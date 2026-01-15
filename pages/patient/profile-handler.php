@@ -166,7 +166,7 @@ try {
         // Validate file type
         $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
         $allowed_types_lower = array_map('strtolower', $allowed_types);
-        
+
         if (!in_array(strtolower($file_type), $allowed_types_lower)) {
             redirectWithMessage('profile.php', 'error', 'Chỉ chấp nhận file JPG, PNG, GIF!');
             exit();
@@ -220,10 +220,8 @@ try {
     // If no action provided
     redirectWithMessage('profile.php', 'error', 'Hành động không hợp lệ!');
     exit();
-
 } catch (Exception $e) {
     error_log("Profile handler error: " . $e->getMessage());
     redirectWithMessage('profile.php', 'error', 'Lỗi: ' . $e->getMessage());
     exit();
 }
-?>

@@ -46,6 +46,7 @@ try {
 }
 ?>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -344,15 +345,17 @@ try {
                 width: 100%;
             }
 
-            .btn-filter, .btn-reset {
+            .btn-filter,
+            .btn-reset {
                 width: 100%;
             }
         }
     </style>
 </head>
+
 <body>
     <?php displayMessage(); ?>
-    
+
     <div class="container-lg py-4">
         <a href="dashboard.php" class="back-link">
             <i class="fas fa-arrow-left"></i>
@@ -532,7 +535,7 @@ try {
         function filterRecords() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             const records = document.querySelectorAll('.record-item-data');
-            
+
             records.forEach(record => {
                 const text = record.textContent.toLowerCase();
                 if (text.includes(searchText)) {
@@ -554,4 +557,5 @@ try {
         document.getElementById('searchInput').addEventListener('keyup', filterRecords);
     </script>
 </body>
+
 </html>

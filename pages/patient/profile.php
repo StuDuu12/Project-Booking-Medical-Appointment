@@ -258,7 +258,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                             <div class="info-card">
                                 <div class="info-label"><i class="fas fa-phone-square"></i> Liên hệ khẩn cấp</div>
                                 <div class="info-value">
-                                    <?php 
+                                    <?php
                                     if ($patient['emergency_contact']) {
                                         echo htmlspecialchars($patient['emergency_contact_name'] . ' - ' . $patient['emergency_contact']);
                                     } else {
@@ -282,17 +282,17 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-phone"></i> Số điện thoại *</label>
-                                    <input type="text" class="form-control" name="contact" 
-                                           value="<?php echo htmlspecialchars($patient['contact']); ?>" 
-                                           pattern="[0-9]{10}" required>
+                                    <input type="text" class="form-control" name="contact"
+                                        value="<?php echo htmlspecialchars($patient['contact']); ?>"
+                                        pattern="[0-9]{10}" required>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-birthday-cake"></i> Ngày sinh</label>
-                                    <input type="date" class="form-control" name="date_of_birth" 
-                                           value="<?php echo $patient['date_of_birth']; ?>">
+                                    <input type="date" class="form-control" name="date_of_birth"
+                                        value="<?php echo $patient['date_of_birth']; ?>">
                                 </div>
                             </div>
 
@@ -322,17 +322,17 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-user"></i> Tên người liên hệ khẩn cấp</label>
-                                    <input type="text" class="form-control" name="emergency_contact_name" 
-                                           value="<?php echo htmlspecialchars($patient['emergency_contact_name'] ?? ''); ?>">
+                                    <input type="text" class="form-control" name="emergency_contact_name"
+                                        value="<?php echo htmlspecialchars($patient['emergency_contact_name'] ?? ''); ?>">
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-phone"></i> SĐT liên hệ khẩn cấp</label>
-                                    <input type="text" class="form-control" name="emergency_contact" 
-                                           value="<?php echo htmlspecialchars($patient['emergency_contact'] ?? ''); ?>" 
-                                           pattern="[0-9]{10}">
+                                    <input type="text" class="form-control" name="emergency_contact"
+                                        value="<?php echo htmlspecialchars($patient['emergency_contact'] ?? ''); ?>"
+                                        pattern="[0-9]{10}">
                                 </div>
                             </div>
                         </div>
@@ -362,16 +362,16 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-lock"></i> Mật khẩu mới *</label>
-                                    <input type="password" class="form-control" name="new_password" 
-                                           id="new_password" minlength="3" required>
+                                    <input type="password" class="form-control" name="new_password"
+                                        id="new_password" minlength="3" required>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-lock"></i> Xác nhận mật khẩu mới *</label>
-                                    <input type="password" class="form-control" name="confirm_password" 
-                                           id="confirm_password" minlength="3" required>
+                                    <input type="password" class="form-control" name="confirm_password"
+                                        id="confirm_password" minlength="3" required>
                                     <small id="password_message"></small>
                                 </div>
                             </div>
@@ -397,8 +397,8 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-image"></i> Chọn ảnh mới</label>
-                            <input type="file" class="form-control" name="avatar" accept="image/*" 
-                                   onchange="previewAvatar(event)" required>
+                            <input type="file" class="form-control" name="avatar" accept="image/*"
+                                onchange="previewAvatar(event)" required>
                             <small class="form-text text-muted">
                                 Chấp nhận: JPG, PNG, GIF. Kích thước tối đa: 5MB
                             </small>

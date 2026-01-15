@@ -656,7 +656,7 @@ if (isset($_POST['docsub1'])) {
                                     <label style="font-weight: 600; color: #1f2937; display: block; margin-bottom: 8px;">Bác sĩ</label>
                                     <select id="filterDoctor" class="form-control" style="border-radius: 6px;">
                                         <option value="">-- Tất cả bác sĩ --</option>
-                                        <?php 
+                                        <?php
                                         $doctors = $pdo->query("SELECT id, fullname FROM doctb ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
                                         foreach ($doctors as $doc) {
                                             echo "<option value='" . $doc['id'] . "'>" . $doc['fullname'] . "</option>";
@@ -705,7 +705,7 @@ if (isset($_POST['docsub1'])) {
                                     ";
                                     $result = $pdo->query($query);
                                     $records = $result->fetchAll(PDO::FETCH_ASSOC);
-                                    
+
                                     if (empty($records)) {
                                         echo "<tr><td colspan='5' style='text-align: center; padding: 40px; color: #6b7280;'>
                                                 <i class='fas fa-inbox' style='font-size: 32px; margin-bottom: 10px; display: block;'></i>
@@ -833,27 +833,27 @@ if (isset($_POST['docsub1'])) {
             const searchText = document.getElementById('searchPatient').value.toLowerCase();
             const doctorId = document.getElementById('filterDoctor').value;
             const status = document.getElementById('filterStatus').value;
-            
+
             const rows = document.querySelectorAll('.medical-record-row');
-            
+
             rows.forEach(row => {
                 let show = true;
-                
+
                 // Filter by patient name
                 if (searchText && !row.dataset.patient.includes(searchText)) {
                     show = false;
                 }
-                
+
                 // Filter by doctor
                 if (doctorId && row.dataset.doctor != doctorId) {
                     show = false;
                 }
-                
+
                 // Filter by status
                 if (status && row.dataset.status !== status) {
                     show = false;
                 }
-                
+
                 row.style.display = show ? '' : 'none';
             });
         }
@@ -863,7 +863,7 @@ if (isset($_POST['docsub1'])) {
             const searchInput = document.getElementById('searchPatient');
             const doctorFilter = document.getElementById('filterDoctor');
             const statusFilter = document.getElementById('filterStatus');
-            
+
             if (searchInput) searchInput.addEventListener('keyup', filterMedicalRecords);
             if (doctorFilter) doctorFilter.addEventListener('change', filterMedicalRecords);
             if (statusFilter) statusFilter.addEventListener('change', filterMedicalRecords);
