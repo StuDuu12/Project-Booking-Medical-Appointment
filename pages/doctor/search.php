@@ -51,19 +51,19 @@ if (isset($_POST['search_submit'])) {
 
     <body>
       <div class="container">
-        <h3>Search Results</h3>
+        <h3>Kết quả tìm kiếm</h3>
         <?php
         if (count($results) > 0) {
         ?>
           <table class="table table-hover table-dark">
             <thead>
               <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
+                <th>Họ</th>
+                <th>Tên</th>
                 <th>Email</th>
-                <th>Contact</th>
-                <th>Appointment Date</th>
-                <th>Appointment Time</th>
+                <th>Liên hệ</th>
+                <th>Ngày hẹn</th>
+                <th>Giờ hẹn</th>Ư
               </tr>
             </thead>
             <tbody>
@@ -90,13 +90,13 @@ if (isset($_POST['search_submit'])) {
         <?php
         } else {
           echo '<div class="no-results">
-                <p>No appointments found for this contact number.</p>
+                <p>Không tìm thấy lịch hẹn cho số điện thoại này.</p>
             </div>';
         }
         ?>
         <div class="back-btn">
           <a href="dashboard.php" class="btn btn-light">
-            <i class="fas fa-arrow-left"></i> Go Back to Dashboard
+            <i class="fas fa-arrow-left"></i> Quay lại bảng điều khiển
           </a>
         </div>
       </div>
@@ -111,7 +111,7 @@ if (isset($_POST['search_submit'])) {
   } catch (PDOException $e) {
     error_log("Search error: " . $e->getMessage());
     echo '<div class="alert alert-danger" role="alert">
-          Error searching appointments. Please try again.
+          Lỗi tìm kiếm lịch hẹn. Vui lòng thử lại.
       </div>';
   }
 }

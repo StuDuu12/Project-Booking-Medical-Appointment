@@ -12,7 +12,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['user_type']) || $_SESSION
 
 // Handle page parameter
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-$allowed_pages = array('dashboard', 'doctors', 'patients', 'appointments', 'prescriptions', 'queries');
+$allowed_pages = array('dashboard', 'doctors', 'patients', 'appointments', 'prescriptions', 'queries', 'medical-records');
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
@@ -118,6 +118,12 @@ if (isset($_POST['docsub1'])) {
                     <a href="?page=queries" class="sidebar-menu-link <?php echo ($page === 'queries') ? 'active' : ''; ?>">
                         <i class="fas fa-comments sidebar-menu-icon"></i>
                         <span>Liên hệ</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="?page=medical-records" class="sidebar-menu-link <?php echo ($page === 'medical-records') ? 'active' : ''; ?>">
+                        <i class="fas fa-file-medical sidebar-menu-icon"></i>
+                        <span>Hồ sơ bệnh án</span>
                     </a>
                 </li>
             </ul>
@@ -281,72 +287,72 @@ if (isset($_POST['docsub1'])) {
             <?php if ($page === 'doctors') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title"><i class="fas fa-user-md"></i> Doctor Management</h2>
-                        <p class="section-subtitle">Manage doctor accounts - View, Add, and Remove doctors</p>
+                        <h2 class="section-title"><i class="fas fa-user-md"></i> Quản lý bác sĩ</h2>
+                        <p class="section-subtitle">Quản lý tài khoản bác sĩ - Xem, thêm và xóa bác sĩ</p>
                     </div>
 
                     <!-- Add Doctor Card -->
                     <div class="data-table-container mb-4">
                         <div class="data-table-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                            <h3 class="data-table-title" style="color: white;"><i class="fas fa-user-plus"></i> Add New Doctor</h3>
+                            <h3 class="data-table-title" style="color: white;"><i class="fas fa-user-plus"></i> Thêm bác sĩ mới</h3>
                         </div>
                         <div class="p-4">
                             <form method="post" action="?page=doctors">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label class="form-label"><i class="fas fa-user"></i> Doctor Name *</label>
-                                            <input type="text" class="form-control" name="doctor" placeholder="Enter full name" required>
+                                            <label class="form-label"><i class="fas fa-user"></i> Tên bác sĩ *</label>
+                                            <input type="text" class="form-control" name="doctor" placeholder="Nhập họ tên đầy đủ" required>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label class="form-label"><i class="fas fa-stethoscope"></i> Specialization *</label>
+                                            <label class="form-label"><i class="fas fa-stethoscope"></i> Chuyên khoa *</label>
                                             <select name="special" class="form-control" required>
-                                                <option value="" disabled selected>Select Specialization</option>
-                                                <option value="General">General</option>
-                                                <option value="Cardiologist">Cardiologist</option>
-                                                <option value="Neurologist">Neurologist</option>
-                                                <option value="Pediatrician">Pediatrician</option>
-                                                <option value="Dermatologist">Dermatologist</option>
-                                                <option value="Orthopedic">Orthopedic</option>
+                                                <option value="" disabled selected>Chọn chuyên khoa</option>
+                                                <option value="General">Đa khoa</option>
+                                                <option value="Cardiologist">Tim mạch</option>
+                                                <option value="Neurologist">Thần kinh</option>
+                                                <option value="Pediatrician">Nhi khoa</option>
+                                                <option value="Dermatologist">Da liễu</option>
+                                                <option value="Orthopedic">Chỉnh hình</option>
                                             </select>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label class="form-label"><i class="fas fa-envelope"></i> Email ID *</label>
-                                            <input type="email" class="form-control" name="demail" placeholder="doctor@example.com" required>
+                                            <label class="form-label"><i class="fas fa-envelope"></i> Email *</label>
+                                            <input type="email" class="form-control" name="demail" placeholder="bacsi@example.com" required>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label class="form-label"><i class="fas fa-money-bill-wave"></i> Consultancy Fees *</label>
-                                            <input type="number" class="form-control" name="docFees" placeholder="Enter fees" min="0" required>
+                                            <label class="form-label"><i class="fas fa-money-bill-wave"></i> Phí khám *</label>
+                                            <input type="number" class="form-control" name="docFees" placeholder="Nhập phí khám" min="0" required>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label class="form-label"><i class="fas fa-lock"></i> Password *</label>
-                                            <input type="password" class="form-control" name="dpassword" id="dpassword" onkeyup="checkPassword()" placeholder="Enter password" required>
+                                            <label class="form-label"><i class="fas fa-lock"></i> Mật khẩu *</label>
+                                            <input type="password" class="form-control" name="dpassword" id="dpassword" onkeyup="checkPassword()" placeholder="Nhập mật khẩu" required>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label class="form-label"><i class="fas fa-lock"></i> Confirm Password *</label>
-                                            <input type="password" class="form-control" name="cdpassword" id="cdpassword" onkeyup="checkPassword()" placeholder="Confirm password" required>
+                                            <label class="form-label"><i class="fas fa-lock"></i> Xác nhận mật khẩu *</label>
+                                            <input type="password" class="form-control" name="cdpassword" id="cdpassword" onkeyup="checkPassword()" placeholder="Xác nhận mật khẩu" required>
                                             <small id="message"></small>
                                         </div>
                                     </div>
 
                                     <div class="col-md-12">
                                         <button type="submit" name="docsub" class="btn btn-success btn-lg">
-                                            <i class="fas fa-user-plus"></i> Add Doctor
+                                            <i class="fas fa-user-plus"></i> Thêm bác sĩ
                                         </button>
                                     </div>
                                 </div>
@@ -357,13 +363,13 @@ if (isset($_POST['docsub1'])) {
                     <!-- Doctor List Card -->
                     <div class="data-table-container">
                         <div class="data-table-header">
-                            <h3 class="data-table-title"><i class="fas fa-list"></i> Doctor List</h3>
+                            <h3 class="data-table-title"><i class="fas fa-list"></i> Danh sách bác sĩ</h3>
                             <div class="data-table-actions">
                                 <span class="badge badge-info">
                                     <?php
                                     $count_stmt = $pdo->query("SELECT COUNT(*) as total FROM doctb");
                                     $count = $count_stmt->fetch(PDO::FETCH_ASSOC)['total'];
-                                    echo $count . ' doctors';
+                                    echo $count . ' bác sĩ';
                                     ?>
                                 </span>
                             </div>
@@ -372,11 +378,11 @@ if (isset($_POST['docsub1'])) {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Doctor Name</th>
-                                    <th>Specialization</th>
+                                    <th>Tên bác sĩ</th>
+                                    <th>Chuyên khoa</th>
                                     <th>Email</th>
-                                    <th>Consultancy Fees</th>
-                                    <th>Actions</th>
+                                    <th>Phí khám</th>
+                                    <th>Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -395,10 +401,10 @@ if (isset($_POST['docsub1'])) {
                                         <td><?php echo htmlspecialchars($row['email']); ?></td>
                                         <td><strong>₹<?php echo htmlspecialchars($row['docFees']); ?></strong></td>
                                         <td>
-                                            <form method="post" action="?page=doctors" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete Dr. <?php echo htmlspecialchars($row['username']); ?>?');">
+                                            <form method="post" action="?page=doctors" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn xóa BS. <?php echo htmlspecialchars($row['username']); ?>?');">
                                                 <input type="hidden" name="demail" value="<?php echo htmlspecialchars($row['email']); ?>">
-                                                <button type="submit" name="docsub1" class="btn btn-danger btn-sm" title="Delete Doctor">
-                                                    <i class="fas fa-trash-alt"></i> Delete
+                                                <button type="submit" name="docsub1" class="btn btn-danger btn-sm" title="Xóa bác sĩ">
+                                                    <i class="fas fa-trash-alt"></i> Xóa
                                                 </button>
                                             </form>
                                         </td>
@@ -414,18 +420,18 @@ if (isset($_POST['docsub1'])) {
             <?php if ($page === 'patients') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title">Patient Records</h2>
-                        <p class="section-subtitle">View registered patients</p>
+                        <h2 class="section-title">Hồ sơ bệnh nhân</h2>
+                        <p class="section-subtitle">Xem bệnh nhân đã đăng ký</p>
                     </div>
 
                     <div class="data-table-container">
                         <div class="data-table-header">
-                            <h3 class="data-table-title">Patient List</h3>
+                            <h3 class="data-table-title">Danh sách bệnh nhân</h3>
                             <div class="data-table-actions">
                                 <form method="post" action="../../patientsearch.php" class="form-inline">
-                                    <input type="text" name="patient_contact" placeholder="Enter Contact" class="form-control form-control-sm mr-2">
+                                    <input type="text" name="patient_contact" placeholder="Nhập số điện thoại" class="form-control form-control-sm mr-2">
                                     <button type="submit" name="patient_search_submit" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-search"></i> Search
+                                        <i class="fas fa-search"></i> Tìm kiếm
                                     </button>
                                 </form>
                             </div>
@@ -434,11 +440,11 @@ if (isset($_POST['docsub1'])) {
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Patient ID</th>
-                                        <th>Name</th>
-                                        <th>Gender</th>
+                                        <th>Mã BN</th>
+                                        <th>Họ tên</th>
+                                        <th>Giới tính</th>
                                         <th>Email</th>
-                                        <th>Contact</th>
+                                        <th>Liên hệ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -466,18 +472,18 @@ if (isset($_POST['docsub1'])) {
             <?php if ($page === 'appointments') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title">Appointment Details</h2>
-                        <p class="section-subtitle">View all scheduled appointments</p>
+                        <h2 class="section-title">Chi tiết lịch hẹn</h2>
+                        <p class="section-subtitle">Xem tất cả các lịch hẹn đã đặt</p>
                     </div>
 
                     <div class="data-table-container">
                         <div class="data-table-header">
-                            <h3 class="data-table-title">All Appointments</h3>
+                            <h3 class="data-table-title">Tất cả lịch hẹn</h3>
                             <div class="data-table-actions">
                                 <form method="post" action="../../appsearch.php" class="form-inline">
-                                    <input type="text" name="app_contact" placeholder="Enter Contact" class="form-control form-control-sm mr-2">
+                                    <input type="text" name="app_contact" placeholder="Nhập số điện thoại" class="form-control form-control-sm mr-2">
                                     <button type="submit" name="app_search_submit" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-search"></i> Search
+                                        <i class="fas fa-search"></i> Tìm kiếm
                                     </button>
                                 </form>
                             </div>
@@ -486,14 +492,14 @@ if (isset($_POST['docsub1'])) {
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>App ID</th>
-                                        <th>Patient Name</th>
-                                        <th>Contact</th>
-                                        <th>Doctor</th>
-                                        <th>Fees</th>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Status</th>
+                                        <th>Mã LH</th>
+                                        <th>Tên bệnh nhân</th>
+                                        <th>Liên hệ</th>
+                                        <th>Bác sĩ</th>
+                                        <th>Phí</th>
+                                        <th>Ngày</th>
+                                        <th>Giờ</th>
+                                        <th>Trạng thái</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -513,13 +519,13 @@ if (isset($_POST['docsub1'])) {
                                             <td>
                                                 <?php
                                                 if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 1)) {
-                                                    echo '<span class="badge badge-success">Active</span>';
+                                                    echo '<span class="badge badge-success">Đang hoạt động</span>';
                                                 }
                                                 if (($row['userStatus'] == 0) && ($row['doctorStatus'] == 1)) {
-                                                    echo '<span class="badge badge-warning">Cancelled by Patient</span>';
+                                                    echo '<span class="badge badge-warning">Bệnh nhân đã hủy</span>';
                                                 }
                                                 if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 0)) {
-                                                    echo '<span class="badge badge-danger">Cancelled by Doctor</span>';
+                                                    echo '<span class="badge badge-danger">Bác sĩ đã hủy</span>';
                                                 }
                                                 ?>
                                             </td>
@@ -536,26 +542,26 @@ if (isset($_POST['docsub1'])) {
             <?php if ($page === 'prescriptions') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title">Prescription Records</h2>
-                        <p class="section-subtitle">View all medical prescriptions</p>
+                        <h2 class="section-title">Hồ sơ đơn thuốc</h2>
+                        <p class="section-subtitle">Xem tất cả các đơn thuốc</p>
                     </div>
 
                     <div class="data-table-container">
                         <div class="data-table-header">
-                            <h3 class="data-table-title">All Prescriptions</h3>
+                            <h3 class="data-table-title">Tất cả đơn thuốc</h3>
                         </div>
                         <div style="overflow-x: auto;">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Doctor</th>
-                                        <th>Patient ID</th>
-                                        <th>Patient Name</th>
-                                        <th>App ID</th>
-                                        <th>Date</th>
-                                        <th>Disease</th>
-                                        <th>Allergy</th>
-                                        <th>Prescription</th>
+                                        <th>Bác sĩ</th>
+                                        <th>Mã BN</th>
+                                        <th>Tên bệnh nhân</th>
+                                        <th>Mã LH</th>
+                                        <th>Ngày</th>
+                                        <th>Bệnh</th>
+                                        <th>Dị ứng</th>
+                                        <th>Đơn thuốc</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -586,18 +592,18 @@ if (isset($_POST['docsub1'])) {
             <?php if ($page === 'queries') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title">Customer Queries</h2>
-                        <p class="section-subtitle">View messages from contact form</p>
+                        <h2 class="section-title">Thắc mắc khách hàng</h2>
+                        <p class="section-subtitle">Xem tin nhắn từ biểu mẫu liên hệ</p>
                     </div>
 
                     <div class="data-table-container">
                         <div class="data-table-header">
-                            <h3 class="data-table-title">Contact Messages</h3>
+                            <h3 class="data-table-title">Tin nhắn liên hệ</h3>
                             <div class="data-table-actions">
                                 <form method="post" action="../../messearch.php" class="form-inline">
-                                    <input type="text" name="mes_contact" placeholder="Enter Contact" class="form-control form-control-sm mr-2">
+                                    <input type="text" name="mes_contact" placeholder="Nhập số điện thoại" class="form-control form-control-sm mr-2">
                                     <button type="submit" name="mes_search_submit" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-search"></i> Search
+                                        <i class="fas fa-search"></i> Tìm kiếm
                                     </button>
                                 </form>
                             </div>
@@ -605,10 +611,10 @@ if (isset($_POST['docsub1'])) {
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
+                                    <th>Họ tên</th>
                                     <th>Email</th>
-                                    <th>Contact</th>
-                                    <th>Message</th>
+                                    <th>Liên hệ</th>
+                                    <th>Tin nhắn</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -629,6 +635,179 @@ if (isset($_POST['docsub1'])) {
                     </div>
                 </section>
             <?php } ?>
+
+            <!-- Medical Records Section -->
+            <?php if ($page === 'medical-records') { ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-file-medical"></i> Hồ sơ bệnh án</h2>
+                        <p class="section-subtitle">Quản lý và theo dõi hồ sơ bệnh án của tất cả bệnh nhân</p>
+                    </div>
+
+                    <!-- Search and Filter -->
+                    <div class="data-table-container mb-4">
+                        <div class="p-4" style="background: #f8fafc; border-radius: 8px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                <div>
+                                    <label style="font-weight: 600; color: #1f2937; display: block; margin-bottom: 8px;">Tìm kiếm bệnh nhân</label>
+                                    <input type="text" id="searchPatient" class="form-control" placeholder="Tên hoặc số điện thoại..." style="border-radius: 6px;">
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #1f2937; display: block; margin-bottom: 8px;">Bác sĩ</label>
+                                    <select id="filterDoctor" class="form-control" style="border-radius: 6px;">
+                                        <option value="">-- Tất cả bác sĩ --</option>
+                                        <?php 
+                                        $doctors = $pdo->query("SELECT id, fullname FROM doctb ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
+                                        foreach ($doctors as $doc) {
+                                            echo "<option value='" . $doc['id'] . "'>" . $doc['fullname'] . "</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #1f2937; display: block; margin-bottom: 8px;">Trạng thái</label>
+                                    <select id="filterStatus" class="form-control" style="border-radius: 6px;">
+                                        <option value="">-- Tất cả --</option>
+                                        <option value="completed">Hoàn thành</option>
+                                        <option value="pending">Đang chờ</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Records Table -->
+                    <div class="data-table-container">
+                        <div class="data-table-header" style="background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);">
+                            <h3 class="data-table-title" style="color: white;"><i class="fas fa-list"></i> Danh sách hồ sơ bệnh án</h3>
+                        </div>
+                        <table class="table table-striped" style="margin: 0;">
+                            <thead style="background-color: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                                <tr>
+                                    <th style="color: #374151; font-weight: 700; padding: 15px;">Bệnh nhân</th>
+                                    <th style="color: #374151; font-weight: 700; padding: 15px;">Bác sĩ</th>
+                                    <th style="color: #374151; font-weight: 700; padding: 15px;">Chẩn đoán</th>
+                                    <th style="color: #374151; font-weight: 700; padding: 15px;">Ngày tạo</th>
+                                    <th style="color: #374151; font-weight: 700; padding: 15px;">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTableBody">
+                                <?php
+                                try {
+                                    $query = "
+                                        SELECT mr.*, 
+                                               p.fname, p.lname, p.contact,
+                                               d.fullname as doctor_name
+                                        FROM medical_records mr
+                                        LEFT JOIN patreg p ON mr.patient_id = p.pid
+                                        LEFT JOIN doctb d ON mr.doctor_id = d.id
+                                        ORDER BY mr.created_at DESC
+                                    ";
+                                    $result = $pdo->query($query);
+                                    $records = $result->fetchAll(PDO::FETCH_ASSOC);
+                                    
+                                    if (empty($records)) {
+                                        echo "<tr><td colspan='5' style='text-align: center; padding: 40px; color: #6b7280;'>
+                                                <i class='fas fa-inbox' style='font-size: 32px; margin-bottom: 10px; display: block;'></i>
+                                                Không có hồ sơ bệnh án
+                                            </td></tr>";
+                                    } else {
+                                        foreach ($records as $record) {
+                                            $status_class = $record['status'] === 'completed' ? 'badge-success' : 'badge-warning';
+                                            $status_text = $record['status'] === 'completed' ? 'Hoàn thành' : 'Đang chờ';
+                                            echo "<tr class='medical-record-row' data-doctor='" . $record['doctor_id'] . "' data-status='" . $record['status'] . "' data-patient='" . strtolower($record['fname'] . ' ' . $record['lname']) . "'>";
+                                            echo "<td style='padding: 15px;'>" . $record['fname'] . " " . $record['lname'] . "<br><small style='color: #6b7280;'>" . $record['contact'] . "</small></td>";
+                                            echo "<td style='padding: 15px;'>" . ($record['doctor_name'] ?? 'Chưa xác định') . "</td>";
+                                            echo "<td style='padding: 15px;'>" . substr($record['diagnosis'] ?? 'N/A', 0, 50) . "...</td>";
+                                            echo "<td style='padding: 15px;'>" . date('d/m/Y H:i', strtotime($record['created_at'])) . "</td>";
+                                            echo "<td style='padding: 15px;'><span class='badge " . $status_class . "'>" . $status_text . "</span></td>";
+                                            echo "</tr>";
+                                        }
+                                    }
+                                } catch (PDOException $e) {
+                                    echo "<tr><td colspan='5' style='text-align: center; padding: 20px; color: #ef4444;'>Lỗi: " . $e->getMessage() . "</td></tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon primary">
+                                    <i class="fas fa-file-medical"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Tổng hồ sơ</div>
+                                    <div class="stat-value">
+                                        <?php
+                                        $query = $pdo->query("SELECT COUNT(*) as total FROM medical_records");
+                                        $row = $query->fetch(PDO::FETCH_ASSOC);
+                                        echo $row['total'];
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon success">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Hoàn thành</div>
+                                    <div class="stat-value">
+                                        <?php
+                                        $query = $pdo->query("SELECT COUNT(*) as total FROM medical_records WHERE status = 'completed'");
+                                        $row = $query->fetch(PDO::FETCH_ASSOC);
+                                        echo $row['total'];
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon warning">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Đang chờ</div>
+                                    <div class="stat-value">
+                                        <?php
+                                        $query = $pdo->query("SELECT COUNT(*) as total FROM medical_records WHERE status = 'pending'");
+                                        $row = $query->fetch(PDO::FETCH_ASSOC);
+                                        echo $row['total'];
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon info">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Bệnh nhân</div>
+                                    <div class="stat-value">
+                                        <?php
+                                        $query = $pdo->query("SELECT COUNT(DISTINCT patient_id) as total FROM medical_records");
+                                        $row = $query->fetch(PDO::FETCH_ASSOC);
+                                        echo $row['total'];
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            <?php } ?>
         </main>
     </div>
 
@@ -642,12 +821,53 @@ if (isset($_POST['docsub1'])) {
         function checkPassword() {
             if (document.getElementById('dpassword').value == document.getElementById('cdpassword').value) {
                 document.getElementById('message').style.color = '#10B981';
-                document.getElementById('message').innerHTML = '✓ Matched';
+                document.getElementById('message').innerHTML = '✓ Khớp';
             } else {
                 document.getElementById('message').style.color = '#EF4444';
-                document.getElementById('message').innerHTML = '✗ Not Matching';
+                document.getElementById('message').innerHTML = '✗ Không khớp';
             }
         }
+
+        // Medical Records Filter
+        function filterMedicalRecords() {
+            const searchText = document.getElementById('searchPatient').value.toLowerCase();
+            const doctorId = document.getElementById('filterDoctor').value;
+            const status = document.getElementById('filterStatus').value;
+            
+            const rows = document.querySelectorAll('.medical-record-row');
+            
+            rows.forEach(row => {
+                let show = true;
+                
+                // Filter by patient name
+                if (searchText && !row.dataset.patient.includes(searchText)) {
+                    show = false;
+                }
+                
+                // Filter by doctor
+                if (doctorId && row.dataset.doctor != doctorId) {
+                    show = false;
+                }
+                
+                // Filter by status
+                if (status && row.dataset.status !== status) {
+                    show = false;
+                }
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchPatient');
+            const doctorFilter = document.getElementById('filterDoctor');
+            const statusFilter = document.getElementById('filterStatus');
+            
+            if (searchInput) searchInput.addEventListener('keyup', filterMedicalRecords);
+            if (doctorFilter) doctorFilter.addEventListener('change', filterMedicalRecords);
+            if (statusFilter) statusFilter.addEventListener('change', filterMedicalRecords);
+        });
     </script>
 </body>
 

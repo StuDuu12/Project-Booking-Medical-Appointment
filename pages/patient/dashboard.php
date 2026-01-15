@@ -193,14 +193,14 @@ if (isset($_POST['app-submit'])) {
     $apptime = $_POST['apptime'];
 
     // Get doctor info
-    $stmt = $pdo->prepare("SELECT username, docFees FROM doctb WHERE id = :id");
+    $stmt = $pdo->prepare("SELECT fullname, docFees FROM doctb WHERE id = :id");
     $stmt->execute([':id' => $doctor_id]);
     $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($doctor) {
         // Remove currency symbols and convert to integer
         $docFees = intval($doctor['docFees']);
-        $doctorName = $doctor['username'];
+        $doctorName = $doctor['fullname'];
 
         // Check if slot is still available
         $check_stmt = $pdo->prepare("SELECT status FROM time_slots WHERE id = :slot_id AND status = 'available'");
@@ -686,6 +686,18 @@ if (isset($_GET["generate_bill"])) {
                     <a href="?page=prescriptions" class="sidebar-menu-link <?php echo ($page === 'prescriptions') ? 'active' : ''; ?>">
                         <i class="fas fa-file-prescription sidebar-menu-icon"></i>
                         <span>Đơn thuốc</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="profile.php" class="sidebar-menu-link">
+                        <i class="fas fa-user-circle sidebar-menu-icon"></i>
+                        <span>Hồ sơ cá nhân</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="medical-records.php" class="sidebar-menu-link">
+                        <i class="fas fa-file-medical sidebar-menu-icon"></i>
+                        <span>Lịch sử bệnh án</span>
                     </a>
                 </li>
             </ul>

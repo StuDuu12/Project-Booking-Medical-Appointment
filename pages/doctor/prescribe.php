@@ -46,9 +46,9 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
     ]);
 
     if ($query) {
-        redirectWithMessage('dashboard.php', 'success', 'Prescribed successfully!');
+        redirectWithMessage('dashboard.php', 'success', 'Kê đơn thuốc thành công!');
     } else {
-        redirectWithMessage('dashboard.php', 'error', 'Unable to process your request. Try again!');
+        redirectWithMessage('dashboard.php', 'error', 'Không thể xử lý yêu cầu. Vui lòng thử lại!');
     }
 }
 ?>
@@ -58,7 +58,7 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png" />
-    <title>Prescribe Medication - Global Hospital</title>
+    <title>Kê đơn thuốc - Bệnh viện Global</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -323,24 +323,24 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
 <body>
     <?php displayMessage(); ?>
     <a href="dashboard.php" class="back-button">
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
+        <i class="fas fa-arrow-left"></i> Quay lại bảng điều khiển
     </a>
 
     <div class="container-custom">
         <div class="header">
-            <h1><i class="fas fa-prescription"></i> Prescribe Medication</h1>
-            <p>Issue prescription for patient appointment</p>
+            <h1><i class="fas fa-prescription"></i> Kê đơn thuốc</h1>
+            <p>Kê đơn thuốc cho lịch hẹn bệnh nhân</p>
         </div>
 
         <div class="patient-info">
-            <h3>Patient Information</h3>
+            <h3>Thông tin bệnh nhân</h3>
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-icon">
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="info-content">
-                        <label>Patient Name</label>
+                        <label>Tên bệnh nhân</label>
                         <span><?php echo $fname . ' ' . $lname; ?></span>
                     </div>
                 </div>
@@ -350,7 +350,7 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
                         <i class="fas fa-id-badge"></i>
                     </div>
                     <div class="info-content">
-                        <label>Patient ID</label>
+                        <label>Mã BN</label>
                         <span>#<?php echo $pid; ?></span>
                     </div>
                 </div>
@@ -360,7 +360,7 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
                         <i class="fas fa-calendar"></i>
                     </div>
                     <div class="info-content">
-                        <label>Appointment Date</label>
+                        <label>Ngày hẹn</label>
                         <span><?php echo date('d M Y', strtotime($appdate)); ?></span>
                     </div>
                 </div>
@@ -370,7 +370,7 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="info-content">
-                        <label>Appointment Time</label>
+                        <label>Giờ hẹn</label>
                         <span><?php echo date('h:i A', strtotime($apptime)); ?></span>
                     </div>
                 </div>
@@ -378,7 +378,7 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
         </div>
 
         <form method="post" action="prescribe.php" class="form-section">
-            <h3><i class="fas fa-file-medical"></i> Prescription Details</h3>
+            <h3><i class="fas fa-file-medical"></i> Chi tiết đơn thuốc</h3>
 
             <input type="hidden" name="fname" value="<?php echo $fname; ?>">
             <input type="hidden" name="lname" value="<?php echo $lname; ?>">
@@ -389,31 +389,31 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
 
             <div class="form-group">
                 <label class="form-label">
-                    <i class="fas fa-disease"></i> Disease / Diagnosis
+                    <i class="fas fa-disease"></i> Bệnh / Chẩn đoán
                 </label>
-                <input type="text" name="disease" class="form-control" placeholder="Enter diagnosis" required>
+                <input type="text" name="disease" class="form-control" placeholder="Nhập chẩn đoán" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label">
-                    <i class="fas fa-exclamation-triangle"></i> Allergies
+                    <i class="fas fa-exclamation-triangle"></i> Dị ứng
                 </label>
-                <input type="text" name="allergy" class="form-control" placeholder="Enter known allergies (if any)">
+                <input type="text" name="allergy" class="form-control" placeholder="Nhập dị ứng (nếu có)">
             </div>
 
             <div class="form-group">
                 <label class="form-label">
-                    <i class="fas fa-pills"></i> Prescription / Medication
+                    <i class="fas fa-pills"></i> Đơn thuốc / Thuốc
                 </label>
-                <textarea name="prescription" class="form-control" placeholder="Enter medication details, dosage, and instructions" required></textarea>
+                <textarea name="prescription" class="form-control" placeholder="Nhập chi tiết thuốc, liều lượng và hướng dẫn" required></textarea>
             </div>
 
             <div class="button-group">
                 <button type="submit" name="prescribe" class="btn btn-primary">
-                    <i class="fas fa-check"></i> Issue Prescription
+                    <i class="fas fa-check"></i> Kê đơn
                 </button>
                 <a href="dashboard.php" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Cancel
+                    <i class="fas fa-times"></i> Hủy
                 </a>
             </div>
         </form>
