@@ -7,13 +7,13 @@
 
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'myhmsdb');
+define('DB_USER', 'chuduyit_k73');
+define('DB_PASS', 'chuduyisme@123');
+define('DB_NAME', 'chuduyit_medical_k73');
 
 try {
     // Create PDO connection
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
 
     // Set PDO attributes
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

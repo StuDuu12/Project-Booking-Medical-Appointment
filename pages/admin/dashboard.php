@@ -387,7 +387,9 @@ if (isset($_POST['docsub1'])) {
                             </thead>
                             <tbody>
                                 <?php
-                                $query = "SELECT * FROM doctb ORDER BY username ASC";
+                                $query = "SELECT d.*, s.name_vi FROM doctb d 
+                                         LEFT JOIN specializations s ON d.spec_id = s.id 
+                                         ORDER BY d.fullname ASC";
                                 $result = $pdo->query($query);
                                 $serial = 1;
                                 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
@@ -395,9 +397,9 @@ if (isset($_POST['docsub1'])) {
                                     <tr>
                                         <td><?php echo $serial++; ?></td>
                                         <td>
-                                            <strong><i class="fas fa-user-md text-primary"></i> Dr. <?php echo htmlspecialchars($row['username']); ?></strong>
+                                            <strong><i class="fas fa-user-md text-primary"></i> Dr. <?php echo htmlspecialchars($row['fullname']); ?></strong>
                                         </td>
-                                        <td><span class="badge badge-primary"><?php echo htmlspecialchars($row['spec']); ?></span></td>
+                                        <td><span class="badge badge-primary"><?php echo htmlspecialchars($row['name_vi'] ?? $row['spec']); ?></span></td>
                                         <td><?php echo htmlspecialchars($row['email']); ?></td>
                                         <td><strong>₹<?php echo htmlspecialchars($row['docFees']); ?></strong></td>
                                         <td>
