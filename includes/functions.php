@@ -18,15 +18,16 @@ function display_docs()
 {
     try {
         $con = getDB();
-        $stmt = $con->prepare("SELECT username, spec, docFees FROM doctb ORDER BY spec, username");
+        $stmt = $con->prepare("SELECT username, fullname, spec, docFees FROM doctb ORDER BY spec, fullname");
         $stmt->execute();
 
         while ($row = $stmt->fetch()) {
-            $name = htmlspecialchars($row['username']);
+            $username = htmlspecialchars($row['username']);
+            $fullname = htmlspecialchars($row['fullname']);
             $spec = htmlspecialchars($row['spec']);
             $cost = isset($row['docFees']) ? $row['docFees'] : '';
 
-            echo '<option value="' . $name . '" data-spec="' . $spec . '" data-value="' . $cost . '">Dr. ' . $name . ' (' . $spec . ')</option>';
+            echo '<option value="' . $fullname . '" data-spec="' . $spec . '" data-value="' . $cost . '">BS. ' . $fullname . ' (' . $spec . ')</option>';
         }
     } catch (PDOException $e) {
         error_log("Display doctors error: " . $e->getMessage());
