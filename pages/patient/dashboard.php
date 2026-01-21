@@ -20,7 +20,7 @@ if (!$pid) {
 
 // Handle page parameter
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-$allowed_pages = array('dashboard', 'book-appointment', 'appointment-history', 'prescriptions');
+$allowed_pages = array('dashboard', 'book-appointment', 'appointment-history', 'prescriptions', 'profile');
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
@@ -63,12 +63,12 @@ if ($page === 'book-appointment') {
 $doctors = [];
 if ($page === 'book-appointment' && $selected_spec && $booking_step >= 2) {
     $doc_stmt = $pdo->prepare("
-        SELECT d.id, d.username, d.email, d.docFees, d.experience_years, d.bio,
+        SELECT d.id, d.username, d.fullname, d.email, d.docFees, d.experience_years, d.bio,
                s.name_vi as spec_name
         FROM doctb d
         LEFT JOIN specializations s ON d.spec_id = s.id
         WHERE d.spec_id = :spec_id AND d.status = 1
-        ORDER BY d.username
+        ORDER BY d.fullname
     ");
     $doc_stmt->execute([':spec_id' => $selected_spec]);
     $doctors = $doc_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -193,14 +193,14 @@ if (isset($_POST['app-submit'])) {
     $apptime = $_POST['apptime'];
 
     // Get doctor info
-    $stmt = $pdo->prepare("SELECT username, docFees FROM doctb WHERE id = :id");
+    $stmt = $pdo->prepare("SELECT fullname, docFees FROM doctb WHERE id = :id");
     $stmt->execute([':id' => $doctor_id]);
     $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($doctor) {
         // Remove currency symbols and convert to integer
         $docFees = intval($doctor['docFees']);
-        $doctorName = $doctor['username'];
+        $doctorName = $doctor['fullname'];
 
         // Check if slot is still available
         $check_stmt = $pdo->prepare("SELECT status FROM time_slots WHERE id = :slot_id AND status = 'available'");
@@ -671,6 +671,12 @@ if (isset($_GET["generate_bill"])) {
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
+                    <a href="?page=profile" class="sidebar-menu-link <?php echo ($page === 'profile') ? 'active' : ''; ?>">
+                        <i class="fas fa-user sidebar-menu-icon"></i>
+                        <span>Hồ sơ cá nhân</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
                     <a href="?page=book-appointment" class="sidebar-menu-link <?php echo ($page === 'book-appointment') ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-plus sidebar-menu-icon"></i>
                         <span>Đặt lịch khám</span>
@@ -820,7 +826,6 @@ if (isset($_GET["generate_bill"])) {
                 </section>
             <?php } ?>
 
-            <!-- Book Appointment Section - NEW SYSTEM -->
             <?php if ($page === 'book-appointment') { ?>
                 <section class="content-section">
                     <div class="section-header">
@@ -851,7 +856,6 @@ if (isset($_GET["generate_bill"])) {
                         </div>
                     </div>
 
-                    <!-- Step 1: Choose Specialization -->
                     <?php if ($booking_step == 1) { ?>
                         <div class="data-table-container">
                             <div class="data-table-header">
@@ -880,7 +884,6 @@ if (isset($_GET["generate_bill"])) {
                         </div>
                     <?php } ?>
 
-                    <!-- Step 2: Choose Doctor -->
                     <?php if ($booking_step == 2 && $selected_spec) { ?>
                         <div class="data-table-container">
                             <div class="data-table-header">
@@ -895,9 +898,9 @@ if (isset($_GET["generate_bill"])) {
                                         <?php foreach ($doctors as $doctor) { ?>
                                             <a href="?page=book-appointment&step=3&spec_id=<?php echo $selected_spec; ?>&doctor_id=<?php echo $doctor['id']; ?>" class="doctor-card" style="text-decoration: none; color: inherit;">
                                                 <div class="doctor-avatar">
-                                                    <?php echo strtoupper(substr($doctor['username'], 0, 1)); ?>
+                                                    <?php echo strtoupper(substr($doctor['fullname'], 0, 1)); ?>
                                                 </div>
-                                                <div class="doctor-name">BS. <?php echo htmlspecialchars($doctor['username']); ?></div>
+                                                <div class="doctor-name">BS. <?php echo htmlspecialchars($doctor['fullname']); ?></div>
                                                 <div class="doctor-spec"><?php echo htmlspecialchars($doctor['spec_name']); ?></div>
                                                 <?php if ($doctor['experience_years']) { ?>
                                                     <div class="doctor-spec">
@@ -920,8 +923,6 @@ if (isset($_GET["generate_bill"])) {
                             </div>
                         </div>
                     <?php } ?>
-
-                    <!-- Step 3: Choose Date -->
                     <?php if ($booking_step == 3 && $selected_doctor) { ?>
                         <div class="data-table-container">
                             <div class="data-table-header">
@@ -1022,10 +1023,8 @@ if (isset($_GET["generate_bill"])) {
                         </div>
                     <?php } ?>
 
-                    <!-- Step 4: Choose Time Slot -->
                     <?php if ($booking_step == 4 && $selected_doctor && $selected_date) {
-                        // Get doctor info for display
-                        $doc_info_stmt = $pdo->prepare("SELECT username, docFees FROM doctb WHERE id = :id");
+                        $doc_info_stmt = $pdo->prepare("SELECT username, fullname, docFees FROM doctb WHERE id = :id");
                         $doc_info_stmt->execute([':id' => $selected_doctor]);
                         $doc_info = $doc_info_stmt->fetch(PDO::FETCH_ASSOC);
                     ?>
@@ -1046,7 +1045,7 @@ if (isset($_GET["generate_bill"])) {
                                         echo $days[date('w', strtotime($selected_date))];
                                         ?>)
                                     <br>
-                                    <strong><i class="fas fa-user-md"></i> Bác sĩ:</strong> BS. <?php echo htmlspecialchars($doc_info['username']); ?>
+                                    <strong><i class="fas fa-user-md"></i> Bác sĩ:</strong> BS. <?php echo htmlspecialchars($doc_info['fullname']); ?>
                                 </div>
 
                                 <?php if ($schedule_info && count($time_slots) > 0) { ?>
@@ -1096,7 +1095,7 @@ if (isset($_GET["generate_bill"])) {
 
                                         <div class="summary-item">
                                             <span><i class="fas fa-user-md"></i> Bác sĩ:</span>
-                                            <strong>BS. <?php echo htmlspecialchars($doc_info['username']); ?></strong>
+                                            <strong>BS. <?php echo htmlspecialchars($doc_info['fullname']); ?></strong>
                                         </div>
 
                                         <div class="summary-item">
@@ -1174,7 +1173,13 @@ if (isset($_GET["generate_bill"])) {
                             </thead>
                             <tbody>
                                 <?php
-                                $stmt = $pdo->prepare("SELECT ID,doctor,docFees,appdate,apptime,userStatus,doctorStatus FROM appointmenttb WHERE fname = :fname AND lname = :lname ORDER BY appdate DESC, apptime DESC");
+                                $stmt = $pdo->prepare("
+                                    SELECT a.ID, COALESCE(d.fullname, a.doctor) as doctor_fullname, a.docFees, a.appdate, a.apptime, a.userStatus, a.doctorStatus
+                                    FROM appointmenttb a
+                                    LEFT JOIN doctb d ON a.doctor = d.fullname OR a.doctor = d.username
+                                    WHERE a.fname = :fname AND a.lname = :lname 
+                                    ORDER BY a.appdate DESC, a.apptime DESC
+                                ");
                                 $stmt->execute([':fname' => $fname, ':lname' => $lname]);
 
                                 if ($stmt->rowCount() == 0) {
@@ -1190,7 +1195,7 @@ if (isset($_GET["generate_bill"])) {
                                 while ($row = $stmt->fetch(PDO::FETCH_BOTH)) {
                                 ?>
                                     <tr>
-                                        <td>Bác sĩ <?php echo $row['doctor']; ?></td>
+                                        <td>Bác sĩ <?php echo $row['doctor_fullname']; ?></td>
                                         <td><?php echo number_format($row['docFees']); ?> VNĐ</td>
                                         <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
                                         <td><?php echo date('H:i', strtotime($row['apptime'])); ?></td>
@@ -1288,40 +1293,149 @@ if (isset($_GET["generate_bill"])) {
                     </div>
                 </section>
             <?php } ?>
-        </main>
-    </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+            <?php if ($page === 'profile') {
+                $patient_stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
+                $patient_stmt->execute([':pid' => $pid]);
+                $patient = $patient_stmt->fetch(PDO::FETCH_ASSOC);
+            ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Hồ sơ cá nhân</h2>
+                        <p class="section-subtitle">Quản lý thông tin cá nhân và tài khoản của bạn</p>
+                    </div>
 
-    <script>
-        // Simple function to select time slot - PHP handles all other logic
-        function selectSlot(slotId, slotTime, slotTimeFull) {
-            // Remove selected class from all slots
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                slot.classList.remove('selected');
-            });
+                    <div class="profile-container">
+                        <div class="profile-card" style="background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%); color: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                            <div style="display: flex; align-items: center; gap: 2rem;">
+                                <div style="width: 120px; height: 120px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #0891b2;">
+                                    <?php echo strtoupper(substr($fname, 0, 1) . substr($lname, 0, 1)); ?>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.5rem; margin: 0; font-weight: 700;"><?php echo htmlspecialchars($fname . ' ' . $lname); ?></h3>
+                                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($email); ?></p>
+                                    <p style="margin: 0.25rem 0 0 0; opacity: 0.9;"><i class="fas fa-phone"></i> <?php echo htmlspecialchars($contact); ?></p>
+                                </div>
+                            </div>
+                        </div>
 
-            // Add selected class to clicked slot
-            document.getElementById('slot-' + slotId).classList.add('selected');
+                        <div class="data-table-container">
+                            <div class="data-table-header">
+                                <h3 class="data-table-title">Thông tin chi tiết</h3>
+                            </div>
+                            <div style="padding: 2rem;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                                    <div>
+                                        <h5 style="font-weight: 600; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; text-transform: uppercase;">Thông tin cá nhân</h5>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Họ:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($fname); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Tên:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($lname); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Giới tính:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;">
+                                                <?php
+                                                $gender_display = ['Male' => 'Nam', 'Female' => 'Nữ', 'Other' => 'Khác'];
+                                                echo $gender_display[$patient['gender'] ?? ''] ?? 'Chưa cập nhật';
+                                                ?>
+                                            </p>
+                                        </div>
+                                    </div>
 
-            // Update form values
-            document.getElementById('selected-slot-id').value = slotId;
-            document.getElementById('selected-time-value').value = slotTimeFull;
-            document.getElementById('selected-time-display').textContent = slotTime;
+                                    <div>
+                                        <h5 style="font-weight: 600; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; text-transform: uppercase;">Thông tin liên hệ</h5>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Email:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($patient['email'] ?? $email); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Số điện thoại:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($patient['contact'] ?? $contact); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Địa chỉ:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($patient['address'] ?? 'Chưa cập nhật'); ?></p>
+                                        </div>
+                                    </div>
 
-            // Show booking form
-            document.getElementById('booking-form').style.display = 'block';
+                                    <div>
+                                        <h5 style="font-weight: 600; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; text-transform: uppercase;">Thông tin y tế</h5>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Ngày sinh:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;">
+                                                <?php
+                                                if (isset($patient['date_of_birth']) && $patient['date_of_birth']) {
+                                                    echo date('d/m/Y', strtotime($patient['date_of_birth']));
+                                                } else {
+                                                    echo 'Chưa cập nhật';
+                                                }
+                                                ?>
+                                            </p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Nhóm máu:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($patient['blood_group'] ?? 'Chưa cập nhật'); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Liên hệ khẩn cấp:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;">
+                                                <?php
+                                                if (isset($patient['emergency_contact_name']) && $patient['emergency_contact_name']) {
+                                                    echo htmlspecialchars($patient['emergency_contact_name']);
+                                                    if (isset($patient['emergency_contact']) && $patient['emergency_contact']) {
+                                                        echo ' - ' . htmlspecialchars($patient['emergency_contact']);
+                                                    }
+                                                } else {
+                                                    echo 'Chưa cập nhật';
+                                                }
+                                                ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-            // Scroll to form
-            document.getElementById('booking-form').scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest'
-            });
-        }
-    </script>
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <a href="profile.php" class="btn" style="background: linear-gradient(135deg, #0891b2, #14b8a6); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                                <i class="fas fa-edit"></i> Chỉnh sửa hồ sơ
+                            </a>
+                            <a href="profile.php" class="btn" style="background: #f3f4f6; color: #111827; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; border: 1px solid #e5e7eb;">
+                                <i class="fas fa-password"></i> Đổi mật khẩu
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            <?php } ?>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+            <script>
+                function selectSlot(slotId, slotTime, slotTimeFull) {
+                    document.querySelectorAll('.time-slot').forEach(slot => {
+                        slot.classList.remove('selected');
+                    });
+
+                    document.getElementById('slot-' + slotId).classList.add('selected');
+
+                    document.getElementById('selected-slot-id').value = slotId;
+                    document.getElementById('selected-time-value').value = slotTimeFull;
+                    document.getElementById('selected-time-display').textContent = slotTime;
+
+                    // Show booking form
+                    document.getElementById('booking-form').style.display = 'block';
+
+                    // Scroll to form
+                    document.getElementById('booking-form').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }
+            </script>
 </body>
 
 </html>

@@ -154,15 +154,15 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
     <!-- Profile Header -->
     <div class="profile-header">
         <div class="container">
-            <div class="profile-avatar-section">
+            <div class="profile-avatar-section" style="position: relative;">
+                <a href="dashboard.php?page=profile" style="position: absolute; top: 0; left: 0; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255, 255, 255, 0.2); border-radius: 8px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
                 <img src="<?php echo $patient['avatar'] ? '../../' . $patient['avatar'] : '../../assets/images/default-avatar.png'; ?>"
                     alt="Avatar" class="profile-avatar" id="headerAvatar">
                 <h2 class="mt-3"><?php echo htmlspecialchars($fname . ' ' . $lname); ?></h2>
                 <p class="mb-0"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($email); ?></p>
                 <p><i class="fas fa-phone"></i> <?php echo htmlspecialchars($contact); ?></p>
-                <a href="dashboard.php" class="btn btn-light mt-2">
-                    <i class="fas fa-arrow-left"></i> Quay lại bảng điều khiển
-                </a>
             </div>
         </div>
     </div>

@@ -1,9 +1,5 @@
 <?php
 
-/**
- * Common Functions Library - PDO Version
- * Global Hospital Management System
- */
 
 if (!isset($_SESSION)) {
     session_start();
