@@ -327,6 +327,55 @@ if (isset($_GET["generate_bill"])) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
+    <style>
+        /* Dropdown Menu Styling */
+        .navbar-user.dropdown .dropdown-toggle::after {
+            display: none;
+        }
+
+        .navbar-user .dropdown-menu {
+            min-width: 220px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: none;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .navbar-user .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-user .dropdown-item i {
+            width: 20px;
+            font-size: 0.9rem;
+        }
+
+        .navbar-user .dropdown-item:hover {
+            background: #f0f9ff;
+            color: #0891b2;
+            padding-left: 1.75rem;
+        }
+
+        .navbar-user .dropdown-item.text-danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .navbar-user .dropdown-divider {
+            margin: 0.5rem 0;
+        }
+
+        /* Improved spacing for user info */
+        .navbar-user-info {
+            margin-left: 1rem;
+        }
+
+    </style>
 
     <style>
         /* Time Slots Grid - Cinema Style */
@@ -646,6 +695,11 @@ if (isset($_GET["generate_bill"])) {
             }
         }
     </style>
+
+    <!-- jQuery and Bootstrap JS for dropdown functionality -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -695,12 +749,6 @@ if (isset($_GET["generate_bill"])) {
                     </a>
                 </li>
             </ul>
-
-            <div class="sidebar-footer">
-                <a href="../auth/logout.php" class="btn btn-danger btn-block">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
-            </div>
         </aside>
 
         <!-- Main Content -->
@@ -711,13 +759,24 @@ if (isset($_GET["generate_bill"])) {
                     <h1 class="navbar-title">Bảng điều khiển bệnh nhân</h1>
                 </div>
                 <div class="navbar-right">
-                    <div class="navbar-user">
-                        <div class="navbar-user-avatar">
-                            <?php echo strtoupper(substr($fname, 0, 1)); ?>
-                        </div>
-                        <div class="navbar-user-info">
-                            <div class="navbar-user-name"><?php echo $fname . ' ' . $lname; ?></div>
-                            <div class="navbar-user-role">Bệnh nhân</div>
+                    <div class="navbar-user dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="navbarUserDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
+                            <div class="navbar-user-avatar">
+                                <?php echo strtoupper(substr($fname, 0, 1)); ?>
+                            </div>
+                            <div class="navbar-user-info">
+                                <div class="navbar-user-name"><?php echo $fname . ' ' . $lname; ?></div>
+                                <div class="navbar-user-role">Bệnh nhân</div>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserDropdown">
+                            <a class="dropdown-item" href="../../index.php">
+                                <i class="fas fa-home mr-2"></i> Quay về trang chủ
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="../auth/logout.php">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -1426,10 +1485,8 @@ if (isset($_GET["generate_bill"])) {
                     document.getElementById('selected-time-value').value = slotTimeFull;
                     document.getElementById('selected-time-display').textContent = slotTime;
 
-                    // Show booking form
                     document.getElementById('booking-form').style.display = 'block';
 
-                    // Scroll to form
                     document.getElementById('booking-form').scrollIntoView({
                         behavior: 'smooth',
                         block: 'nearest'
