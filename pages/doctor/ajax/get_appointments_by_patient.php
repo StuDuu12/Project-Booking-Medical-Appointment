@@ -21,12 +21,12 @@ try {
     $stmt = $pdo->prepare("SELECT fullname FROM doctb WHERE id = :doctor_id");
     $stmt->execute([':doctor_id' => $doctor_id]);
     $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+
     if (!$doctor_result) {
         echo json_encode(['success' => false, 'appointments' => []]);
         exit;
     }
-    
+
     $doctor_name = $doctor_result['fullname'];
 
     // Get all appointments for this patient AND doctor
@@ -41,7 +41,7 @@ try {
         ':doctor_name' => $doctor_name
     ]);
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Log for debugging
     error_log("DEBUG: patient_id=$patient_id, doctor_name=$doctor_name, found " . count($appointments) . " appointments");
 

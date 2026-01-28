@@ -25,7 +25,7 @@ $temperature = isset($_POST['temperature']) && $_POST['temperature'] !== '' ? fl
 
 try {
     $stmt = $pdo->prepare("
-        UPDATE medical_records 
+        UPDATE medical_records
         SET symptoms = :symptoms,
             diagnosis = :diagnosis,
             treatment_plan = :treatment_plan,

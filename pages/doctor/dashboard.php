@@ -537,12 +537,12 @@ if (isset($_GET['cancel'])) {
                                     $debug_stmt = $pdo->prepare("SELECT DISTINCT doctor FROM appointmenttb ORDER BY doctor");
                                     $debug_stmt->execute();
                                     $all_doctors = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
-                                    
+
                                     // Get appointments for this doctor
                                     $stmt = $pdo->prepare("SELECT pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus,doctor FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) ORDER BY appdate DESC, apptime DESC");
                                     $stmt->execute([':doctor' => trim($doctor)]);
                                     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                    
+
                                     if (empty($appointments)) {
                                         echo '<tr><td colspan="11" style="text-align: center; padding: 20px; color: #999;">
                                             Không có lịch hẹn nào<br>

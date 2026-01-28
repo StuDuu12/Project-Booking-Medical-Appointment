@@ -12,7 +12,7 @@ if (isset($_POST['record_id'])) {
 
     try {
         $stmt = $pdo->prepare("
-            SELECT mr.*, 
+            SELECT mr.*,
                    p.fname, p.lname, p.contact, p.email,
                    d.fullname as doctor_name
             FROM medical_records mr
@@ -58,7 +58,7 @@ elseif (isset($_POST['patient_id'])) {
 
     try {
         $stmt = $pdo->prepare("
-            SELECT mr.*, 
+            SELECT mr.*,
                    p.fname, p.lname, p.contact, p.email,
                    d.fullname as doctor_name
             FROM medical_records mr

@@ -42,10 +42,10 @@ if (isset($_POST['add_medical_record'])) {
 
         $stmt = $pdo->prepare("
             INSERT INTO medical_records (
-                patient_id, doctor_id, appointment_id, record_date, symptoms, diagnosis, treatment_plan, 
+                patient_id, doctor_id, appointment_id, record_date, symptoms, diagnosis, treatment_plan,
                 notes, height, weight, blood_pressure, heart_rate, temperature, status, created_by, created_at, updated_at
             ) VALUES (
-                :patient_id, :doctor_id, :appointment_id, CURDATE(), :symptoms, :diagnosis, :treatment, 
+                :patient_id, :doctor_id, :appointment_id, CURDATE(), :symptoms, :diagnosis, :treatment,
                 :notes, :height, :weight, :blood_pressure, :heart_rate, :temperature, 'completed', " . intval($doctor_id) . ", NOW(), NOW()
             )
         ");
@@ -98,7 +98,7 @@ try {
     ");
     $stmt->execute([':doctor_id' => $doctor_id]);
     $all_medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Group records by patient
     foreach ($all_medical_records as $record) {
         $patient_id = $record['patient_id'];
@@ -133,7 +133,7 @@ if ($selected_patient_id) {
         $selected_patient_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $stmt = $pdo->prepare("
-            SELECT mr.*, 
+            SELECT mr.*,
                    d.fullname as doctor_name,
                    apt.appointmentDate, apt.appointmentTime
             FROM medical_records mr
@@ -450,7 +450,7 @@ if ($selected_patient_id) {
                                                             </button>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <?php if ($record['symptoms']) { ?>
                                                         <div style="margin-bottom: 8px;">
                                                             <span style="font-weight: 600; color: #6b7280; font-size: 12px;">Triệu chứng:</span>
@@ -602,7 +602,7 @@ if ($selected_patient_id) {
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    
+
     <!-- Modal Xem Chi Tiết -->
     <div class="modal fade" id="viewDetailModal" tabindex="-1" role="dialog" aria-labelledby="viewDetailLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -705,9 +705,9 @@ if ($selected_patient_id) {
                     const group = this.closest('.patient-group');
                     const recordsDiv = group.querySelector('.patient-records');
                     const icon = group.querySelector('.expand-icon i');
-                    
+
                     const isExpanded = recordsDiv.style.maxHeight !== '0px' && recordsDiv.style.maxHeight !== '';
-                    
+
                     if (isExpanded) {
                         // Collapse
                         recordsDiv.style.maxHeight = '0';
@@ -839,7 +839,7 @@ if ($selected_patient_id) {
         $('#editForm').submit(function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            
+
             fetch('ajax/update_medical_record.php', {
                 method: 'POST',
                 body: new URLSearchParams(formData)
