@@ -1,7 +1,7 @@
 <?php
 define('DB_HOST', 'localhost');
-define('DB_USER', 'chuduyit_k73');
-define('DB_PASS', 'chuduyisme@123');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 define('DB_NAME', 'chuduyit_medical_k73');
 
 try {

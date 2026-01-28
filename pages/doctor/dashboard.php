@@ -464,8 +464,8 @@ if (isset($_GET['cancel'])) {
                                 <div class="stat-label">Tổng lịch hẹn</div>
                                 <div class="stat-value">
                                     <?php
-                                    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM appointmenttb WHERE doctor = :doctor");
-                                    $stmt->execute([':doctor' => $doctor]);
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor)");
+                                    $stmt->execute([':doctor' => trim($doctor)]);
                                     $row = $stmt->fetch(PDO::FETCH_ASSOC);
                                     echo $row['total'];
                                     ?>
@@ -481,8 +481,8 @@ if (isset($_GET['cancel'])) {
                                 <div class="stat-label">Lịch hẹn đang hoạt động</div>
                                 <div class="stat-value">
                                     <?php
-                                    $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM appointmenttb WHERE doctor = :doctor AND userStatus = '1' AND doctorStatus = '1'");
-                                    $stmt->execute([':doctor' => $doctor]);
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) AND userStatus = '1' AND doctorStatus = '1'");
+                                    $stmt->execute([':doctor' => trim($doctor)]);
                                     $row = $stmt->fetch(PDO::FETCH_ASSOC);
                                     echo $row['active'];
                                     ?>
@@ -585,9 +585,24 @@ if (isset($_GET['cancel'])) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $stmt = $pdo->prepare("SELECT pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus FROM appointmenttb WHERE doctor = :doctor ORDER BY appdate DESC, apptime DESC");
-                                    $stmt->execute([':doctor' => $doctor]);
-                                    while ($row = $stmt->fetch(PDO::FETCH_BOTH)) {
+                                    // Debug: Show all appointments (regardless of doctor name)
+                                    $debug_stmt = $pdo->prepare("SELECT DISTINCT doctor FROM appointmenttb ORDER BY doctor");
+                                    $debug_stmt->execute();
+                                    $all_doctors = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                    // Get appointments for this doctor
+                                    $stmt = $pdo->prepare("SELECT pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus,doctor FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) ORDER BY appdate DESC, apptime DESC");
+                                    $stmt->execute([':doctor' => trim($doctor)]);
+                                    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                    if (empty($appointments)) {
+                                        echo '<tr><td colspan="11" style="text-align: center; padding: 20px; color: #999;">
+                                            Không có lịch hẹn nào<br>
+                                            <small style="color: #ccc;">Session doctor: "' . htmlspecialchars($doctor) . '"</small><br>
+                                            <small style="color: #ccc;">Doctors in DB: ' . implode(', ', array_column($all_doctors, 'doctor')) . '</small>
+                                        </td></tr>';
+                                    } else {
+                                        foreach ($appointments as $row) {
                                     ?>
                                         <tr>
                                             <td>#<?php echo $row['pid']; ?></td>
@@ -601,12 +616,12 @@ if (isset($_GET['cancel'])) {
                                                 <?php
                                                 if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 1)) {
                                                     echo '<span class="badge badge-success">Đang hoạt động</span>';
-                                                }
-                                                if (($row['userStatus'] == 0) && ($row['doctorStatus'] == 1)) {
+                                                } elseif (($row['userStatus'] == 0) && ($row['doctorStatus'] == 1)) {
                                                     echo '<span class="badge badge-warning">Bệnh nhân đã hủy</span>';
-                                                }
-                                                if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 0)) {
+                                                } elseif (($row['userStatus'] == 1) && ($row['doctorStatus'] == 0)) {
                                                     echo '<span class="badge badge-danger">Bạn đã hủy</span>';
+                                                } else {
+                                                    echo '<span class="badge badge-info">Chờ xác nhận</span>';
                                                 }
                                                 ?>
                                             </td>
@@ -630,7 +645,8 @@ if (isset($_GET['cancel'])) {
                                                 </a>
                                             </td>
                                         </tr>
-                                    <?php } ?>
+                                    <?php }
+                                    } ?>
                                 </tbody>
                             </table>
                         </div>
