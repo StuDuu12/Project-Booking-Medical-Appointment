@@ -29,6 +29,7 @@ if (!in_array($page, $allowed_pages)) {
 $booking_step = isset($_GET['step']) ? intval($_GET['step']) : 1;
 $selected_spec = isset($_GET['spec_id']) ? intval($_GET['spec_id']) : null;
 $selected_doctor = isset($_GET['doctor_id']) ? intval($_GET['doctor_id']) : null;
+$selected_services = isset($_GET['services']) ? explode(',', $_GET['services']) : array();
 
 // Handle date from dropdown or direct date input
 $selected_date = null;
@@ -57,6 +58,13 @@ $specializations = [];
 if ($page === 'book-appointment') {
     $spec_stmt = $pdo->query("SELECT id, name, name_vi, icon, description FROM specializations WHERE status = 1 ORDER BY name_vi");
     $specializations = $spec_stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Get services for booking
+$services = [];
+if ($page === 'book-appointment') {
+    $services_stmt = $pdo->query("SELECT id, name, name_vi, description, price, category FROM services WHERE status = 1 ORDER BY category, name_vi");
+    $services = $services_stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // Get doctors for selected specialization
@@ -191,6 +199,7 @@ if (isset($_POST['app-submit'])) {
     $slot_id = intval($_POST['slot_id']);
     $appdate = $_POST['appdate'];
     $apptime = $_POST['apptime'];
+    $selected_services = isset($_POST['selected_services']) ? $_POST['selected_services'] : [];
 
     // Get doctor info
     $stmt = $pdo->prepare("SELECT fullname, docFees FROM doctb WHERE id = :id");
@@ -207,31 +216,60 @@ if (isset($_POST['app-submit'])) {
         $check_stmt->execute([':slot_id' => $slot_id]);
 
         if ($check_stmt->rowCount() > 0) {
-            // Insert appointment
-            $stmt = $pdo->prepare("INSERT INTO appointmenttb(pid,fname,lname,gender,email,contact,doctor,docFees,appdate,apptime,slot_id,userStatus,doctorStatus) VALUES(:pid,:fname,:lname,:gender,:email,:contact,:doctor,:docFees,:appdate,:apptime,:slot_id,'1','1')");
-            $result = $stmt->execute([
-                ':pid' => $pid,
-                ':fname' => $fname,
-                ':lname' => $lname,
-                ':gender' => $gender,
-                ':email' => $email,
-                ':contact' => $contact,
-                ':doctor' => $doctorName,
-                ':docFees' => $docFees,
-                ':appdate' => $appdate,
-                ':apptime' => $apptime,
-                ':slot_id' => $slot_id
-            ]);
+            try {
+                // Begin transaction
+                $pdo->beginTransaction();
 
-            if ($result) {
-                $appointment_id = $pdo->lastInsertId();
-                // Update slot status
-                $update_stmt = $pdo->prepare("UPDATE time_slots SET status = 'booked', appointment_id = :app_id WHERE id = :slot_id");
-                $update_stmt->execute([':app_id' => $appointment_id, ':slot_id' => $slot_id]);
+                // Insert appointment
+                $stmt = $pdo->prepare("INSERT INTO appointmenttb(pid,fname,lname,gender,email,contact,doctor,docFees,appdate,apptime,slot_id,userStatus,doctorStatus) VALUES(:pid,:fname,:lname,:gender,:email,:contact,:doctor,:docFees,:appdate,:apptime,:slot_id,'1','1')");
+                $result = $stmt->execute([
+                    ':pid' => $pid,
+                    ':fname' => $fname,
+                    ':lname' => $lname,
+                    ':gender' => $gender,
+                    ':email' => $email,
+                    ':contact' => $contact,
+                    ':doctor' => $doctorName,
+                    ':docFees' => $docFees,
+                    ':appdate' => $appdate,
+                    ':apptime' => $apptime,
+                    ':slot_id' => $slot_id
+                ]);
 
-                redirectWithMessage($_SERVER['PHP_SELF'] . '?page=appointment-history', 'success', 'Đặt lịch hẹn thành công!');
-            } else {
-                redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Không thể xử lý yêu cầu. Vui lòng thử lại!');
+                if ($result) {
+                    $appointment_id = $pdo->lastInsertId();
+
+                    // Update slot status
+                    $update_stmt = $pdo->prepare("UPDATE time_slots SET status = 'booked', appointment_id = :app_id WHERE id = :slot_id");
+                    $update_stmt->execute([':app_id' => $appointment_id, ':slot_id' => $slot_id]);
+
+                    // Insert selected services
+                    if (!empty($selected_services)) {
+                        $service_stmt = $pdo->prepare("
+                            INSERT INTO appointment_services (appointment_id, service_id, quantity, price)
+                            SELECT :appointment_id, id, 1, price FROM services WHERE id = :service_id
+                        ");
+
+                        foreach ($selected_services as $service_id) {
+                            $service_stmt->execute([
+                                ':appointment_id' => $appointment_id,
+                                ':service_id' => intval($service_id)
+                            ]);
+                        }
+                    }
+
+                    // Commit transaction
+                    $pdo->commit();
+
+                    redirectWithMessage($_SERVER['PHP_SELF'] . '?page=appointment-history', 'success', 'Đặt lịch hẹn thành công!');
+                } else {
+                    $pdo->rollBack();
+                    redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Không thể xử lý yêu cầu. Vui lòng thử lại!');
+                }
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                error_log("Appointment booking error: " . $e->getMessage());
+                redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Có lỗi xảy ra khi đặt lịch. Vui lòng thử lại.');
             }
         } else {
             redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Khung giờ này đã được đặt. Vui lòng chọn khung giờ khác!');
@@ -525,6 +563,117 @@ if (isset($_GET["generate_bill"])) {
             opacity: 0.8;
         }
 
+        /* Service selection styles */
+        .services-grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .service-category {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .category-services {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .service-item {
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .service-item:hover {
+            border-color: #0891b2;
+            box-shadow: 0 2px 8px rgba(8, 145, 178, 0.1);
+        }
+
+        .service-checkbox {
+            width: 100%;
+            margin: 0;
+        }
+
+        .service-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        .service-label {
+            display: block;
+            padding: 1rem;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .service-checkbox input[type="checkbox"]:checked + .service-label {
+            background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(20, 184, 166, 0.1));
+            border-color: #0891b2;
+        }
+
+        .service-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .service-name {
+            font-weight: 600;
+            color: #212529;
+            font-size: 1rem;
+        }
+
+        .service-desc {
+            color: #6c757d;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .service-price {
+            font-weight: 700;
+            color: #28a745;
+            font-size: 0.95rem;
+        }
+
+        /* Service summary styles */
+        .service-summary {
+            margin-top: 2rem;
+        }
+
+        .service-summary .card {
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.15);
+        }
+
+        .service-summary .card-header {
+            border-bottom: none;
+        }
+
+        #selected-services-list {
+            margin-bottom: 1rem;
+        }
+
+        #selected-services-list > div {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        #selected-services-list > div:last-child {
+            border-bottom: none;
+        }
+
         .booking-summary {
             background: linear-gradient(135deg, rgba(8, 145, 178, 0.05), rgba(6, 182, 212, 0.1));
             border-radius: 16px;
@@ -783,6 +932,32 @@ if (isset($_GET["generate_bill"])) {
                                 </div>
                             </div>
                         </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon info">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Tổng chi phí</div>
+                                <div class="stat-value">
+                                    <?php
+                                    $stmt = $pdo->prepare("
+                                        SELECT COALESCE(SUM(a.docFees + COALESCE(services_total, 0)), 0) as total_cost
+                                        FROM appointmenttb a
+                                        LEFT JOIN (
+                                            SELECT appointment_id, SUM(price * quantity) as services_total
+                                            FROM appointment_services
+                                            GROUP BY appointment_id
+                                        ) s ON a.ID = s.appointment_id
+                                        WHERE a.fname = :fname AND a.lname = :lname AND a.userStatus='1' AND a.doctorStatus='1'
+                                    ");
+                                    $stmt->execute([':fname' => $fname, ':lname' => $lname]);
+                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    echo number_format($row['total_cost']) . ' VNĐ';
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Quick Actions -->
@@ -850,9 +1025,14 @@ if (isset($_GET["generate_bill"])) {
                             <div class="step-label">Chọn ngày</div>
                             <div class="step-line"></div>
                         </div>
-                        <div class="step <?php echo ($booking_step >= 4) ? 'active' : ''; ?>" id="step4">
-                            <div class="step-number">4</div>
+                        <div class="step <?php echo ($booking_step >= 4) ? 'active' : ''; ?> <?php echo ($booking_step > 4) ? 'completed' : ''; ?>" id="step4">
+                            <div class="step-number"><?php echo ($booking_step > 4) ? '<i class="fas fa-check"></i>' : '4'; ?></div>
                             <div class="step-label">Chọn giờ</div>
+                            <div class="step-line"></div>
+                        </div>
+                        <div class="step <?php echo ($booking_step >= 5) ? 'active' : ''; ?>" id="step5">
+                            <div class="step-number">5</div>
+                            <div class="step-label">Dịch vụ bổ sung</div>
                         </div>
                     </div>
 
@@ -1088,7 +1268,12 @@ if (isset($_GET["generate_bill"])) {
                                     </div>
 
                                     <!-- Booking Form -->
-                                    <form method="POST" action="" id="booking-form" class="booking-summary mt-4" style="display: none;">
+                                    <form method="GET" action="" id="booking-form" class="booking-summary mt-4" style="display: none;">
+                                        <input type="hidden" name="page" value="book-appointment">
+                                        <input type="hidden" name="step" value="5">
+                                        <input type="hidden" name="spec_id" value="<?php echo $selected_spec; ?>">
+                                        <input type="hidden" name="doctor_id" value="<?php echo $selected_doctor; ?>">
+                                        <input type="hidden" name="date" value="<?php echo $selected_date; ?>">
                                         <h4 class="mb-3">
                                             <i class="fas fa-file-medical"></i> Xác nhận thông tin đặt lịch
                                         </h4>
@@ -1113,14 +1298,15 @@ if (isset($_GET["generate_bill"])) {
                                             <strong class="text-success"><?php echo number_format($doc_info['docFees']); ?> VNĐ</strong>
                                         </div>
 
-                                        <input type="hidden" name="doctor_id" value="<?php echo $selected_doctor; ?>">
                                         <input type="hidden" name="slot_id" id="selected-slot-id" value="">
-                                        <input type="hidden" name="appdate" value="<?php echo $selected_date; ?>">
-                                        <input type="hidden" name="apptime" id="selected-time-value" value="">
+                                        <input type="hidden" name="time" id="selected-time-value" value="">
 
-                                        <button type="submit" name="app-submit" class="btn btn-primary btn-block btn-lg mt-4">
-                                            <i class="fas fa-check-circle"></i> Xác nhận đặt lịch
+                                        <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">
+                                            <i class="fas fa-arrow-right"></i> Tiếp tục chọn dịch vụ bổ sung
                                         </button>
+                                        <div class="text-center mt-2">
+                                            <small class="text-muted">Bạn có thể bỏ qua bước này và đặt lịch ngay</small>
+                                        </div>
                                     </form>
 
                                 <?php } elseif ($schedule_info) { ?>
@@ -1145,6 +1331,109 @@ if (isset($_GET["generate_bill"])) {
                             </div>
                         </div>
                     <?php } ?>
+
+                    <?php if ($booking_step == 5 && $selected_doctor && $selected_date && isset($_GET['slot_id'])) { ?>
+                        <div class="data-table-container">
+                            <div class="data-table-header">
+                                <h3 class="data-table-title"><i class="fas fa-plus-circle"></i> Chọn dịch vụ bổ sung (tùy chọn)</h3>
+                                <a href="?page=book-appointment&step=4&spec_id=<?php echo $selected_spec; ?>&doctor_id=<?php echo $selected_doctor; ?>&date=<?php echo $selected_date; ?>" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-arrow-left"></i> Quay lại
+                                </a>
+                            </div>
+                            <div class="p-4">
+                                <form method="POST" action="">
+                                    <input type="hidden" name="doctor_id" value="<?php echo $selected_doctor; ?>">
+                                    <input type="hidden" name="slot_id" value="<?php echo intval($_GET['slot_id']); ?>">
+                                    <input type="hidden" name="appdate" value="<?php echo $selected_date; ?>">
+                                    <input type="hidden" name="apptime" value="<?php echo $_GET['time']; ?>">
+
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Thông tin:</strong> Bạn có thể chọn thêm các dịch vụ bổ sung bên dưới. Những dịch vụ này sẽ được thực hiện cùng với cuộc hẹn khám chính.
+                                    </div>
+
+                                    <div class="services-grid">
+                                        <?php
+                                        $categories = [];
+                                        foreach ($services as $service) {
+                                            $categories[$service['category']][] = $service;
+                                        }
+
+                                        foreach ($categories as $category => $category_services) {
+                                            $category_names = [
+                                                'laboratory' => 'Xét nghiệm',
+                                                'radiology' => 'Chẩn đoán hình ảnh',
+                                                'cardiology' => 'Tim mạch',
+                                                'consultation' => 'Tư vấn',
+                                                'vaccination' => 'Tiêm chủng',
+                                                'therapy' => 'Trị liệu'
+                                            ];
+                                            $category_name = $category_names[$category] ?? ucfirst($category);
+                                        ?>
+                                            <div class="service-category">
+                                                <h5 class="category-title">
+                                                    <i class="fas fa-flask"></i> <?php echo $category_name; ?>
+                                                </h5>
+                                                <div class="category-services">
+                                                    <?php foreach ($category_services as $service) { ?>
+                                                        <div class="service-item">
+                                                            <div class="service-checkbox">
+                                                                <input type="checkbox" name="selected_services[]" value="<?php echo $service['id']; ?>" id="service_<?php echo $service['id']; ?>" data-price="<?php echo $service['price']; ?>" onchange="updateServiceSummary()">
+                                                                <label for="service_<?php echo $service['id']; ?>" class="service-label">
+                                                                    <div class="service-info">
+                                                                        <div class="service-name"><?php echo htmlspecialchars($service['name_vi']); ?></div>
+                                                                        <div class="service-desc"><?php echo htmlspecialchars($service['description']); ?></div>
+                                                                        <div class="service-price"><?php echo number_format($service['price']); ?> VNĐ</div>
+                                                                    </div>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    <?php } ?>
+                                                </div>
+                                            </div>
+                                        <?php } ?>
+                                    </div>
+
+                                    <!-- Service Summary -->
+                                    <div id="service-summary" class="service-summary mt-4" style="display: none;">
+                                        <div class="card border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <h6 class="mb-0"><i class="fas fa-calculator"></i> Tóm tắt dịch vụ đã chọn</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="selected-services-list"></div>
+                                                <hr>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <strong>Chi phí khám: <?php echo number_format($doc_info['docFees']); ?> VNĐ</strong>
+                                                    </div>
+                                                    <div class="col-md-6 text-right">
+                                                        <strong id="services-total">Chi phí dịch vụ: 0 VNĐ</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-12 text-center">
+                                                        <h5 class="text-success mb-0">
+                                                            <strong>Tổng cộng: <span id="grand-total"><?php echo number_format($doc_info['docFees']); ?> VNĐ</span></strong>
+                                                        </h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center mt-4">
+                                        <button type="submit" name="app-submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-check-circle"></i> Xác nhận đặt lịch
+                                        </button>
+                                        <a href="?page=book-appointment&step=4&spec_id=<?php echo $selected_spec; ?>&doctor_id=<?php echo $selected_doctor; ?>&date=<?php echo $selected_date; ?>" class="btn btn-outline-secondary btn-lg ml-2">
+                                            <i class="fas fa-times"></i> Bỏ qua dịch vụ bổ sung
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    <?php } ?>
                 </section>
             <?php } ?>
 
@@ -1164,9 +1453,10 @@ if (isset($_GET["generate_bill"])) {
                             <thead>
                                 <tr>
                                     <th>Bác sĩ</th>
-                                    <th>Chi phí</th>
+                                    <th>Tổng chi phí</th>
                                     <th>Ngày khám</th>
                                     <th>Giờ khám</th>
+                                    <th>Dịch vụ bổ sung</th>
                                     <th>Trạng thái</th>
                                     <th>Thao tác</th>
                                 </tr>
@@ -1174,16 +1464,21 @@ if (isset($_GET["generate_bill"])) {
                             <tbody>
                                 <?php
                                 $stmt = $pdo->prepare("
-                                    SELECT a.ID, COALESCE(d.fullname, a.doctor) as doctor_fullname, a.docFees, a.appdate, a.apptime, a.userStatus, a.doctorStatus
+                                    SELECT a.ID, COALESCE(d.fullname, a.doctor) as doctor_fullname, a.docFees, a.appdate, a.apptime, a.userStatus, a.doctorStatus,
+                                           COALESCE(SUM(aps.price * aps.quantity), 0) as services_total,
+                                           GROUP_CONCAT(CONCAT(s.name_vi, ' (', FORMAT(aps.price, 0), ' VNĐ)') SEPARATOR '; ') as services_list
                                     FROM appointmenttb a
                                     LEFT JOIN doctb d ON a.doctor = d.fullname OR a.doctor = d.username
-                                    WHERE a.fname = :fname AND a.lname = :lname 
+                                    LEFT JOIN appointment_services aps ON a.ID = aps.appointment_id
+                                    LEFT JOIN services s ON aps.service_id = s.id
+                                    WHERE a.fname = :fname AND a.lname = :lname
+                                    GROUP BY a.ID
                                     ORDER BY a.appdate DESC, a.apptime DESC
                                 ");
                                 $stmt->execute([':fname' => $fname, ':lname' => $lname]);
 
                                 if ($stmt->rowCount() == 0) {
-                                    echo '<tr><td colspan="6" class="text-center py-5">
+                                    echo '<tr><td colspan="7" class="text-center py-5">
                                         <div class="empty-state">
                                             <i class="fas fa-calendar-times"></i>
                                             <p>Bạn chưa có lịch hẹn nào</p>
@@ -1193,12 +1488,28 @@ if (isset($_GET["generate_bill"])) {
                                 }
 
                                 while ($row = $stmt->fetch(PDO::FETCH_BOTH)) {
+                                    $total_cost = $row['docFees'] + $row['services_total'];
                                 ?>
                                     <tr>
                                         <td>Bác sĩ <?php echo $row['doctor_fullname']; ?></td>
-                                        <td><?php echo number_format($row['docFees']); ?> VNĐ</td>
+                                        <td>
+                                            <div><?php echo number_format($total_cost); ?> VNĐ</div>
+                                            <?php if ($row['services_total'] > 0) { ?>
+                                                <small class="text-muted">
+                                                    Khám: <?php echo number_format($row['docFees']); ?> VNĐ<br>
+                                                    Dịch vụ: <?php echo number_format($row['services_total']); ?> VNĐ
+                                                </small>
+                                            <?php } ?>
+                                        </td>
                                         <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
                                         <td><?php echo date('H:i', strtotime($row['apptime'])); ?></td>
+                                        <td>
+                                            <?php if (!empty($row['services_list'])) { ?>
+                                                <small class="text-muted"><?php echo htmlspecialchars($row['services_list']); ?></small>
+                                            <?php } else { ?>
+                                                <span class="text-muted">Không có</span>
+                                            <?php } ?>
+                                        </td>
                                         <td>
                                             <?php
                                             if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 1)) {
@@ -1434,6 +1745,35 @@ if (isset($_GET["generate_bill"])) {
                         behavior: 'smooth',
                         block: 'nearest'
                     });
+                }
+
+                function updateServiceSummary() {
+                    const selectedServices = document.querySelectorAll('input[name="selected_services[]"]:checked');
+                    const selectedServicesList = document.getElementById('selected-services-list');
+                    const servicesTotal = document.getElementById('services-total');
+                    const grandTotal = document.getElementById('grand-total');
+                    const serviceSummary = document.getElementById('service-summary');
+
+                    let totalServicesCost = 0;
+                    let serviceItems = [];
+
+                    selectedServices.forEach(service => {
+                        const price = parseInt(service.getAttribute('data-price'));
+                        const label = service.parentElement.querySelector('.service-name').textContent;
+                        totalServicesCost += price;
+                        serviceItems.push(`<div class="d-flex justify-content-between"><span>${label}</span><span>${price.toLocaleString()} VNĐ</span></div>`);
+                    });
+
+                    if (serviceItems.length > 0) {
+                        selectedServicesList.innerHTML = serviceItems.join('');
+                        servicesTotal.textContent = `Chi phí dịch vụ: ${totalServicesCost.toLocaleString()} VNĐ`;
+                        const consultationFee = <?php echo $doc_info['docFees']; ?>;
+                        const totalCost = consultationFee + totalServicesCost;
+                        grandTotal.textContent = `${totalCost.toLocaleString()} VNĐ`;
+                        serviceSummary.style.display = 'block';
+                    } else {
+                        serviceSummary.style.display = 'none';
+                    }
                 }
             </script>
 </body>

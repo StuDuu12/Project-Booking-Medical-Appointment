@@ -899,6 +899,148 @@ DROP TABLE IF EXISTS `v_patient_profiles`;
 CREATE ALGORITHM=UNDEFINED VIEW `v_patient_profiles`  AS SELECT `p`.`pid` AS `pid`, `p`.`fname` AS `fname`, `p`.`lname` AS `lname`, `p`.`gender` AS `gender`, `p`.`email` AS `email`, `p`.`contact` AS `contact`, `p`.`address` AS `address`, `p`.`avatar` AS `avatar`, `p`.`date_of_birth` AS `date_of_birth`, `p`.`blood_group` AS `blood_group`, `p`.`emergency_contact` AS `emergency_contact`, `p`.`emergency_contact_name` AS `emergency_contact_name`, timestampdiff(YEAR,`p`.`date_of_birth`,curdate()) AS `age`, count(distinct `a`.`ID`) AS `total_appointments`, count(distinct `mr`.`id`) AS `total_records` FROM ((`patreg` `p` left join `appointmenttb` `a` on((`p`.`pid` = `a`.`pid`))) left join `medical_records` `mr` on((`p`.`pid` = `mr`.`patient_id`))) GROUP BY `p`.`pid` ;
 COMMIT;
 
+/* Additional Services Table */
+CREATE TABLE `services` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name_vi` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `price` int(10) NOT NULL DEFAULT '0',
+  `category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'general',
+  `status` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `services` (`id`, `name`, `name_vi`, `description`, `price`, `category`, `status`, `created_at`) VALUES
+(1, 'Blood Test', 'Xét nghiệm máu', 'Xét nghiệm máu cơ bản', 150000, 'laboratory', 1, '2026-01-24 10:00:00'),
+(2, 'Urine Test', 'Xét nghiệm nước tiểu', 'Xét nghiệm nước tiểu tổng quát', 80000, 'laboratory', 1, '2026-01-24 10:00:00'),
+(3, 'X-Ray', 'Chụp X-quang', 'Chụp X-quang ngực hoặc các bộ phận khác', 200000, 'radiology', 1, '2026-01-24 10:00:00'),
+(4, 'Ultrasound', 'Siêu âm', 'Siêu âm bụng hoặc các bộ phận khác', 250000, 'radiology', 1, '2026-01-24 10:00:00'),
+(5, 'ECG', 'Điện tâm đồ', 'Đo điện tâm đồ tim', 150000, 'cardiology', 1, '2026-01-24 10:00:00'),
+(6, 'Consultation', 'Tư vấn', 'Tư vấn sức khỏe tổng quát', 100000, 'consultation', 1, '2026-01-24 10:00:00'),
+(7, 'Vaccination', 'Tiêm chủng', 'Tiêm vaccine phòng bệnh', 300000, 'vaccination', 1, '2026-01-24 10:00:00'),
+(8, 'Physical Therapy', 'Vật lý trị liệu', 'Phiên vật lý trị liệu', 180000, 'therapy', 1, '2026-01-24 10:00:00');
+
+/* Appointment Services Table */
+CREATE TABLE `appointment_services` (
+  `id` int(11) NOT NULL,
+  `appointment_id` int(11) NOT NULL,
+  `service_id` int(11) NOT NULL,
+  `quantity` int(3) DEFAULT '1',
+  `price` int(10) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `services`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `appointment_services`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `appointment_id` (`appointment_id`),
+  ADD KEY `service_id` (`service_id`);
+
+ALTER TABLE `services`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+ALTER TABLE `appointment_services`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `appointment_services`
+  ADD CONSTRAINT `appointment_services_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointmenttb` (`ID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `appointment_services_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`) ON DELETE CASCADE;
+
+--
+-- Table structure for table `medicines`
+--
+
+CREATE TABLE `medicines` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `generic_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `category` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `dosage_form` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `strength` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `manufacturer` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `quantity` int(11) NOT NULL DEFAULT '0',
+  `unit_price` decimal(10,2) NOT NULL,
+  `expiry_date` date DEFAULT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `created_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `medicines`
+--
+
+INSERT INTO `medicines` (`id`, `name`, `generic_name`, `category`, `dosage_form`, `strength`, `manufacturer`, `quantity`, `unit_price`, `expiry_date`, `description`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 'Paracetamol', 'Acetaminophen', 'Thuốc giảm đau', 'Viên nén', '500mg', 'PharmaCorp', 100, 500.00, '2027-12-31', 'Thuốc giảm đau, hạ sốt', 'admin', '2026-01-24 00:00:00', '2026-01-24 00:00:00'),
+(2, 'Amoxicillin', 'Amoxicillin', 'Thuốc kháng sinh', 'Viên nang', '500mg', 'MediPharm', 50, 1200.00, '2026-06-30', 'Kháng sinh phổ rộng', 'admin', '2026-01-24 00:00:00', '2026-01-24 00:00:00'),
+(3, 'Ibuprofen', 'Ibuprofen', 'Thuốc giảm đau', 'Viên nén', '200mg', 'HealthCare Inc', 75, 800.00, '2027-03-15', 'Thuốc chống viêm không steroid', 'admin', '2026-01-24 00:00:00', '2026-01-24 00:00:00'),
+(4, 'Vitamin C', 'Ascorbic Acid', 'Vitamin & Khoáng chất', 'Viên nén', '500mg', 'NutriLife', 200, 300.00, '2028-01-01', 'Vitamin C tăng cường miễn dịch', 'admin', '2026-01-24 00:00:00', '2026-01-24 00:00:00'),
+(5, 'Omeprazole', 'Omeprazole', 'Thuốc tiêu hóa', 'Viên nang', '20mg', 'GastroMed', 30, 1500.00, '2026-08-20', 'Thuốc ức chế bơm proton', 'admin', '2026-01-24 00:00:00', '2026-01-24 00:00:00');
+
+--
+-- Indexes for table `medicines`
+--
+ALTER TABLE `medicines`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_name` (`name`),
+  ADD KEY `idx_category` (`category`),
+  ADD KEY `idx_expiry_date` (`expiry_date`);
+
+--
+-- AUTO_INCREMENT for table `medicines`
+--
+ALTER TABLE `medicines`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- Table structure for table `medicine_stock_log`
+--
+
+CREATE TABLE `medicine_stock_log` (
+  `id` int(11) NOT NULL,
+  `medicine_id` int(11) NOT NULL,
+  `quantity_change` int(11) NOT NULL,
+  `new_quantity` int(11) NOT NULL,
+  `reason` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `updated_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `medicine_stock_log`
+--
+
+INSERT INTO `medicine_stock_log` (`id`, `medicine_id`, `quantity_change`, `new_quantity`, `reason`, `updated_by`, `updated_at`) VALUES
+(1, 1, 100, 100, 'Nhập kho', 'admin', '2026-01-24 00:00:00'),
+(2, 2, 50, 50, 'Nhập kho', 'admin', '2026-01-24 00:00:00'),
+(3, 3, 75, 75, 'Nhập kho', 'admin', '2026-01-24 00:00:00'),
+(4, 4, 200, 200, 'Nhập kho', 'admin', '2026-01-24 00:00:00'),
+(5, 5, 30, 30, 'Nhập kho', 'admin', '2026-01-24 00:00:00');
+
+--
+-- Indexes for table `medicine_stock_log`
+--
+ALTER TABLE `medicine_stock_log`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `medicine_id` (`medicine_id`),
+  ADD KEY `idx_updated_at` (`updated_at`);
+
+--
+-- AUTO_INCREMENT for table `medicine_stock_log`
+--
+ALTER TABLE `medicine_stock_log`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- Constraints for table `medicine_stock_log`
+--
+ALTER TABLE `medicine_stock_log`
+  ADD CONSTRAINT `medicine_stock_log_ibfk_1` FOREIGN KEY (`medicine_id`) REFERENCES `medicines` (`id`) ON DELETE CASCADE;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

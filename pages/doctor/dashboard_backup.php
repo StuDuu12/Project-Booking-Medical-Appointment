@@ -494,6 +494,7 @@ if (isset($_POST['update_stock'])) {
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
         }
 
         .sidebar-overlay.active {
@@ -1868,58 +1869,97 @@ if (isset($_POST['update_stock'])) {
             document.getElementById('edit_description').value = description;
             $('#editMedicineModal').modal('show');
         }
-    </script>
+                                                'laboratory' => 'Xét nghiệm',
+                                                'radiology' => 'Chẩn đoán hình ảnh',
+                                                'cardiology' => 'Tim mạch',
+                                                'consultation' => 'Tư vấn',
+                                                'vaccination' => 'Tiêm chủng',
+                                                'therapy' => 'Trị liệu'
+                                            ];
+                                            $category_name = $category_names[$service['category']] ?? ucfirst($service['category']);
+                                    ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($service['name_vi']); ?></td>
+                                                <td><?php echo htmlspecialchars($service['description']); ?></td>
+                                                <td><?php echo number_format($service['price']); ?></td>
+                                                <td><?php echo $category_name; ?></td>
+                                                <td>
+                                                    <?php if ($service['status'] == 1) { ?>
+                                                        <span class="badge badge-success">Hoạt động</span>
+                                                    <?php } else { ?>
+                                                        <span class="badge badge-secondary">Tạm dừng</span>
+                                                    <?php } ?>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info" onclick="editService(<?php echo $service['id']; ?>)">
+                                                        <i class="fas fa-edit"></i> Sửa
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger" onclick="deleteService(<?php echo $service['id']; ?>, '<?php echo htmlspecialchars($service['name_vi']); ?>')">
+                                                        <i class="fas fa-trash"></i> Xóa
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                    <?php
+                                        }
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
 
-    <!-- Add Service Modal -->
-    <div class="modal fade" id="addServiceModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Thêm dịch vụ mới</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
+                <!-- Add Service Modal -->
+                <div class="modal fade" id="addServiceModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Thêm dịch vụ mới</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <form method="POST" action="">
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label>Tên dịch vụ (Tiếng Việt)</label>
+                                        <input type="text" name="name_vi" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tên dịch vụ (Tiếng Anh)</label>
+                                        <input type="text" name="name" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mô tả</label>
+                                        <textarea name="description" class="form-control" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Giá (VNĐ)</label>
+                                        <input type="number" name="price" class="form-control" min="0" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Danh mục</label>
+                                        <select name="category" class="form-control" required>
+                                            <option value="laboratory">Xét nghiệm</option>
+                                            <option value="radiology">Chẩn đoán hình ảnh</option>
+                                            <option value="cardiology">Tim mạch</option>
+                                            <option value="consultation">Tư vấn</option>
+                                            <option value="vaccination">Tiêm chủng</option>
+                                            <option value="therapy">Trị liệu</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                    <button type="submit" name="add_service" class="btn btn-primary">Thêm dịch vụ</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <form method="POST" action="">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label>Tên dịch vụ (Tiếng Việt)</label>
-                            <input type="text" name="name_vi" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Tên dịch vụ (Tiếng Anh)</label>
-                            <input type="text" name="name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Mô tả</label>
-                            <textarea name="description" class="form-control" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Giá (VNĐ)</label>
-                            <input type="number" name="price" class="form-control" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Danh mục</label>
-                            <select name="category" class="form-control" required>
-                                <option value="laboratory">Xét nghiệm</option>
-                                <option value="radiology">Chẩn đoán hình ảnh</option>
-                                <option value="cardiology">Tim mạch</option>
-                                <option value="consultation">Tư vấn</option>
-                                <option value="vaccination">Tiêm chủng</option>
-                                <option value="therapy">Trị liệu</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                        <button type="submit" name="add_service" class="btn btn-primary">Thêm dịch vụ</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        </main>
     </div>
-
-    <!-- Scripts -->
+    </script>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -1956,24 +1996,42 @@ if (isset($_POST['update_stock'])) {
             });
         });
 
-        // Event listener for edit medicine buttons
-        document.addEventListener('click', function(e) {
-            const button = e.target.closest('.edit-medicine-btn');
-            if (button) {
-                const id = button.getAttribute('data-id');
-                const name = button.getAttribute('data-name');
-                const genericName = button.getAttribute('data-generic-name');
-                const category = button.getAttribute('data-category');
-                const dosageForm = button.getAttribute('data-dosage-form');
-                const strength = button.getAttribute('data-strength');
-                const manufacturer = button.getAttribute('data-manufacturer');
-                const quantity = button.getAttribute('data-quantity');
-                const unitPrice = button.getAttribute('data-unit-price');
-                const expiryDate = button.getAttribute('data-expiry-date');
-                const description = button.getAttribute('data-description');
+        // Medicine management functions
+        function editMedicine(id, name, genericName, category, dosageForm, strength, manufacturer, quantity, unitPrice, expiryDate, description) {
+            document.getElementById('edit_medicine_id').value = id;
+            document.getElementById('edit_name').value = name;
+            document.getElementById('edit_generic_name').value = genericName;
+            document.getElementById('edit_category').value = category;
+            document.getElementById('edit_dosage_form').value = dosageForm;
+            document.getElementById('edit_strength').value = strength;
+            document.getElementById('edit_manufacturer').value = manufacturer;
+            document.getElementById('edit_quantity').value = quantity;
+            document.getElementById('edit_unit_price').value = unitPrice;
+            document.getElementById('edit_expiry_date').value = expiryDate;
+            document.getElementById('edit_description').value = description;
+            $('#editMedicineModal').modal('show');
+        }
 
-                editMedicine(id, name, genericName, category, dosageForm, strength, manufacturer, quantity, unitPrice, expiryDate, description);
-            }
+        // Event listener for edit medicine buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const editButtons = document.querySelectorAll('.edit-medicine-btn');
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name');
+                    const genericName = this.getAttribute('data-generic-name');
+                    const category = this.getAttribute('data-category');
+                    const dosageForm = this.getAttribute('data-dosage-form');
+                    const strength = this.getAttribute('data-strength');
+                    const manufacturer = this.getAttribute('data-manufacturer');
+                    const quantity = this.getAttribute('data-quantity');
+                    const unitPrice = this.getAttribute('data-unit-price');
+                    const expiryDate = this.getAttribute('data-expiry-date');
+                    const description = this.getAttribute('data-description');
+
+                    editMedicine(id, name, genericName, category, dosageForm, strength, manufacturer, quantity, unitPrice, expiryDate, description);
+                });
+            });
         });
 
         function updateStock(id, name) {

@@ -494,6 +494,7 @@ if (isset($_POST['update_stock'])) {
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
         }
 
         .sidebar-overlay.active {
@@ -1853,86 +1854,6 @@ if (isset($_POST['update_stock'])) {
             overlay.classList.toggle('active');
         }
 
-        // Medicine management functions
-        function editMedicine(id, name, genericName, category, dosageForm, strength, manufacturer, quantity, unitPrice, expiryDate, description) {
-            document.getElementById('edit_medicine_id').value = id;
-            document.getElementById('edit_name').value = name;
-            document.getElementById('edit_generic_name').value = genericName;
-            document.getElementById('edit_category').value = category;
-            document.getElementById('edit_dosage_form').value = dosageForm;
-            document.getElementById('edit_strength').value = strength;
-            document.getElementById('edit_manufacturer').value = manufacturer;
-            document.getElementById('edit_quantity').value = quantity;
-            document.getElementById('edit_unit_price').value = unitPrice;
-            document.getElementById('edit_expiry_date').value = expiryDate;
-            document.getElementById('edit_description').value = description;
-            $('#editMedicineModal').modal('show');
-        }
-    </script>
-
-    <!-- Add Service Modal -->
-    <div class="modal fade" id="addServiceModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Thêm dịch vụ mới</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <form method="POST" action="">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label>Tên dịch vụ (Tiếng Việt)</label>
-                            <input type="text" name="name_vi" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Tên dịch vụ (Tiếng Anh)</label>
-                            <input type="text" name="name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Mô tả</label>
-                            <textarea name="description" class="form-control" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Giá (VNĐ)</label>
-                            <input type="number" name="price" class="form-control" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Danh mục</label>
-                            <select name="category" class="form-control" required>
-                                <option value="laboratory">Xét nghiệm</option>
-                                <option value="radiology">Chẩn đoán hình ảnh</option>
-                                <option value="cardiology">Tim mạch</option>
-                                <option value="consultation">Tư vấn</option>
-                                <option value="vaccination">Tiêm chủng</option>
-                                <option value="therapy">Trị liệu</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                        <button type="submit" name="add_service" class="btn btn-primary">Thêm dịch vụ</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        }
-
         // Close sidebar when clicking outside on mobile
         document.addEventListener('DOMContentLoaded', function() {
             const overlay = document.querySelector('.sidebar-overlay');
@@ -1956,10 +1877,157 @@ if (isset($_POST['update_stock'])) {
             });
         });
 
+        // Medicine management functions
+        function editMedicine(id, name, genericName, category, dosageForm, strength, manufacturer, quantity, unitPrice, expiryDate, description) {
+            console.log('editMedicine called with:', id, name);
+            console.log('Modal element exists:', document.getElementById('editMedicineModal') !== null);
+            
+            // Populate form fields
+            document.getElementById('edit_medicine_id').value = id;
+            document.getElementById('edit_name').value = name;
+            document.getElementById('edit_generic_name').value = genericName;
+            document.getElementById('edit_category').value = category;
+            document.getElementById('edit_dosage_form').value = dosageForm;
+            document.getElementById('edit_strength').value = strength;
+            document.getElementById('edit_manufacturer').value = manufacturer;
+            document.getElementById('edit_quantity').value = quantity;
+            document.getElementById('edit_unit_price').value = unitPrice;
+            document.getElementById('edit_expiry_date').value = expiryDate;
+            document.getElementById('edit_description').value = description;
+            console.log('About to show modal');
+            // Try jQuery modal first
+            if (typeof $ !== 'undefined' && typeof $.fn.modal !== 'undefined') {
+                console.log('Using jQuery modal');
+                $('#editMedicineModal').modal('show');
+                console.log('jQuery modal shown');
+            } else {
+                console.log('jQuery not available, using simple display');
+                const modal = document.getElementById('editMedicineModal');
+                if (modal) {
+                    modal.style.display = 'block';
+                    modal.classList.add('show');
+                    console.log('Simple modal shown');
+                }
+            }
+                    modalDialog.style.setProperty('z-index', '1055', 'important');
+                    modalDialog.style.setProperty('position', 'relative', 'important');
+                    modalDialog.style.setProperty('pointer-events', 'auto', 'important');
+                    modalDialog.style.setProperty('top', '50%', 'important');
+                    modalDialog.style.setProperty('left', '50%', 'important');
+                    modalDialog.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+                    modalDialog.style.setProperty('margin', '0', 'important');
+                    
+                    const modalContent = modalDialog.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.style.setProperty('z-index', '1060', 'important');
+                        modalContent.style.setProperty('pointer-events', 'auto', 'important');
+                        
+                        // Ensure all form elements have pointer-events
+                        const formElements = modalContent.querySelectorAll('input, select, textarea, button');
+                        formElements.forEach(el => {
+                            el.style.setProperty('pointer-events', 'auto', 'important');
+                        });
+                    }
+                }
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+                
+                // Add backdrop
+                let backdrop = document.querySelector('.modal-backdrop');
+                if (!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    backdrop.style.position = 'fixed';
+                    backdrop.style.top = '0';
+                    backdrop.style.left = '0';
+                    backdrop.style.width = '100%';
+                    backdrop.style.height = '100%';
+                    backdrop.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                    backdrop.style.zIndex = '1020';
+                    backdrop.style.setProperty('z-index', '1020', 'important');
+                    document.body.appendChild(backdrop);
+                    
+                    // Add click handler to close modal
+                    backdrop.addEventListener('click', function(e) {
+                        // Only close if clicked on backdrop, not on modal
+                        if (e.target === backdrop) {
+                            hideModal();
+                        }
+                    });
+                }
+                
+                // Add close button handler
+                const closeBtn = modal.querySelector('[data-dismiss="modal"]');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        hideModal();
+                    });
+                }
+                
+                // Focus trap for accessibility
+                const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                const firstFocusable = focusableElements[0];
+                const lastFocusable = focusableElements[focusableElements.length - 1];
+                
+                modal.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        hideModal();
+                    }
+                    if (e.key === 'Tab') {
+                        if (e.shiftKey) {
+                            if (document.activeElement === firstFocusable) {
+                                lastFocusable.focus();
+                                e.preventDefault();
+                            }
+                        } else {
+                            if (document.activeElement === lastFocusable) {
+                                firstFocusable.focus();
+                                e.preventDefault();
+                            }
+                        }
+                    }
+                console.log('Found focusable elements:', focusableElements.length);
+                
+                // Focus first focusable element
+                if (firstFocusable) {
+                    firstFocusable.focus();
+                    console.log('Focused first element:', firstFocusable.tagName);
+                }
+                
+                console.log('Modal shown successfully');
+                console.log('Modal display:', modal.style.display);
+                console.log('Modal z-index:', modal.style.zIndex);
+            } else {
+                console.error('Modal element not found');
+            }
+            
+            function hideModal() {
+                const modal = document.getElementById('editMedicineModal');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                }
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            }
+        }
+
         // Event listener for edit medicine buttons
+        console.log('Setting up edit buttons immediately');
+        
+        // Use event delegation for dynamically loaded content
         document.addEventListener('click', function(e) {
             const button = e.target.closest('.edit-medicine-btn');
             if (button) {
+                console.log('Edit button clicked via delegation');
+                console.log('Button data-id:', button.getAttribute('data-id'));
                 const id = button.getAttribute('data-id');
                 const name = button.getAttribute('data-name');
                 const genericName = button.getAttribute('data-generic-name');

@@ -6,7 +6,7 @@
  */
 
 // Database configuration
-define('DB_HOST', 'localhost');
+define('DB_HOST', 'host-244160.nvme.io.vn');
 define('DB_USER', 'chuduyit_k73');
 define('DB_PASS', 'chuduyisme@123');
 define('DB_NAME', 'chuduyit_medical_k73');
@@ -23,7 +23,8 @@ try {
     // Set UTF-8 encoding
     $pdo->exec("SET NAMES 'utf8mb4'");
 } catch (PDOException $e) {
-    error_log("Database Connection Error: " . $e->getMessage());
+    // error_log("Database Connection Error: " . $e->getMessage());
+    // echo $e->getMessage();
     die("Database connection failed. Please contact the administrator.");
 }
 
