@@ -3,134 +3,198 @@
 session_start();
 require_once('../../config.php');
 require_once('../../includes/messages.php');
+require_once('../../includes/functions.php'); // Ensure this is included
+
+$doctor = $_SESSION['dname'] ?? null;
+
+if (!$doctor) {
+    header("Location: ../../pages/auth/login.php");
+    exit();
+}
+
+// Get doctor ID
+// Try to get doctor info, but don't blocking properly if username mismatch.
+// Use session dname (username) as the primary identifier since database uses username in most relations.
+$doctor_username = $_SESSION['dname'];
+$doctor_id = null;
+$doctor_info = null;
+
+$stmt = $pdo->prepare("SELECT id, fullname, spec FROM doctb WHERE username = ?");
+$stmt->execute([$doctor_username]);
+$doctor_info = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($doctor_info) {
+    $doctor_id = $doctor_info['id'];
+} else {
+    // If not found in doctb, we can still proceed if we just need the username for the prescription record.
+    // However, it's better to log this.
+    error_log("Warning: Doctor with username '$doctor_username' not found in doctb.");
+    // We can continue, just doc id will be null, but we insert 'doctor' as username in prestb anyway.
+}
+
+// Initialize variables
 $pid = '';
 $ID = '';
 $appdate = '';
 $apptime = '';
 $fname = '';
 $lname = '';
-$doctor = $_SESSION['dname'];
 
-if (isset($_GET['pid']) && isset($_GET['ID']) && isset($_GET['appdate']) && isset($_GET['apptime']) && isset($_GET['fname']) && isset($_GET['lname'])) {
+// Check if parameters are passed via GET (from Appointments list)
+if (isset($_GET['pid']) && isset($_GET['ID'])) {
     $pid = $_GET['pid'];
     $ID = $_GET['ID'];
-    $fname = $_GET['fname'];
-    $lname = $_GET['lname'];
-    $appdate = $_GET['appdate'];
-    $apptime = $_GET['apptime'];
+    $fname = $_GET['fname'] ?? '';
+    $lname = $_GET['lname'] ?? '';
+    $appdate = $_GET['appdate'] ?? '';
+    $apptime = $_GET['apptime'] ?? '';
 }
 
-if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) && isset($_POST['appdate']) && isset($_POST['apptime']) && isset($_POST['lname']) && isset($_POST['fname'])) {
-    $appdate = $_POST['appdate'];
-    $apptime = $_POST['apptime'];
-    $disease = $_POST['disease'];
-    $allergy = $_POST['allergy'];
-    $fname = $_POST['fname'];
-    $lname = $_POST['lname'];
-    $pid = $_POST['pid'];
-    $ID = $_POST['ID'];
-    $prescription = $_POST['prescription'];
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
+    try {
+        $pdo->beginTransaction();
+        
+        // Get POST data
+        $pid = $_POST['pid'];
+        $ID = $_POST['ID'] ?? null; // Appointment ID
+        $disease = $_POST['disease'];
+        $allergy = $_POST['allergy'] ?? '';
+        $treatment_duration = $_POST['treatment_duration'];
+        $general_notes = $_POST['general_notes'] ?? '';
+        
+        // Insert into prestb (Enhanced Existing Table)
+        // Note: prestb has columns: doctor, pid, ID (app_id), fname, lname, appdate, apptime, disease, allergy, prescription, treatment_duration, general_notes
+        
+        // We need to fetch patient details to fill fname, lname, appdate, apptime if they are not in POST
+        // But the form sends them as hidden inputs.
+        
+        $fname = $_POST['fname'] ?? '';
+        $lname = $_POST['lname'] ?? '';
+        $appdate = $_POST['appdate'] ?? date('Y-m-d');
+        $apptime = $_POST['apptime'] ?? date('H:i:s');
+        
+        // Use a summary of medications for the old 'prescription' column to maintain backward compatibility
+        $med_summary = "";
+        if (isset($_POST['medications']) && is_array($_POST['medications'])) {
+            foreach ($_POST['medications'] as $med) {
+                if (!empty($med['name'])) {
+                    $med_summary .= $med['name'] . " (" . $med['dosage'] . ") - " . $med['frequency'] . "; ";
+                }
+            }
+        }
+        
+        // Ensure med_summary is not empty if required
+        if (empty($med_summary)) {
+             $med_summary = "Chi tiết trong bảng thuốc";
+        }
 
-    $stmt = $pdo->prepare("INSERT INTO prestb(doctor, pid, ID, fname, lname, appdate, apptime, disease, allergy, prescription) VALUES (:doctor, :pid, :ID, :fname, :lname, :appdate, :apptime, :disease, :allergy, :prescription)");
-    $query = $stmt->execute([
-        ':doctor' => $doctor,
-        ':pid' => $pid,
-        ':ID' => $ID,
-        ':fname' => $fname,
-        ':lname' => $lname,
-        ':appdate' => $appdate,
-        ':apptime' => $apptime,
-        ':disease' => $disease,
-        ':allergy' => $allergy,
-        ':prescription' => $prescription
-    ]);
-
-    if ($query) {
-        redirectWithMessage('dashboard.php', 'success', 'Kê đơn thuốc thành công!');
-    } else {
-        redirectWithMessage('dashboard.php', 'error', 'Không thể xử lý yêu cầu. Vui lòng thử lại!');
+        $stmt = $pdo->prepare("
+            INSERT INTO prestb (doctor, pid, ID, fname, lname, appdate, apptime, disease, allergy, prescription, treatment_duration, general_notes, created_at)
+            VALUES (:doctor, :pid, :ID, :fname, :lname, :appdate, :apptime, :disease, :allergy, :prescription, :treatment_duration, :general_notes, NOW())
+        ");
+        
+        $result = $stmt->execute([
+            ':doctor' => $doctor, // username
+            ':pid' => $pid,
+            ':ID' => $ID,
+            ':fname' => $fname,
+            ':lname' => $lname,
+            ':appdate' => $appdate,
+            ':apptime' => $apptime,
+            ':disease' => $disease,
+            ':allergy' => $allergy,
+            ':prescription' => $med_summary, // Backward compatibility
+            ':treatment_duration' => $treatment_duration,
+            ':general_notes' => $general_notes
+        ]);
+        
+        if (!$result) {
+            $errorInfo = $stmt->errorInfo();
+            throw new Exception("Failed to insert prescription: " . $errorInfo[2]);
+        }
+        
+        // Use new column name for PK only if it was renamed to pres_id, but migration script adds pres_id. 
+        // lastInsertId needs to know nothing special if it's auto_increment.
+        $prescription_id = $pdo->lastInsertId(); 
+        
+        // Update appointment status if ID is present (optional, but good practice to mark as visited/prescribed)
+        if ($ID) {
+           // Maybe update status? Leaving as is for now unless requested.
+        }
+        
+        // Insert medications
+        if (isset($_POST['medications']) && is_array($_POST['medications'])) {
+            $stmt = $pdo->prepare("
+                INSERT INTO prescription_medications (prescription_id, medication_name, dosage, frequency, duration, special_notes)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
+            
+            foreach ($_POST['medications'] as $med) {
+                if (!empty($med['name'])) {
+                    $stmt->execute([
+                        $prescription_id,
+                        $med['name'],
+                        $med['dosage'],
+                        $med['frequency'],
+                        $med['duration'],
+                        $med['notes'] ?? ''
+                    ]);
+                }
+            }
+        }
+        
+        $pdo->commit();
+        redirectWithMessage('dashboard.php?page=prescriptions', 'success', 'Kê đơn thuốc thành công!');
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        $error_message = "Lỗi khi tạo đơn thuốc: " . $e->getMessage();
+        error_log($error_message);
     }
 }
 ?>
-<html lang="en">
 
+<html lang="vi">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png" />
     <title>Kê đơn thuốc - Bệnh viện Global</title>
-
-    <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    
     <style>
         :root {
             --primary: #0891b2;
             --primary-dark: #0e7490;
             --success: #10B981;
             --danger: #EF4444;
-            --gray-50: #F9FAFB;
-            --gray-100: #F3F4F6;
-            --gray-200: #E5E7EB;
-            --gray-700: #374151;
-            --gray-900: #111827;
+            --light-bg: #f0f9ff;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #14b8a6 100%);
             min-height: 100vh;
             padding: 2rem;
-            position: relative;
-            overflow-x: hidden;
         }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 25% 75%, rgba(20, 184, 166, 0.15) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
+        
         .container-custom {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
         }
-
+        
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%);
             color: white;
             padding: 2rem;
             text-align: center;
         }
-
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1rem;
-        }
-
+        
         .back-button {
             position: absolute;
             top: 2rem;
@@ -140,288 +204,234 @@ if (isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['ID']) &&
             padding: 0.75rem 1.5rem;
             border-radius: 10px;
             text-decoration: none;
-            transition: all 0.3s ease;
             backdrop-filter: blur(10px);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
         }
-
+        
         .back-button:hover {
             background: rgba(255, 255, 255, 0.3);
             color: white;
-            transform: translateX(-5px);
+            text-decoration: none;
         }
-
+        
         .patient-info {
-            background: var(--gray-50);
+            background: #f8fafc;
             padding: 1.5rem;
-            border-bottom: 2px solid var(--gray-200);
+            border-bottom: 2px solid #e2e8f0;
         }
-
-        .patient-info h3 {
-            color: var(--gray-900);
-            font-size: 1.25rem;
-            font-weight: 600;
+        
+        .medication-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
             margin-bottom: 1rem;
+            border: 2px solid #e2e8f0;
+            position: relative;
         }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .info-icon {
-            width: 40px;
-            height: 40px;
+        
+        .medication-number {
+            position: absolute;
+            top: -12px;
+            left: 15px;
             background: var(--primary);
             color: white;
-            border-radius: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .info-content label {
-            font-size: 0.75rem;
-            color: var(--gray-700);
             font-weight: 600;
-            text-transform: uppercase;
-            display: block;
         }
-
-        .info-content span {
-            font-size: 1rem;
-            color: var(--gray-900);
-            font-weight: 500;
-        }
-
-        .form-section {
-            padding: 2rem;
-        }
-
-        .form-section h3 {
-            color: var(--gray-900);
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: var(--gray-700);
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--gray-200);
-            border-radius: 10px;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-
-        textarea.form-control {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 1rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--success);
+        
+        .btn-remove-medication {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--danger);
             color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
-
-        .btn-primary:hover {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--gray-200);
-            color: var(--gray-700);
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-300);
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 1rem;
-            }
-
-            .back-button {
-                position: relative;
-                top: 0;
-                left: 0;
-                margin-bottom: 1rem;
-                width: 100%;
-                justify-content: center;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
+        
+        .required-field::after {
+            content: " *";
+            color: var(--danger);
         }
     </style>
 </head>
-
 <body>
     <?php displayMessage(); ?>
+    
     <a href="dashboard.php" class="back-button">
-        <i class="fas fa-arrow-left"></i> Quay lại bảng điều khiển
+        <i class="fas fa-arrow-left"></i> Quay lại
     </a>
 
     <div class="container-custom">
         <div class="header">
-            <h1><i class="fas fa-prescription"></i> Kê đơn thuốc</h1>
-            <p>Kê đơn thuốc cho lịch hẹn bệnh nhân</p>
+            <h1><i class="fas fa-file-prescription"></i> Kê Đơn Thuốc Chi Tiết</h1>
+            <p>Tạo đơn thuốc cho bệnh nhân</p>
         </div>
 
+        <?php if ($pid): ?>
         <div class="patient-info">
-            <h3>Thông tin bệnh nhân</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="info-content">
-                        <label>Tên bệnh nhân</label>
-                        <span><?php echo $fname . ' ' . $lname; ?></span>
-                    </div>
+            <h4 class="mb-3"><i class="fas fa-user-injured mr-2"></i>Thông tin bệnh nhân</h4>
+            <div class="row">
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Tên bệnh nhân</small>
+                    <strong><?php echo htmlspecialchars($fname . ' ' . $lname); ?></strong>
                 </div>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-id-badge"></i>
-                    </div>
-                    <div class="info-content">
-                        <label>Mã BN</label>
-                        <span>#<?php echo $pid; ?></span>
-                    </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Mã hồ sơ</small>
+                    <strong>#<?php echo htmlspecialchars($pid); ?></strong>
                 </div>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-calendar"></i>
-                    </div>
-                    <div class="info-content">
-                        <label>Ngày hẹn</label>
-                        <span><?php echo date('d M Y', strtotime($appdate)); ?></span>
-                    </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Ngày hẹn</small>
+                    <strong><?php echo htmlspecialchars($appdate); ?></strong>
                 </div>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="info-content">
-                        <label>Giờ hẹn</label>
-                        <span><?php echo date('h:i A', strtotime($apptime)); ?></span>
-                    </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Giờ hẹn</small>
+                    <strong><?php echo htmlspecialchars($apptime); ?></strong>
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
-        <form method="post" action="prescribe.php" class="form-section">
-            <h3><i class="fas fa-file-medical"></i> Chi tiết đơn thuốc</h3>
+        <div class="p-4">
+            <?php if (isset($error_message)): ?>
+                <div class="alert alert-danger"><?php echo $error_message; ?></div>
+            <?php endif; ?>
 
-            <input type="hidden" name="fname" value="<?php echo $fname; ?>">
-            <input type="hidden" name="lname" value="<?php echo $lname; ?>">
-            <input type="hidden" name="appdate" value="<?php echo $appdate; ?>">
-            <input type="hidden" name="apptime" value="<?php echo $apptime; ?>">
-            <input type="hidden" name="pid" value="<?php echo $pid; ?>">
-            <input type="hidden" name="ID" value="<?php echo $ID; ?>">
+            <form method="POST" id="prescriptionForm">
+                <input type="hidden" name="pid" value="<?php echo htmlspecialchars($pid); ?>">
+                <input type="hidden" name="ID" value="<?php echo htmlspecialchars($ID); ?>">
+                
+                <!-- Diagnosis -->
+                <div class="mb-4">
+                    <h5 class="text-secondary border-bottom pb-2 mb-3">Chẩn đoán & Điều trị</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="required-field">Chẩn đoán / Bệnh</label>
+                                <input type="text" name="disease" class="form-control" placeholder="Nhập tên bệnh" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="required-field">Thời gian điều trị</label>
+                                <input type="text" name="treatment_duration" class="form-control" placeholder="VD: 7 ngày" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Dị ứng (nếu có)</label>
+                        <input type="text" name="allergy" class="form-control" placeholder="Nhập tên thuốc/thực phẩm gây dị ứng">
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="fas fa-disease"></i> Bệnh / Chẩn đoán
-                </label>
-                <input type="text" name="disease" class="form-control" placeholder="Nhập chẩn đoán" required>
-            </div>
+                <!-- Medications -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-secondary border-bottom pb-2 mb-0 w-100">Danh sách thuốc</h5>
+                        <button type="button" class="btn btn-success btn-sm ml-2" style="min-width: 120px;" onclick="addMedication()">
+                            <i class="fas fa-plus mr-1"></i> Thêm thuốc
+                        </button>
+                    </div>
+                    
+                    <div id="medications-container">
+                        <!-- Medications added via JS -->
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="fas fa-exclamation-triangle"></i> Dị ứng
-                </label>
-                <input type="text" name="allergy" class="form-control" placeholder="Nhập dị ứng (nếu có)">
-            </div>
+                <!-- Notes -->
+                <div class="mb-4">
+                    <h5 class="text-secondary border-bottom pb-2 mb-3">Hướng dẫn chung</h5>
+                    <div class="form-group">
+                        <textarea name="general_notes" class="form-control" rows="3" placeholder="Lời dặn dò của bác sĩ..."></textarea>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="fas fa-pills"></i> Đơn thuốc / Thuốc
-                </label>
-                <textarea name="prescription" class="form-control" placeholder="Nhập chi tiết thuốc, liều lượng và hướng dẫn" required></textarea>
-            </div>
-
-            <div class="button-group">
-                <button type="submit" name="prescribe" class="btn btn-primary">
-                    <i class="fas fa-check"></i> Kê đơn
-                </button>
-                <a href="dashboard.php" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Hủy
-                </a>
-            </div>
-        </form>
+                <div class="text-center">
+                    <button type="submit" name="prescribe" class="btn btn-lg btn-primary px-5">
+                        <i class="fas fa-save mr-2"></i> Lưu Đơn Thuốc
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
+    <script>
+        let medicationCount = 0;
+        
+        function addMedication() {
+            medicationCount++;
+            const container = document.getElementById('medications-container');
+            const html = `
+                <div class="medication-item" id="medication-${medicationCount}">
+                    <div class="medication-number">${medicationCount}</div>
+                    <button type="button" class="btn-remove-medication" onclick="removeMedication(${medicationCount})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-field">Tên thuốc</label>
+                                <input type="text" name="medications[${medicationCount}][name]" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-field">Liều lượng</label>
+                                <input type="text" name="medications[${medicationCount}][dosage]" class="form-control" placeholder="VD: 500mg, 1 viên" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-field">Tần suất</label>
+                                <input type="text" name="medications[${medicationCount}][frequency]" class="form-control" placeholder="VD: Sáng 1, Tối 1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-field">Thời gian</label>
+                                <input type="text" name="medications[${medicationCount}][duration]" class="form-control" placeholder="VD: 7 ngày" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label>Lưu ý riêng</label>
+                        <input type="text" name="medications[${medicationCount}][notes]" class="form-control" placeholder="VD: Uống sau ăn">
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+        
+        function removeMedication(id) {
+            const el = document.getElementById(`medication-${id}`);
+            if (el) el.remove();
+            // Optional: Renumber items, but ID uniqueness matters more for form submission
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            addMedication(); // Add first item by default
+        });
 
+        document.getElementById('prescriptionForm').addEventListener('submit', function(e) {
+            if (document.querySelectorAll('.medication-item').length === 0) {
+                e.preventDefault();
+                alert('Vui lòng thêm ít nhất một loại thuốc!');
+            }
+        });
+    </script>
+</body>
 </html>

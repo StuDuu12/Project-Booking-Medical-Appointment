@@ -42,6 +42,53 @@ if (isset($_GET['cancel'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
     <style>
+        /* Dropdown Menu Styling */
+        .navbar-user.dropdown .dropdown-toggle::after {
+            display: none;
+        }
+
+        .navbar-user .dropdown-menu {
+            min-width: 220px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: none;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .navbar-user .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-user .dropdown-item i {
+            width: 20px;
+            font-size: 0.9rem;
+        }
+
+        .navbar-user .dropdown-item:hover {
+            background: #f0f9ff;
+            color: #0891b2;
+            padding-left: 1.75rem;
+        }
+
+        .navbar-user .dropdown-item.text-danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .navbar-user .dropdown-divider {
+            margin: 0.5rem 0;
+        }
+
+        .navbar-user-info {
+            margin-left: 1rem;
+        }
+    </style>
+    <style>
         /* Enhanced Responsive Styles */
 
         /* Ensure main content is flexible */
@@ -366,12 +413,6 @@ if (isset($_GET['cancel'])) {
                     </a>
                 </li>
             </ul>
-
-            <div class="sidebar-footer">
-                <a href="../auth/logout.php" class="btn btn-danger btn-block">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
-            </div>
         </aside>
 
         <!-- Main Content -->
@@ -382,13 +423,24 @@ if (isset($_GET['cancel'])) {
                     <h1 class="navbar-title">Bảng điều khiển Bác sĩ</h1>
                 </div>
                 <div class="navbar-right">
-                    <div class="navbar-user">
-                        <div class="navbar-user-avatar">
-                            <?php echo strtoupper(substr($doctor, 0, 1)); ?>
-                        </div>
-                        <div class="navbar-user-info">
-                            <div class="navbar-user-name">BS. <?php echo $doctor; ?></div>
-                            <div class="navbar-user-role">Bác sĩ</div>
+                    <div class="navbar-user dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="navbarUserDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
+                            <div class="navbar-user-avatar">
+                                <?php echo strtoupper(substr($doctor, 0, 1)); ?>
+                            </div>
+                            <div class="navbar-user-info">
+                                <div class="navbar-user-name">BS. <?php echo $doctor; ?></div>
+                                <div class="navbar-user-role">Bác sĩ</div>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserDropdown">
+                            <a class="dropdown-item" href="../../index.php">
+                                <i class="fas fa-home mr-2"></i> Quay về trang chủ
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="../auth/logout.php">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -570,14 +622,12 @@ if (isset($_GET['cancel'])) {
                                                 } ?>
                                             </td>
                                             <td>
-                                                <?php if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 1)) { ?>
-                                                    <a href="prescribe.php?pid=<?php echo $row['pid'] ?>&ID=<?php echo $row['ID'] ?>&fname=<?php echo $row['fname'] ?>&lname=<?php echo $row['lname'] ?>&appdate=<?php echo $row['appdate'] ?>&apptime=<?php echo $row['apptime'] ?>"
-                                                        class="btn btn-success btn-sm">
-                                                        <i class="fas fa-prescription"></i> Kê đơn
-                                                    </a>
-                                                <?php } else {
-                                                    echo '<span class="text-muted">-</span>';
-                                                } ?>
+                                                <a href="prescribe.php?pid=<?php echo $row['pid']; ?>&ID=<?php echo $row['ID']; ?>&fname=<?php echo $row['fname']; ?>&lname=<?php echo $row['lname']; ?>&appdate=<?php echo $row['appdate']; ?>&apptime=<?php echo $row['apptime']; ?>"
+                                                   class="btn btn-sm btn-primary"
+                                                   title="Kê đơn thuốc"
+                                                   style="white-space: nowrap;">
+                                                    <i class="fas fa-prescription"></i> Kê đơn
+                                                </a>
                                             </td>
                                         </tr>
                                     <?php } ?>
@@ -592,43 +642,91 @@ if (isset($_GET['cancel'])) {
             <?php if ($page === 'prescriptions') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title">Lịch sử đơn thuốc</h2>
-                        <p class="section-subtitle">Xem tất cả các đơn thuốc đã kê</p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h2 class="section-title">Quản lý đơn thuốc</h2>
+                                <p class="section-subtitle">Danh sách các đơn thuốc đã kê</p>
+                            </div>
+                            <!-- Button removed as per request to move to appointment list -->
+                        </div>
                     </div>
 
                     <div class="data-table-container">
                         <div class="data-table-header">
-                            <h3 class="data-table-title">Đơn thuốc đã kê</h3>
+                            <h3 class="data-table-title">Danh sách đơn thuốc</h3>
                         </div>
                         <div style="overflow-x: auto;">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Mã BN</th>
-                                        <th>Tên bệnh nhân</th>
-                                        <th>Mã lịch hẹn</th>
-                                        <th>Ngày</th>
-                                        <th>Giờ</th>
-                                        <th>Bệnh</th>
-                                        <th>Dị ứng</th>
-                                        <th>Đơn thuốc</th>
+                                        <th>Mã ĐT</th>
+                                        <th>Bệnh nhân</th>
+                                        <th>Chẩn đoán</th>
+                                        <th>Số thuốc</th>
+                                        <th>Thời gian điều trị</th>
+                                        <th>Ngày kê</th>
+                                        <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $stmt = $pdo->prepare("SELECT pid,fname,lname,ID,appdate,apptime,disease,allergy,prescription FROM prestb WHERE doctor = :doctor ORDER BY appdate DESC");
+                                    // Modified query to support enhanced prestb
+                                    // We select pres_id as ID for view/export links
+                                    $stmt = $pdo->prepare("
+                                        SELECT p.pres_id, p.ID as app_id, p.pid, p.disease, p.treatment_duration, p.created_at, p.appdate,
+                                               p.fname, p.lname,
+                                               (SELECT COUNT(id) FROM prescription_medications WHERE prescription_id = p.pres_id) as medication_count
+                                        FROM prestb p
+                                        WHERE p.doctor = :doctor
+                                        ORDER BY p.appdate DESC, p.created_at DESC
+                                    ");
                                     $stmt->execute([':doctor' => $doctor]);
-                                    while ($row = $stmt->fetch(PDO::FETCH_BOTH)) {
+                                    
+                                    if ($stmt->rowCount() > 0) {
+                                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            // Handle cases where pres_id might be null (old records before migration)
+                                            // If pres_id is missing, we can't easily view details or export PDF for old records unless we backfill.
+                                            // But new records will have it.
+                                            $view_id = $row['pres_id']; 
                                     ?>
                                         <tr>
-                                            <td>#<?php echo $row['pid']; ?></td>
-                                            <td><?php echo $row['fname'] . ' ' . $row['lname']; ?></td>
-                                            <td>#<?php echo $row['ID']; ?></td>
-                                            <td><?php echo date('d M Y', strtotime($row['appdate'])); ?></td>
-                                            <td><?php echo date('h:i A', strtotime($row['apptime'])); ?></td>
-                                            <td><?php echo $row['disease']; ?></td>
-                                            <td><?php echo $row['allergy']; ?></td>
-                                            <td><?php echo $row['prescription']; ?></td>
+                                            <td>#<?php echo $row['app_id']; ?></td>
+                                            <td><?php echo htmlspecialchars($row['fname'] . ' ' . $row['lname']); ?></td>
+                                            <td><?php echo htmlspecialchars($row['disease']); ?></td>
+                                            <td>
+                                                <span class="badge badge-info">
+                                                    <?php echo $row['medication_count']; ?> thuốc
+                                                </span>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($row['treatment_duration'] ?? 'N/A'); ?></td>
+                                            <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
+                                            <td>
+                                                <?php if($view_id): ?>
+                                                <a href="view_prescription.php?id=<?php echo $view_id; ?>" 
+                                                   class="btn btn-sm btn-info" 
+                                                   title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="export_prescription_pdf.php?id=<?php echo $view_id; ?>" 
+                                                   class="btn btn-sm btn-danger" 
+                                                   target="_blank"
+                                                   title="Tải PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                <?php else: ?>
+                                                    <small class="text-muted">Đơn cũ</small>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php 
+                                        }
+                                    } else {
+                                    ?>
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">
+                                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                                <p>Chưa có đơn thuốc nào. Nhấn "Tạo đơn thuốc mới" để bắt đầu.</p>
+                                            </td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
