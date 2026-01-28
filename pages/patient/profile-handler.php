@@ -14,9 +14,6 @@ if (!$pid) {
 $action = $_POST['action'] ?? null;
 
 try {
-    // ========================================
-    // 1. CẬP NHẬT THÔNG TIN PROFILE
-    // ========================================
     if ($action === 'update_profile') {
         $contact = trim($_POST['contact'] ?? '');
         $address = trim($_POST['address'] ?? '');
@@ -25,19 +22,16 @@ try {
         $emergency_contact = trim($_POST['emergency_contact'] ?? '');
         $emergency_contact_name = trim($_POST['emergency_contact_name'] ?? '');
 
-        // Validate contact
         if (!$contact || !preg_match('/^[0-9]{10}$/', $contact)) {
             redirectWithMessage('profile.php', 'error', 'Số điện thoại không hợp lệ!');
             exit();
         }
 
-        // Validate emergency contact if provided
         if ($emergency_contact && !preg_match('/^[0-9]{10}$/', $emergency_contact)) {
             redirectWithMessage('profile.php', 'error', 'Số điện thoại liên hệ khẩn cấp không hợp lệ!');
             exit();
         }
 
-        // Update database
         $stmt = $pdo->prepare("
             UPDATE patreg SET 
                 contact = :contact,
