@@ -1,3 +1,9 @@
+<?php
+// Start session for navbar portal button
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -451,6 +457,11 @@
 			}
 		}
 	</style>
+
+	<!-- Load jQuery FIRST in head -->
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -462,8 +473,49 @@
 		<div class="container">
 			<div class="row align-items-center">
 				<div class="col-lg-6 hero-content">
-					<h1>Chào mừng đến với Global Hospitals</h1>
+					<?php
+					// Get user info for personalized welcome message
+					$welcomeName = '';
+					$isUserLoggedIn = false;
+					
+					if (isset($_SESSION['patientSession'])) {
+						$isUserLoggedIn = true;
+						try {
+							$stmt = $pdo->prepare("SELECT fname, lname FROM patreg WHERE pid = ?");
+							$stmt->execute([$_SESSION['patientSession']]);
+							$user = $stmt->fetch(PDO::FETCH_ASSOC);
+							if ($user) {
+								$welcomeName = trim($user['fname'] . ' ' . $user['lname']);
+							}
+						} catch (Exception $e) {
+							$welcomeName = '';
+						}
+					} elseif (isset($_SESSION['doctorSession'])) {
+						$isUserLoggedIn = true;
+						try {
+							$stmt = $pdo->prepare("SELECT fullname FROM doctb WHERE id = ?");
+							$stmt->execute([$_SESSION['doctorSession']]);
+							$user = $stmt->fetch(PDO::FETCH_ASSOC);
+							if ($user && !empty($user['fullname'])) {
+								$welcomeName = trim($user['fullname']);
+							}
+						} catch (Exception $e) {
+							$welcomeName = '';
+						}
+					} elseif (isset($_SESSION['adminSession'])) {
+						$isUserLoggedIn = true;
+						$welcomeName = 'Quản trị viên';
+					}
+					
+					if ($isUserLoggedIn && !empty($welcomeName)): ?>
+						<h1>Chào mừng <?php echo htmlspecialchars($welcomeName); ?> đến với Global Hospitals</h1>
+					<?php else: ?>
+						<h1>Chào mừng đến với Global Hospitals</h1>
+					<?php endif; ?>
+					
 					<p>Hệ thống quản lý bệnh viện hiện đại, đặt lịch khám nhanh chóng và tiện lợi. Chăm sóc sức khỏe của bạn là ưu tiên hàng đầu của chúng tôi.</p>
+					
+					<?php if (!$isUserLoggedIn): ?>
 					<div class="hero-buttons">
 						<a href="pages/auth/register.php" class="btn btn-hero-primary">
 							<i class="fas fa-user-plus"></i> Đăng ký ngay
@@ -472,6 +524,7 @@
 							<i class="fas fa-sign-in-alt"></i> Đăng nhập
 						</a>
 					</div>
+					<?php endif; ?>
 				</div>
 				<div class="col-lg-6 hero-image">
 					<i class="fas fa-hospital-user" style="font-size: 20rem; color: rgba(255,255,255,0.2);"></i>
@@ -606,8 +659,8 @@
 					<ul class="footer-links">
 						<li><a href="#home">Trang chủ</a></li>
 						<li><a href="#features">Tính năng</a></li>
-						<li><a href="services.html">Dịch vụ</a></li>
-						<li><a href="contact.html">Liên hệ</a></li>
+						<li><a href="pages/reviews.php">Dịch vụ</a></li>
+						<li><a href="pages/contact.php">Liên hệ</a></li>
 					</ul>
 				</div>
 				<div class="col-md-4 mb-4">
@@ -625,10 +678,7 @@
 		</div>
 	</footer>
 
-	<!-- Scripts -->
-	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 
 </html>

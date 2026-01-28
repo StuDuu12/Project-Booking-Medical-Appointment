@@ -66,6 +66,55 @@ if (isset($_POST['docsub1'])) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
+    <style>
+        /* Dropdown Menu Styling */
+        .navbar-user.dropdown .dropdown-toggle::after {
+            display: none;
+        }
+
+        .navbar-user .dropdown-menu {
+            min-width: 220px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: none;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .navbar-user .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-user .dropdown-item i {
+            width: 20px;
+            font-size: 0.9rem;
+        }
+
+        .navbar-user .dropdown-item:hover {
+            background: #f0f9ff;
+            color: #0891b2;
+            padding-left: 1.75rem;
+        }
+
+        .navbar-user .dropdown-item.text-danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .navbar-user .dropdown-divider {
+            margin: 0.5rem 0;
+        }
+
+        /* Improved spacing for user info */
+        .navbar-user-info {
+            margin-left: 1rem;
+        }
+
+    </style>
 </head>
 
 <body>
@@ -126,13 +175,13 @@ if (isset($_POST['docsub1'])) {
                         <span>Hồ sơ bệnh án</span>
                     </a>
                 </li>
+                <li class="sidebar-menu-item">
+                    <a href="../forum/index.php" class="sidebar-menu-link">
+                        <i class="fas fa-comments sidebar-menu-icon"></i>
+                        <span>Diễn đàn</span>
+                    </a>
+                </li>
             </ul>
-
-            <div class="sidebar-footer">
-                <a href="../auth/logout.php" class="btn btn-danger btn-block">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
-            </div>
         </aside>
 
         <!-- Main Content -->
@@ -143,13 +192,24 @@ if (isset($_POST['docsub1'])) {
                     <h1 class="navbar-title">Bảng điều khiển Quản trị</h1>
                 </div>
                 <div class="navbar-right">
-                    <div class="navbar-user">
-                        <div class="navbar-user-avatar">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                        <div class="navbar-user-info">
-                            <div class="navbar-user-name">Quản trị viên</div>
-                            <div class="navbar-user-role">Lễ tân</div>
+                    <div class="navbar-user dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="navbarUserDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
+                            <div class="navbar-user-avatar">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div class="navbar-user-info">
+                                <div class="navbar-user-name">Quản trị viên</div>
+                                <div class="navbar-user-role">Lễ tân</div>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserDropdown">
+                            <a class="dropdown-item" href="../../index.php">
+                                <i class="fas fa-home mr-2"></i> Quay về trang chủ
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="../auth/logout.php">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -278,6 +338,74 @@ if (isset($_POST['docsub1'])) {
                                     <p class="text-muted mb-0 small">Xem đơn thuốc</p>
                                 </div>
                             </a>
+                        </div>
+                    </div>
+
+                    <!-- Statistical Charts Section -->
+                    <div class="row mt-5">
+                        <div class="col-md-12">
+                            <div class="data-table-container mb-4">
+                                <div class="data-table-header">
+                                    <h3 class="data-table-title"><i class="fas fa-chart-line"></i> Thống kê và Báo cáo</h3>
+                                </div>
+                                <div class="p-4">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <h5><i class="fas fa-user-plus"></i> Bệnh nhân mới theo tháng</h5>
+                                            <canvas id="patientsChart" style="max-height: 300px;"></canvas>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <h5><i class="fas fa-money-bill-wave"></i> Doanh thu theo tháng</h5>
+                                            <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6 mb-4">
+                                            <h5><i class="fas fa-chart-pie"></i> Tỷ lệ lịch khám</h5>
+                                            <canvas id="appointmentRatioChart" style="max-height: 300px;"></canvas>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <h5><i class="fas fa-trophy"></i> Top bác sĩ</h5>
+                                            <canvas id="topDoctorsChart" style="max-height: 300px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Section -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="data-table-container">
+                                <div class="data-table-header">
+                                    <h3 class="data-table-title"><i class="fas fa-file-pdf"></i> Xuất báo cáo PDF</h3>
+                                </div>
+                                <div class="p-4">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <a href="export.php?type=patients" class="btn btn-primary btn-block mb-3" target="_blank">
+                                                <i class="fas fa-users"></i> Xuất danh sách bệnh nhân
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="export.php?type=doctors" class="btn btn-success btn-block mb-3" target="_blank">
+                                                <i class="fas fa-user-md"></i> Xuất danh sách bác sĩ
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="export.php?type=revenue" class="btn btn-warning btn-block mb-3" target="_blank">
+                                                <i class="fas fa-chart-bar"></i> Báo cáo doanh thu
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="export.php?type=appointments" class="btn btn-info btn-block mb-3" target="_blank">
+                                                <i class="fas fa-calendar-check"></i> Lịch hẹn
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -870,6 +998,119 @@ if (isset($_POST['docsub1'])) {
             if (doctorFilter) doctorFilter.addEventListener('change', filterMedicalRecords);
             if (statusFilter) statusFilter.addEventListener('change', filterMedicalRecords);
         });
+    </script>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- Chart Implementation Script -->
+    <script>
+    <?php if ($page === 'dashboard'): ?>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Patients by Month Chart
+        fetch('../../includes/charts_api.php?action=patients_by_month')
+            .then(r => r.json())
+            .then(data => {
+                if (document.getElementById('patientsChart')) {
+                    new Chart(document.getElementById('patientsChart'), {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Bệnh nhân mới',
+                                data: data.data,
+                                borderColor: '#0891b2',
+                                backgroundColor: 'rgba(8, 145, 178, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: true } }
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading patients chart:', err));
+
+        // Revenue Chart
+        fetch('../../includes/charts_api.php?action=revenue_stats')
+            .then(r => r.json())
+            .then(data => {
+                if (document.getElementById('revenueChart')) {
+                    new Chart(document.getElementById('revenueChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Doanh thu (VNĐ)',
+                                data: data.data,
+                                backgroundColor: '#10b981'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: true } }
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading revenue chart:', err));
+
+        // Appointment Ratios Chart
+        fetch('../../includes/charts_api.php?action=appointment_ratios')
+            .then(r => r.json())
+            .then(data => {
+                if (document.getElementById('appointmentRatioChart')) {
+                    new Chart(document.getElementById('appointmentRatioChart'), {
+                        type: 'pie',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                data: data.data,
+                                backgroundColor: ['#10b981', '#ef4444']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: true, position: 'bottom' } }
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading appointment ratio chart:', err));
+
+        // Top Doctors Chart
+        fetch('../../includes/charts_api.php?action=top_doctors')
+            .then(r => r.json())
+            .then(data => {
+                if (document.getElementById('topDoctorsChart')) {
+                    new Chart(document.getElementById('topDoctorsChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Số lượng lịch khám',
+                                data: data.data,
+                                backgroundColor: '#f59e0b'
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: true } }
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading top doctors chart:', err));
+    });
+    <?php endif; ?>
     </script>
 </body>
 
