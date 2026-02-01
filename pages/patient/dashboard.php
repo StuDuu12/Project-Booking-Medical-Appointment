@@ -356,8 +356,8 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .navbar-user .dropdown-item:hover {
-            background: #f0f9ff;
-            color: #0891b2;
+            background: #fff5f5;
+            color: #d2302c;
             padding-left: 1.75rem;
         }
 
@@ -374,7 +374,6 @@ if (isset($_GET["generate_bill"])) {
         .navbar-user-info {
             margin-left: 1rem;
         }
-
     </style>
 
     <style>
@@ -394,17 +393,17 @@ if (isset($_GET["generate_bill"])) {
             cursor: pointer;
             transition: all 0.3s ease;
             border: 3px solid transparent;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.1);
+            box-shadow: 0 4px 12px rgba(210, 48, 44, 0.1);
         }
 
         .spec-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(8, 145, 178, 0.2);
+            box-shadow: 0 8px 24px rgba(210, 48, 44, 0.2);
             border-color: var(--medical-blue);
         }
 
         .spec-card.active {
-            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
             color: white;
             border-color: var(--medical-blue-dark);
         }
@@ -627,16 +626,16 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .step.active .step-number {
-            background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
-            border-color: #0891b2;
+            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
+            border-color: #d2302c;
             color: white;
-            box-shadow: 0 4px 15px rgba(8, 145, 178, 0.3);
+            box-shadow: 0 4px 15px rgba(210, 48, 44, 0.3);
         }
 
         .step.completed .step-number {
-            background: #14b8a6;
-            border-color: #14b8a6;
-            color: white;
+            background: #ffd700;
+            border-color: #ffd700;
+            color: #8b0000;
         }
 
         .step-label {
@@ -656,16 +655,14 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .step.completed .step-line {
-            background: #14b8a6;
+            background: #d2302c;
         }
 
         .step:last-child .step-line {
             display: none;
         }
 
-        .modal-backdrop {
-            z-index: 1040;
-        }
+        .modal-backdrop {}
 
         .modal {
             z-index: 1050;
@@ -1365,9 +1362,9 @@ if (isset($_GET["generate_bill"])) {
                     </div>
 
                     <div class="profile-container">
-                        <div class="profile-card" style="background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%); color: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <div class="profile-card" style="background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%); color: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
                             <div style="display: flex; align-items: center; gap: 2rem;">
-                                <div style="width: 120px; height: 120px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #0891b2;">
+                                <div style="width: 120px; height: 120px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #d2302c;">
                                     <?php echo strtoupper(substr($fname, 0, 1) . substr($lname, 0, 1)); ?>
                                 </div>
                                 <div>
@@ -1460,7 +1457,7 @@ if (isset($_GET["generate_bill"])) {
                         </div>
 
                         <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                            <a href="profile.php" class="btn" style="background: linear-gradient(135deg, #0891b2, #14b8a6); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                            <a href="profile.php" class="btn" style="background: linear-gradient(135deg, #d2302c, #ff4d4d); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
                                 <i class="fas fa-edit"></i> Chỉnh sửa hồ sơ
                             </a>
                             <a href="profile.php" class="btn" style="background: #f3f4f6; color: #111827; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; border: 1px solid #e5e7eb;">

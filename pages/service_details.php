@@ -39,24 +39,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
         $rating = $_POST['rating'];
         $review_text = $_POST['review'];
         $patient_id = $_SESSION['pid'];
-        
+
         try {
             $stmt = $pdo->prepare("
                 INSERT INTO service_ratings (spec_id, patient_id, rating, review, created_at)
                 VALUES (?, ?, ?, ?, NOW())
             ");
             $stmt->execute([$spec_id, $patient_id, $rating, $review_text]);
-            
+
             // Calculate new average
             $stmt = $pdo->prepare("SELECT AVG(rating) as avg_rate, COUNT(*) as total FROM service_ratings WHERE spec_id = ?");
             $stmt->execute([$spec_id]);
             $stats = $stmt->fetch();
-            
+
             // Update specializations table
             // Note: Ensure migration script ran to add these columns
             $update = $pdo->prepare("UPDATE specializations SET average_rating = ?, total_ratings = ? WHERE id = ?");
             $update->execute([$stats['avg_rate'], $stats['total'], $spec_id]);
-            
+
             $success = "Cảm ơn bạn đã đánh giá dịch vụ!";
             // Reload reviews
             $stmt = $pdo->prepare("
@@ -68,38 +68,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
             ");
             $stmt->execute([$spec_id]);
             $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             // Refresh service info
             $stmt = $pdo->prepare("SELECT * FROM specializations WHERE id = ?");
             $stmt->execute([$spec_id]);
             $service = $stmt->fetch();
-            
         } catch (Exception $e) {
             $error = "Lỗi: " . $e->getMessage();
         }
     }
 }
 ?>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Chi tiết Dịch vụ - <?php echo htmlspecialchars($service['name_vi'] ?? $service['name']); ?></title>
-    
+
     <link rel="shortcut icon" href="../images/favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
-        body { background: #f9fafb; font-family: 'Inter', sans-serif; }
+        body {
+            background: #f9fafb;
+            font-family: 'Inter', sans-serif;
+        }
+
         .doc-header {
             background: white;
             border-radius: 15px;
             padding: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
         }
-        .rating-stars { color: #f59e0b; }
+
+        .rating-stars {
+            color: #f59e0b;
+        }
+
         .review-card {
             background: white;
             border-radius: 12px;
@@ -107,29 +115,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
             margin-bottom: 1rem;
             border: 1px solid #e5e7eb;
         }
+
         .rating-input {
             display: flex;
             flex-direction: row-reverse;
             justify-content: flex-end;
             gap: 0.5rem;
         }
-        .rating-input input { display: none; }
+
+        .rating-input input {
+            display: none;
+        }
+
         .rating-input label {
             cursor: pointer;
             font-size: 1.5rem;
             color: #d1d5db;
             transition: color 0.2s;
         }
-        .rating-input input:checked ~ label,
+
+        .rating-input input:checked~label,
         .rating-input label:hover,
-        .rating-input label:hover ~ label {
+        .rating-input label:hover~label {
             color: #f59e0b;
         }
+
         .service-icon-lg {
             width: 120px;
             height: 120px;
-            background: #ecfeff;
-            color: #0891b2;
+            background: #fff5f5;
+            color: #d2302c;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -139,35 +154,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
         }
     </style>
 </head>
+
 <body>
     <?php include('../includes/navbar.php'); ?>
 
     <div class="container py-5" style="margin-top: 80px;">
         <a href="reviews.php" class="btn btn-outline-secondary mb-3"><i class="fas fa-arrow-left"></i> Quay lại</a>
-        
+
         <div class="doc-header">
             <div class="row align-items-center">
                 <div class="col-md-3 text-center">
-                     <div class="service-icon-lg mb-3">
+                    <div class="service-icon-lg mb-3">
                         <i class="<?php echo !empty($service['icon']) ? $service['icon'] : 'fas fa-stethoscope'; ?>"></i>
-                     </div>
+                    </div>
                 </div>
                 <div class="col-md-9">
                     <h2 class="font-weight-bold mb-2"><?php echo htmlspecialchars($service['name_vi'] ?? $service['name']); ?></h2>
-                    
+
                     <div class="d-flex align-items-center mb-4">
                         <div class="rating-stars mr-2">
-                             <?php 
-                             $stars = round($service['average_rating'] ?? 0);
-                             for($i=1; $i<=5; $i++) {
-                                 echo $i <= $stars ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
-                             }
-                             ?>
+                            <?php
+                            $stars = round($service['average_rating'] ?? 0);
+                            for ($i = 1; $i <= 5; $i++) {
+                                echo $i <= $stars ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                            }
+                            ?>
                         </div>
                         <span class="font-weight-bold h5 mb-0 mr-2"><?php echo number_format($service['average_rating'] ?? 0, 1); ?></span>
                         <span class="text-muted">(<?php echo $service['total_ratings'] ?? 0; ?> đánh giá)</span>
                     </div>
-                    
+
                     <p class="text-muted"><?php echo htmlspecialchars($service['description'] ?? ''); ?></p>
                 </div>
             </div>
@@ -176,34 +192,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
         <div class="row">
             <div class="col-md-8">
                 <h4 class="mb-4">Đánh giá dịch vụ</h4>
-                
+
                 <?php if (empty($reviews)): ?>
                     <div class="alert alert-light text-center">Chưa có đánh giá nào. Hãy là người đầu tiên!</div>
                 <?php else: ?>
                     <?php foreach ($reviews as $rev): ?>
-                    <div class="review-card">
-                        <div class="d-flex justify-content-between mb-2">
-                            <h6 class="font-weight-bold"><?php echo htmlspecialchars($rev['fname'] . ' ' . $rev['lname']); ?></h6>
-                            <small class="text-muted"><?php echo date('d/m/Y', strtotime($rev['created_at'])); ?></small>
+                        <div class="review-card">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6 class="font-weight-bold"><?php echo htmlspecialchars($rev['fname'] . ' ' . $rev['lname']); ?></h6>
+                                <small class="text-muted"><?php echo date('d/m/Y', strtotime($rev['created_at'])); ?></small>
+                            </div>
+                            <div class="rating-stars mb-2" style="font-size: 0.8rem;">
+                                <?php for ($i = 1; $i <= 5; $i++) echo $i <= $rev['rating'] ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'; ?>
+                            </div>
+                            <p class="mb-0 text-secondary"><?php echo htmlspecialchars($rev['review']); ?></p>
                         </div>
-                        <div class="rating-stars mb-2" style="font-size: 0.8rem;">
-                            <?php for($i=1; $i<=5; $i++) echo $i <= $rev['rating'] ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'; ?>
-                        </div>
-                        <p class="mb-0 text-secondary"><?php echo htmlspecialchars($rev['review']); ?></p>
-                    </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-            
+
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title font-weight-bold mb-3">Viết đánh giá</h5>
-                        <?php 
+                        <?php
                         // Determine user role and permission (Same logic as doctor_details)
                         $can_rate = false;
                         $role_message = "";
-                        
+
                         if (isset($_SESSION['patientSession'])) {
                             if (isset($_SESSION['pid'])) {
                                 $can_rate = true;
@@ -220,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
                         <?php if ($can_rate): ?>
                             <?php if (isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
                             <?php if (isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
-                            
+
                             <form method="post">
                                 <div class="form-group text-center">
                                     <label class="d-block mb-2">Chọn số sao</label>
@@ -255,4 +271,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
         </div>
     </div>
 </body>
+
 </html>

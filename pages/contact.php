@@ -50,14 +50,14 @@ $base_path = '../';
 
 	<style>
 		:root {
-			--primary-color: #0891b2;
-			--primary-dark: #0e7490;
-			--primary-light: #14b8a6;
+			--primary-color: #d2302c;
+			--primary-dark: #8b0000;
+			--primary-light: #ff4d4d;
 		}
 
 		body {
 			font-family: 'Inter', sans-serif;
-			background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #14b8a6 100%);
+			background: linear-gradient(135deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
 			min-height: 100vh;
 			padding-top: 70px;
 			position: relative;
@@ -355,6 +355,63 @@ $base_path = '../';
 	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+	<!-- Hiệu ứng hoa đào rơi -->
+	<script type="text/javascript">
+		(function() {
+			const isMobile = window.matchMedia('(max-width: 767px)').matches;
+			const petalCount = isMobile ? 10 : 20;
+			const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+			const petals = [];
+			let docWidth = window.innerWidth - 10;
+			let docHeight = window.innerHeight;
+
+			// Khởi tạo hoa đào
+			for (let i = 0; i < petalCount; i++) {
+				const petal = {
+					x: Math.random() * docWidth,
+					y: Math.random() * docHeight,
+					dx: 0,
+					amplitude: Math.random() * 20,
+					speedX: 0.02 + Math.random() / 10,
+					speedY: 0.7 + Math.random(),
+					element: null
+				};
+
+				const div = document.createElement('div');
+				div.id = 'petal' + i;
+				div.style.cssText = `position:fixed;z-index:${99+i};visibility:visible;pointer-events:none;width:15px;left:${petal.x}px;top:${petal.y}px`;
+				div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto">`;
+				document.body.appendChild(div);
+				petal.element = div;
+				petals.push(petal);
+			}
+
+			// Animation loop
+			function animate() {
+				docWidth = window.innerWidth - 10;
+				docHeight = window.innerHeight;
+
+				petals.forEach(petal => {
+					petal.y += petal.speedY;
+					if (petal.y > docHeight - 50) {
+						petal.x = Math.random() * (docWidth - petal.amplitude - 30);
+						petal.y = 0;
+						petal.speedX = 0.02 + Math.random() / 10;
+						petal.speedY = 0.7 + Math.random();
+					}
+					petal.dx += petal.speedX;
+					petal.element.style.top = petal.y + 'px';
+					petal.element.style.left = (petal.x + petal.amplitude * Math.sin(petal.dx)) + 'px';
+				});
+
+				requestAnimationFrame(animate);
+			}
+
+			animate();
+		})();
+	</script>
 </body>
 
 </html>

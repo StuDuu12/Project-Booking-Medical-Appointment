@@ -15,12 +15,20 @@ $action = $_POST['action'] ?? null;
 
 try {
     if ($action === 'update_profile') {
+        $first_name = trim($_POST['first_name'] ?? '');
+        $last_name = trim($_POST['last_name'] ?? '');
+        $gender = trim($_POST['gender'] ?? '');
         $contact = trim($_POST['contact'] ?? '');
         $address = trim($_POST['address'] ?? '');
         $date_of_birth = $_POST['date_of_birth'] ?? null;
         $blood_group = $_POST['blood_group'] ?? null;
         $emergency_contact = trim($_POST['emergency_contact'] ?? '');
         $emergency_contact_name = trim($_POST['emergency_contact_name'] ?? '');
+
+        if (!$first_name || !$last_name) {
+            redirectWithMessage('profile.php', 'error', 'Vui lòng nhập Họ và Tên!');
+            exit();
+        }
 
         if (!$contact || !preg_match('/^[0-9]{10}$/', $contact)) {
             redirectWithMessage('profile.php', 'error', 'Số điện thoại không hợp lệ!');
@@ -34,6 +42,9 @@ try {
 
         $stmt = $pdo->prepare("
             UPDATE patreg SET 
+                firstname = :first_name,
+                lastname = :last_name,
+                gender = :gender,
                 contact = :contact,
                 address = :address,
                 date_of_birth = :date_of_birth,
@@ -45,8 +56,11 @@ try {
         ");
 
         $result = $stmt->execute([
+            ':first_name' => $first_name,
+            ':last_name' => $last_name,
+            ':gender' => $gender ?: null,
             ':contact' => $contact,
-            ':address' => $address,
+            ':address' => $address ?: null,
             ':date_of_birth' => $date_of_birth ?: null,
             ':blood_group' => $blood_group ?: null,
             ':emergency_contact' => $emergency_contact ?: null,
@@ -55,7 +69,7 @@ try {
         ]);
 
         if ($result) {
-            // Update session contact
+            // Update session
             $_SESSION['contact'] = $contact;
             redirectWithMessage('profile.php', 'success', 'Cập nhật thông tin thành công!');
         } else {

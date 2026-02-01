@@ -177,13 +177,13 @@ if ($selected_patient_id) {
         }
 
         .nav-tabs .nav-link.active {
-            color: #10b981;
+            color: #d2302c;
             background-color: transparent;
-            border-bottom-color: #10b981;
+            border-bottom-color: #d2302c;
         }
 
         .nav-tabs .nav-link:hover {
-            color: #10b981;
+            color: #d2302c;
         }
 
         .tab-content {
@@ -204,14 +204,14 @@ if ($selected_patient_id) {
         }
 
         .patient-card:hover {
-            background-color: #f9fafb;
-            border-left-color: #10b981;
+            background-color: #fff5f5;
+            border-left-color: #d2302c;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .patient-card.active {
-            background-color: #f0fdf4;
-            border-left-color: #10b981;
+            background-color: #fff0f0;
+            border-left-color: #d2302c;
         }
 
         .patient-name {
@@ -229,11 +229,11 @@ if ($selected_patient_id) {
         }
 
         .medical-record-card {
-            background: #f8fafc;
+            background: #fff5f5;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            border-left: 4px solid #10b981;
+            border-left: 4px solid #d2302c;
         }
 
         .form-section {
@@ -265,8 +265,8 @@ if ($selected_patient_id) {
         }
 
         .form-control:focus {
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            border-color: #d2302c;
+            box-shadow: 0 0 0 3px rgba(210, 48, 44, 0.1);
         }
 
         .textarea-control {
@@ -275,32 +275,32 @@ if ($selected_patient_id) {
         }
 
         .btn-primary {
-            background-color: #10b981;
-            border-color: #10b981;
+            background-color: #d2302c;
+            border-color: #d2302c;
             font-weight: 600;
         }
 
         .btn-primary:hover {
-            background-color: #059669;
-            border-color: #059669;
+            background-color: #8b0000;
+            border-color: #8b0000;
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #10b981;
+            color: #d2302c;
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 20px;
         }
 
         .back-link:hover {
-            color: #059669;
+            color: #8b0000;
         }
 
         .page-header {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
             color: white;
             padding: 30px;
             border-radius: 8px;
@@ -334,7 +334,7 @@ if ($selected_patient_id) {
         }
 
         .vital-input-card .form-label {
-            color: #047857;
+            color: #8b0000;
             font-size: 12px;
         }
 
@@ -607,7 +607,7 @@ if ($selected_patient_id) {
     <div class="modal fade" id="viewDetailModal" tabindex="-1" role="dialog" aria-labelledby="viewDetailLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%); color: white;">
                     <h5 class="modal-title" id="viewDetailLabel"><i class="fas fa-file-medical"></i> Chi tiết hồ sơ bệnh án</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
                         <span aria-hidden="true">&times;</span>
@@ -725,17 +725,17 @@ if ($selected_patient_id) {
         $('.view-record').click(function() {
             const recordId = $(this).data('record-id');
             fetch('ajax/get_medical_record_detail.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'record_id=' + recordId
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const record = data.record;
-                    let html = `
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'record_id=' + recordId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const record = data.record;
+                        let html = `
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <strong style="color: #6b7280;">Bệnh nhân:</strong>
@@ -757,111 +757,57 @@ if ($selected_patient_id) {
                         <hr>
                     `;
 
-                    if (record.symptoms) {
-                        html += `<div style="margin-bottom: 15px;">
+                        if (record.symptoms) {
+                            html += `<div style="margin-bottom: 15px;">
                             <strong style="color: #6b7280;">Triệu chứng:</strong>
                             <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.symptoms}</div>
                         </div>`;
-                    }
+                        }
 
-                    if (record.diagnosis) {
-                        html += `<div style="margin-bottom: 15px;">
+                        if (record.diagnosis) {
+                            html += `<div style="margin-bottom: 15px;">
                             <strong style="color: #6b7280;">Chẩn đoán:</strong>
                             <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.diagnosis}</div>
                         </div>`;
-                    }
+                        }
 
-                    if (record.treatment_plan) {
-                        html += `<div style="margin-bottom: 15px;">
+                        if (record.treatment_plan) {
+                            html += `<div style="margin-bottom: 15px;">
                             <strong style="color: #6b7280;">Điều trị:</strong>
                             <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.treatment_plan}</div>
                         </div>`;
-                    }
+                        }
 
-                    if (record.height || record.weight || record.blood_pressure || record.heart_rate || record.temperature) {
-                        html += `<div style="margin-bottom: 15px;">
+                        if (record.height || record.weight || record.blood_pressure || record.heart_rate || record.temperature) {
+                            html += `<div style="margin-bottom: 15px;">
                             <strong style="color: #6b7280;">Chỉ số sức khỏe:</strong>
                             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px;">`;
-                        if (record.height) html += `<div>Chiều cao: <strong>${record.height} cm</strong></div>`;
-                        if (record.weight) html += `<div>Cân nặng: <strong>${record.weight} kg</strong></div>`;
-                        if (record.blood_pressure) html += `<div>Huyết áp: <strong>${record.blood_pressure}</strong></div>`;
-                        if (record.heart_rate) html += `<div>Nhịp tim: <strong>${record.heart_rate} bpm</strong></div>`;
-                        if (record.temperature) html += `<div>Nhiệt độ: <strong>${record.temperature}°C</strong></div>`;
-                        html += `</div></div>`;
-                    }
+                            if (record.height) html += `<div>Chiều cao: <strong>${record.height} cm</strong></div>`;
+                            if (record.weight) html += `<div>Cân nặng: <strong>${record.weight} kg</strong></div>`;
+                            if (record.blood_pressure) html += `<div>Huyết áp: <strong>${record.blood_pressure}</strong></div>`;
+                            if (record.heart_rate) html += `<div>Nhịp tim: <strong>${record.heart_rate} bpm</strong></div>`;
+                            if (record.temperature) html += `<div>Nhiệt độ: <strong>${record.temperature}°C</strong></div>`;
+                            html += `</div></div>`;
+                        }
 
-                    if (record.notes) {
-                        html += `<div style="margin-bottom: 15px;">
+                        if (record.notes) {
+                            html += `<div style="margin-bottom: 15px;">
                             <strong style="color: #6b7280;">Ghi chú:</strong>
                             <div style="padding: 8px; background: #fef3c7; border-radius: 4px; margin-top: 5px;">${record.notes.replace(/\n/g, '<br>')}</div>
                         </div>`;
-                    }
+                        }
 
-                    $('#viewDetailContent').html(html);
-                    $('#viewDetailModal').modal('show');
-                }
-            })
-            .catch(error => console.error('Error:', error));
+                        $('#viewDetailContent').html(html);
+                        $('#viewDetailModal').modal('show');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
         });
 
         // Chỉnh sửa hồ sơ
         $('.edit-record').click(function() {
             const recordId = $(this).data('record-id');
             fetch('ajax/get_medical_record_detail.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'record_id=' + recordId
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const record = data.record;
-                    $('#editRecordId').val(recordId);
-                    $('#editDoctorName').val(record.doctor_name || 'N/A');
-                    $('#editSymptoms').val(record.symptoms || '');
-                    $('#editDiagnosis').val(record.diagnosis || '');
-                    $('#editTreatment').val(record.treatment_plan || '');
-                    $('#editHeight').val(record.height || '');
-                    $('#editWeight').val(record.weight || '');
-                    $('#editBloodPressure').val(record.blood_pressure || '');
-                    $('#editHeartRate').val(record.heart_rate || '');
-                    $('#editTemperature').val(record.temperature || '');
-                    $('#editNotes').val(record.notes || '');
-                    $('#editModal').modal('show');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-
-        // Submit form chỉnh sửa
-        $('#editForm').submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-
-            fetch('ajax/update_medical_record.php', {
-                method: 'POST',
-                body: new URLSearchParams(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    $('#editModal').modal('hide');
-                    location.reload();
-                } else {
-                    alert('Lỗi: ' + (data.error || 'Không xác định'));
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-
-        // Xóa hồ sơ
-        $('.delete-record').click(function() {
-            const recordId = $(this).data('record-id');
-            if (confirm('Bạn có chắc chắn muốn xóa hồ sơ bệnh án này? Hành động này không thể hoàn tác!')) {
-                fetch('ajax/delete_medical_record.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -871,13 +817,67 @@ if ($selected_patient_id) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        const record = data.record;
+                        $('#editRecordId').val(recordId);
+                        $('#editDoctorName').val(record.doctor_name || 'N/A');
+                        $('#editSymptoms').val(record.symptoms || '');
+                        $('#editDiagnosis').val(record.diagnosis || '');
+                        $('#editTreatment').val(record.treatment_plan || '');
+                        $('#editHeight').val(record.height || '');
+                        $('#editWeight').val(record.weight || '');
+                        $('#editBloodPressure').val(record.blood_pressure || '');
+                        $('#editHeartRate').val(record.heart_rate || '');
+                        $('#editTemperature').val(record.temperature || '');
+                        $('#editNotes').val(record.notes || '');
+                        $('#editModal').modal('show');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Submit form chỉnh sửa
+        $('#editForm').submit(function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('ajax/update_medical_record.php', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
                         alert(data.message);
+                        $('#editModal').modal('hide');
                         location.reload();
                     } else {
                         alert('Lỗi: ' + (data.error || 'Không xác định'));
                     }
                 })
                 .catch(error => console.error('Error:', error));
+        });
+
+        // Xóa hồ sơ
+        $('.delete-record').click(function() {
+            const recordId = $(this).data('record-id');
+            if (confirm('Bạn có chắc chắn muốn xóa hồ sơ bệnh án này? Hành động này không thể hoàn tác!')) {
+                fetch('ajax/delete_medical_record.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'record_id=' + recordId
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + (data.error || 'Không xác định'));
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
             }
         });
 
@@ -900,42 +900,42 @@ if ($selected_patient_id) {
 
             // Send AJAX request to get patients for this doctor
             fetch('ajax/get_patients_by_doctor.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'doctor_id=' + doctorId
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.patients.length > 0) {
-                    let optionsHtml = '<option value="">-- Chọn bệnh nhân --</option>';
-                    data.patients.forEach(patient => {
-                        optionsHtml += `<option value="${patient.pid}">
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'doctor_id=' + doctorId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.patients.length > 0) {
+                        let optionsHtml = '<option value="">-- Chọn bệnh nhân --</option>';
+                        data.patients.forEach(patient => {
+                            optionsHtml += `<option value="${patient.pid}">
                             ${patient.fname} ${patient.lname} - ${patient.contact}
                         </option>`;
-                    });
-                    patientSelect.innerHTML = optionsHtml;
-                    patientSelect.disabled = false;
-                    // Auto-select first patient and load appointments
-                    if (data.patients.length > 0) {
-                        patientSelect.value = data.patients[0].pid;
-                        patientSelect.dispatchEvent(new Event('change'));
+                        });
+                        patientSelect.innerHTML = optionsHtml;
+                        patientSelect.disabled = false;
+                        // Auto-select first patient and load appointments
+                        if (data.patients.length > 0) {
+                            patientSelect.value = data.patients[0].pid;
+                            patientSelect.dispatchEvent(new Event('change'));
+                        }
+                    } else {
+                        patientSelect.innerHTML = '<option value="">Bác sĩ này chưa khám bệnh nhân nào</option>';
+                        patientSelect.disabled = true;
+                        appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
+                        appointmentSelect.disabled = true;
                     }
-                } else {
-                    patientSelect.innerHTML = '<option value="">Bác sĩ này chưa khám bệnh nhân nào</option>';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    patientSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
                     patientSelect.disabled = true;
                     appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
                     appointmentSelect.disabled = true;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                patientSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
-                patientSelect.disabled = true;
-                appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
-                appointmentSelect.disabled = true;
-            });
+                });
         });
 
         // Handle patient selection and load appointments
@@ -955,38 +955,38 @@ if ($selected_patient_id) {
 
             // Send AJAX request to get appointments for this patient and doctor
             fetch('ajax/get_appointments_by_patient.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'patient_id=' + patientId + '&doctor_id=' + doctorId
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.appointments.length > 0) {
-                    let optionsHtml = '<option value="">-- Không chọn lịch hẹn --</option>';
-                    data.appointments.forEach(apt => {
-                        const appointDate = new Date(apt.appdate);
-                        const formattedDate = appointDate.toLocaleDateString('vi-VN');
-                        const formattedTime = apt.apptime;
-                        optionsHtml += `<option value="${apt.ID}">
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'patient_id=' + patientId + '&doctor_id=' + doctorId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.appointments.length > 0) {
+                        let optionsHtml = '<option value="">-- Không chọn lịch hẹn --</option>';
+                        data.appointments.forEach(apt => {
+                            const appointDate = new Date(apt.appdate);
+                            const formattedDate = appointDate.toLocaleDateString('vi-VN');
+                            const formattedTime = apt.apptime;
+                            optionsHtml += `<option value="${apt.ID}">
                             ${formattedDate} - ${formattedTime}
                         </option>`;
-                    });
-                    appointmentSelect.innerHTML = optionsHtml;
-                    appointmentSelect.disabled = false;
-                    // Auto-select latest appointment (first one since sorted DESC)
-                    appointmentSelect.value = data.appointments[0].ID;
-                } else {
-                    appointmentSelect.innerHTML = '<option value="">Bác sĩ này chưa khám bệnh nhân này</option>';
+                        });
+                        appointmentSelect.innerHTML = optionsHtml;
+                        appointmentSelect.disabled = false;
+                        // Auto-select latest appointment (first one since sorted DESC)
+                        appointmentSelect.value = data.appointments[0].ID;
+                    } else {
+                        appointmentSelect.innerHTML = '<option value="">Bác sĩ này chưa khám bệnh nhân này</option>';
+                        appointmentSelect.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    appointmentSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
                     appointmentSelect.disabled = true;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                appointmentSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
-                appointmentSelect.disabled = true;
-            });
+                });
         });
     </script>
 </body>

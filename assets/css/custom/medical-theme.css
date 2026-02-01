@@ -4,19 +4,19 @@
    ============================================ */
 
 :root {
-    /* Medical Primary Colors */
-    --medical-blue: #0891b2;
-    --medical-blue-light: #06b6d4;
-    --medical-blue-dark: #0e7490;
-    --medical-teal: #14b8a6;
-    --medical-cyan: #22d3ee;
+    /* Medical Primary Colors - Tet Theme */
+    --medical-blue: #d2302c;
+    --medical-blue-light: #ff4d4d;
+    --medical-blue-dark: #8b0000;
+    --medical-teal: #d2302c;
+    --medical-cyan: #ff6b6b;
 
-    /* Healthcare Accent Colors */
-    --health-green: #10b981;
-    --health-green-light: #34d399;
-    --vital-red: #f43f5e;
-    --vital-orange: #fb923c;
-    --calm-purple: #a78bfa;
+    /* Healthcare Accent Colors - Tet Theme */
+    --health-green: #ffd700;
+    --health-green-light: #ffed4e;
+    --vital-red: #d2302c;
+    --vital-orange: #ff6b6b;
+    --calm-purple: #ffd700;
 
     /* Neutral Medical Palette */
     --white: #ffffff;
@@ -26,15 +26,15 @@
     --charcoal: #475569;
     --medical-dark: #1e293b;
 
-    /* Gradients */
-    --gradient-medical: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #14b8a6 100%);
-    --gradient-health: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    --gradient-vital: linear-gradient(135deg, #fb923c 0%, #f43f5e 100%);
-    --gradient-calm: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+    /* Gradients - Tet Theme */
+    --gradient-medical: linear-gradient(135deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
+    --gradient-health: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
+    --gradient-vital: linear-gradient(135deg, #ff6b6b 0%, #d2302c 100%);
+    --gradient-calm: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
 
-    /* Sidebar */
+    /* Sidebar - Tet Theme */
     --sidebar-width: 280px;
-    --sidebar-bg: linear-gradient(180deg, #0e7490 0%, #0891b2 50%, #14b8a6 100%);
+    --sidebar-bg: linear-gradient(180deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
 
     /* Shadows - Medical Soft */
     --shadow-soft: 0 2px 8px rgba(8, 145, 178, 0.08);
@@ -93,7 +93,8 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
         radial-gradient(circle at 40% 20%, rgba(20, 184, 166, 0.05) 0%, transparent 50%);
     pointer-events: none;
@@ -124,7 +125,8 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.03) 30%, rgba(255, 255, 255, 0.03) 70%, transparent 70%),
+    background:
+        linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.03) 30%, rgba(255, 255, 255, 0.03) 70%, transparent 70%),
         linear-gradient(-45deg, transparent 30%, rgba(255, 255, 255, 0.03) 30%, rgba(255, 255, 255, 0.03) 70%, transparent 70%);
     background-size: 20px 20px;
     opacity: 0.3;
@@ -187,7 +189,7 @@ body {
     gap: 1rem;
     padding: 1rem 1.25rem;
     color: rgba(255, 255, 255, 0.85);
-    text-decoration: none;
+    text-decoration: none !important;
     border-radius: var(--radius-md);
     transition: all var(--transition-smooth);
     font-weight: 500;
@@ -212,6 +214,7 @@ body {
     color: white;
     transform: translateX(4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-decoration: none !important;
 }
 
 .sidebar-menu-link:hover::before {
@@ -223,6 +226,7 @@ body {
     color: white;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     border-left: 4px solid white;
+    text-decoration: none !important;
 }
 
 .sidebar-menu-icon {
@@ -418,6 +422,10 @@ body {
 
 .stat-icon.danger {
     background: linear-gradient(135deg, #f43f5e 0%, #dc2626 100%);
+}
+
+.stat-icon.info {
+    background: linear-gradient(135deg, #ff4d4d 0%, #d2302c 100%);
 }
 
 .stat-label {
@@ -666,14 +674,14 @@ textarea.form-control {
 }
 
 .btn-info {
-    background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+    background: linear-gradient(135deg, #ff4d4d, #d2302c) !important;
     color: white !important;
     border: none !important;
 }
 
 .btn-info:hover {
     transform: translateY(-3px) !important;
-    box-shadow: 0 8px 24px rgba(8, 145, 178, 0.4) !important;
+    box-shadow: 0 8px 24px rgba(210, 48, 44, 0.4) !important;
     color: white !important;
 }
 

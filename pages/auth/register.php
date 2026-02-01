@@ -63,7 +63,7 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 		.main-container {
 			min-height: 100vh;
 			padding: 100px 20px 40px;
-			background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #14b8a6 100%);
+			background: linear-gradient(135deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
 			position: relative;
 			overflow: hidden;
 		}
@@ -92,11 +92,11 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 		}
 
 		.register-card {
-			max-width: 900px;
+			max-width: 700px;
 			margin: 0 auto;
 			background: white;
-			border-radius: 24px;
-			padding: 3rem;
+			border-radius: 20px;
+			padding: 2rem 2.5rem;
 			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 			position: relative;
 			z-index: 1;
@@ -104,40 +104,40 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 
 		.register-header {
 			text-align: center;
-			margin-bottom: 2.5rem;
+			margin-bottom: 1.5rem;
 		}
 
 		.register-icon {
-			width: 80px;
-			height: 80px;
-			background: linear-gradient(135deg, #0891b2, #14b8a6);
-			border-radius: 20px;
+			width: 60px;
+			height: 60px;
+			background: linear-gradient(135deg, #d2302c, #ff4d4d);
+			border-radius: 16px;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			margin: 0 auto 1.5rem;
-			font-size: 2.5rem;
+			margin: 0 auto 1rem;
+			font-size: 2rem;
 			color: white;
 			box-shadow: 0 10px 30px rgba(8, 145, 178, 0.4);
 		}
 
 		.register-title {
-			font-size: 2rem;
+			font-size: 1.6rem;
 			font-weight: 700;
 			color: #1a202c;
-			margin-bottom: 0.5rem;
+			margin-bottom: 0.25rem;
 		}
 
 		.register-subtitle {
 			color: #718096;
-			font-size: 1rem;
+			font-size: 0.9rem;
 		}
 
 		.form-row-custom {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			gap: 1.5rem;
-			margin-bottom: 1.5rem;
+			gap: 1rem;
+			margin-bottom: 1rem;
 		}
 
 		.form-group-custom {
@@ -152,8 +152,8 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 			display: block;
 			font-weight: 600;
 			color: #2d3748;
-			margin-bottom: 0.5rem;
-			font-size: 0.9rem;
+			margin-bottom: 0.35rem;
+			font-size: 0.85rem;
 		}
 
 		.required {
@@ -162,10 +162,10 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 
 		.form-input {
 			width: 100%;
-			padding: 0.875rem 1rem;
+			padding: 0.7rem 0.875rem;
 			border: 2px solid #e2e8f0;
-			border-radius: 12px;
-			font-size: 0.95rem;
+			border-radius: 10px;
+			font-size: 0.9rem;
 			transition: all 0.2s ease;
 			color: #000000;
 			background: white;
@@ -173,17 +173,17 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 
 		.form-input:focus {
 			outline: none;
-			border-color: #0891b2;
-			box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+			border-color: #d2302c;
+			box-shadow: 0 0 0 3px rgba(210, 48, 44, 0.1);
 		}
 
 		.gender-group {
 			display: flex;
-			gap: 1rem;
+			gap: 0.5rem;
 		}
 
 		.gender-option {
-			flex: 1;
+			flex: 0 0 auto;
 			position: relative;
 			cursor: pointer;
 		}
@@ -195,34 +195,35 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 
 		.gender-option span {
 			display: block;
-			padding: 0.875rem;
+			padding: 0.5rem 1rem;
 			border: 2px solid #e2e8f0;
-			border-radius: 12px;
+			border-radius: 10px;
 			text-align: center;
 			transition: all 0.2s ease;
 			font-weight: 500;
 			color: #4a5568;
+			font-size: 0.9rem;
 		}
 
 		.gender-option input:checked+span {
-			border-color: #0891b2;
-			background: linear-gradient(135deg, #0891b2, #14b8a6);
+			border-color: #d2302c;
+			background: linear-gradient(135deg, #d2302c, #ff4d4d);
 			color: white;
-			box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+			box-shadow: 0 4px 12px rgba(210, 48, 44, 0.3);
 		}
 
 		.btn-submit-register {
 			width: 100%;
-			padding: 1rem;
-			background: linear-gradient(135deg, #0891b2, #14b8a6);
+			padding: 0.85rem;
+			background: linear-gradient(135deg, #d2302c, #ff4d4d);
 			color: white;
 			border: none;
-			border-radius: 12px;
-			font-size: 1rem;
+			border-radius: 10px;
+			font-size: 0.95rem;
 			font-weight: 600;
 			cursor: pointer;
 			transition: all 0.3s ease;
-			margin-top: 1rem;
+			margin-top: 0.75rem;
 		}
 
 		.btn-submit-register:hover {
@@ -232,12 +233,12 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 
 		.login-link {
 			text-align: center;
-			margin-top: 1.5rem;
-			font-size: 0.95rem;
+			margin-top: 1rem;
+			font-size: 0.9rem;
 		}
 
 		.login-link a {
-			color: #0891b2;
+			color: #d2302c;
 			font-weight: 600;
 			text-decoration: none;
 			margin-left: 0.5rem;
@@ -351,8 +352,8 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 				</div>
 
 				<!-- Giới tính -->
-				<div class="form-group-custom full-width">
-					<label class="form-label">Giới tính</label>
+				<div class="form-group-custom">
+					<label class="form-label">Giới tính <span class="required">*</span></label>
 					<div class="gender-group">
 						<label class="gender-option">
 							<input type="radio" name="gender" value="Male" checked>
@@ -567,6 +568,63 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 
 			return true;
 		}
+	</script>
+
+	<!-- Hiệu ứng hoa đào rơi -->
+	<script type="text/javascript">
+		(function() {
+			const isMobile = window.matchMedia('(max-width: 767px)').matches;
+			const petalCount = isMobile ? 10 : 20;
+			const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+			const petals = [];
+			let docWidth = window.innerWidth - 10;
+			let docHeight = window.innerHeight;
+
+			// Khởi tạo hoa đào
+			for (let i = 0; i < petalCount; i++) {
+				const petal = {
+					x: Math.random() * docWidth,
+					y: Math.random() * docHeight,
+					dx: 0,
+					amplitude: Math.random() * 20,
+					speedX: 0.02 + Math.random() / 10,
+					speedY: 0.7 + Math.random(),
+					element: null
+				};
+
+				const div = document.createElement('div');
+				div.id = 'petal' + i;
+				div.style.cssText = `position:fixed;z-index:${99+i};visibility:visible;pointer-events:none;width:15px;left:${petal.x}px;top:${petal.y}px`;
+				div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto">`;
+				document.body.appendChild(div);
+				petal.element = div;
+				petals.push(petal);
+			}
+
+			// Animation loop
+			function animate() {
+				docWidth = window.innerWidth - 10;
+				docHeight = window.innerHeight;
+
+				petals.forEach(petal => {
+					petal.y += petal.speedY;
+					if (petal.y > docHeight - 50) {
+						petal.x = Math.random() * (docWidth - petal.amplitude - 30);
+						petal.y = 0;
+						petal.speedX = 0.02 + Math.random() / 10;
+						petal.speedY = 0.7 + Math.random();
+					}
+					petal.dx += petal.speedX;
+					petal.element.style.top = petal.y + 'px';
+					petal.element.style.left = (petal.x + petal.amplitude * Math.sin(petal.dx)) + 'px';
+				});
+
+				requestAnimationFrame(animate);
+			}
+
+			animate();
+		})();
 	</script>
 </body>
 

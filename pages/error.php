@@ -17,7 +17,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #14b8a6 100%);
+            background: linear-gradient(135deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -81,8 +81,8 @@
         }
 
         .error-icon.info {
-            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
         }
 
         h1 {
@@ -132,13 +132,13 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
             color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(8, 145, 178, 0.3);
+            box-shadow: 0 10px 30px rgba(210, 48, 44, 0.3);
         }
 
         .btn-secondary {

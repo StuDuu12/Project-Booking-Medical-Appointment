@@ -36,7 +36,7 @@ if (!isset($pdo)) {
                 if (isset($_SESSION['patientSession']) || isset($_SESSION['doctorSession']) || isset($_SESSION['adminSession'])):
                     $portal_url = '';
                     $portal_label = '';
-                    
+
                     if (isset($_SESSION['patientSession'])) {
                         $portal_url = $base_path . 'pages/patient/dashboard.php';
                         $portal_label = 'Cổng Bệnh nhân';
@@ -48,11 +48,11 @@ if (!isset($pdo)) {
                         $portal_label = 'Cổng Quản trị';
                     }
                 ?>
-                <li class="nav-item">
-                    <a href="<?php echo $portal_url; ?>" class="btn btn-nav btn-portal">
-                        <i class="fas fa-th-large"></i> <?php echo $portal_label; ?>
-                    </a>
-                </li>
+                    <li class="nav-item">
+                        <a href="<?php echo $portal_url; ?>" class="btn btn-nav btn-portal">
+                            <i class="fas fa-th-large"></i> <?php echo $portal_label; ?>
+                        </a>
+                    </li>
 
                 <?php endif; ?>
                 <li class="nav-item">
@@ -70,19 +70,19 @@ if (!isset($pdo)) {
                         <i class="fas fa-phone"></i> Liên hệ
                     </a>
                 </li>
-                <?php 
+                <?php
                 // Show login/register buttons if not logged in
                 if (!isset($_SESSION['patientSession']) && !isset($_SESSION['doctorSession']) && !isset($_SESSION['adminSession'])): ?>
-                <li class="nav-item">
-                    <a href="<?php echo $base_path; ?>pages/auth/login.php" class="btn btn-nav btn-login">
-                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="<?php echo $base_path; ?>pages/auth/register.php" class="btn btn-nav btn-register">
-                        <i class="fas fa-user-plus"></i> Đăng ký
-                    </a>
-                </li>
+                    <li class="nav-item">
+                        <a href="<?php echo $base_path; ?>pages/auth/login.php" class="btn btn-nav btn-login">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?php echo $base_path; ?>pages/auth/register.php" class="btn btn-nav btn-register">
+                            <i class="fas fa-user-plus"></i> Đăng ký
+                        </a>
+                    </li>
                 <?php endif; ?>
             </ul>
         </div>
@@ -113,14 +113,14 @@ if (!isset($pdo)) {
     .navbar-custom .navbar-brand {
         font-size: 1.5rem;
         font-weight: 700;
-        background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #14b8a6 100%);
+        background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 50%, #ffd700 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
     }
 
     .navbar-custom .navbar-brand i {
-        background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #14b8a6 100%);
+        background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 50%, #ffd700 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -143,8 +143,8 @@ if (!isset($pdo)) {
     }
 
     .nav-link-custom:hover {
-        color: #0891b2 !important;
-        background-color: #f0fdfa;
+        color: #d2302c !important;
+        background-color: #fff5f5;
     }
 
     .navbar-custom .btn-nav {
@@ -163,38 +163,39 @@ if (!isset($pdo)) {
     }
 
     .navbar-custom .btn-login {
-        color: #0891b2 !important;
-        border: 2px solid #0891b2;
+        color: #d2302c !important;
+        border: 2px solid #d2302c;
         background: transparent;
     }
 
     .navbar-custom .btn-login:hover {
-        background: #0891b2;
+        background: #d2302c;
         color: white !important;
     }
 
     .navbar-custom .btn-register {
-        background: linear-gradient(135deg, #0891b2, #14b8a6);
+        background: linear-gradient(135deg, #d2302c, #ff4d4d);
         color: white !important;
         border: 2px solid transparent;
     }
 
     .navbar-custom .btn-register:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(8, 145, 178, 0.3);
+        box-shadow: 0 8px 16px rgba(210, 48, 44, 0.3);
         color: white !important;
     }
 
     .navbar-custom .btn-portal {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white !important;
+        background: linear-gradient(135deg, #ffd700, #d4af37);
+        color: #8b0000 !important;
         border: 2px solid transparent;
+        font-weight: 700;
     }
 
     .navbar-custom .btn-portal:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
-        color: white !important;
+        box-shadow: 0 8px 16px rgba(255, 215, 0, 0.4);
+        color: #8b0000 !important;
     }
 
     /* Welcome Message Dropdown */

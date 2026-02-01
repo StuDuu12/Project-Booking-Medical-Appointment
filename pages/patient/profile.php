@@ -39,7 +39,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 
     <style>
         .profile-header {
-            background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
             padding: 3rem 0;
             margin-bottom: 2rem;
         }
@@ -72,7 +72,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 
         .avatar-upload-btn:hover {
             background: white;
-            color: #0891b2;
+            color: #d2302c;
         }
 
         .profile-tabs {
@@ -95,12 +95,12 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
         .nav-tabs .nav-link:hover {
-            color: #0891b2;
+            color: #d2302c;
         }
 
         .nav-tabs .nav-link.active {
-            color: #0891b2;
-            border-bottom: 3px solid #0891b2;
+            color: #d2302c;
+            border-bottom: 3px solid #d2302c;
         }
 
         .tab-content {
@@ -281,6 +281,36 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-user"></i> Họ *</label>
+                                    <input type="text" class="form-control" name="first_name"
+                                        value="<?php echo htmlspecialchars($patient['firstname'] ?? ''); ?>"
+                                        required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-user"></i> Tên *</label>
+                                    <input type="text" class="form-control" name="last_name"
+                                        value="<?php echo htmlspecialchars($patient['lastname'] ?? ''); ?>"
+                                        required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-venus-mars"></i> Giới tính</label>
+                                    <select class="form-control" name="gender">
+                                        <option value="">Chọn giới tính</option>
+                                        <option value="Nam" <?php echo ($patient['gender'] == 'Nam') ? 'selected' : ''; ?>>Nam</option>
+                                        <option value="Nữ" <?php echo ($patient['gender'] == 'Nữ') ? 'selected' : ''; ?>>Nữ</option>
+                                        <option value="Khác" <?php echo ($patient['gender'] == 'Khác') ? 'selected' : ''; ?>>Khác</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label class="form-label"><i class="fas fa-phone"></i> Số điện thoại *</label>
                                     <input type="text" class="form-control" name="contact"
                                         value="<?php echo htmlspecialchars($patient['contact']); ?>"
@@ -439,7 +469,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
             if (confirmPass === '') {
                 message.innerHTML = '';
             } else if (newPass === confirmPass) {
-                message.style.color = '#10B981';
+                message.style.color = '#d2302c';
                 message.innerHTML = '<i class="fas fa-check-circle"></i> Mật khẩu khớp';
             } else {
                 message.style.color = '#EF4444';

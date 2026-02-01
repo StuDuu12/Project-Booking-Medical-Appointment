@@ -69,7 +69,7 @@ try {
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            border-left: 4px solid #10b981;
+            border-left: 4px solid #ffd700;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
@@ -94,7 +94,7 @@ try {
         }
 
         .record-doctor {
-            color: #0891b2;
+            color: #d2302c;
             font-weight: 600;
         }
 
@@ -159,7 +159,7 @@ try {
 
         .vital-label {
             font-size: 11px;
-            color: #047857;
+            color: #8b0000;
             font-weight: 600;
             text-transform: uppercase;
         }
@@ -186,7 +186,7 @@ try {
         }
 
         .page-header {
-            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
             color: white;
             padding: 30px;
             border-radius: 8px;
@@ -211,7 +211,7 @@ try {
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 30px;
-            border-left: 4px solid #0891b2;
+            border-left: 4px solid #d2302c;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
@@ -245,7 +245,7 @@ try {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #0891b2;
+            color: #d2302c;
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 20px;
@@ -253,7 +253,7 @@ try {
         }
 
         .back-link:hover {
-            color: #06b6d4;
+            color: #ff4d4d;
             gap: 12px;
         }
 
@@ -281,13 +281,13 @@ try {
 
         .filter-input:focus {
             outline: none;
-            border-color: #0891b2;
-            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+            border-color: #d2302c;
+            box-shadow: 0 0 0 3px rgba(210, 48, 44, 0.1);
         }
 
         .btn-filter {
             padding: 8px 16px;
-            background-color: #0891b2;
+            background-color: #d2302c;
             color: white;
             border: none;
             border-radius: 6px;
@@ -297,7 +297,7 @@ try {
         }
 
         .btn-filter:hover {
-            background-color: #06b6d4;
+            background-color: #ff4d4d;
         }
 
         .btn-reset {
@@ -371,7 +371,7 @@ try {
         <!-- Patient Info Card -->
         <?php if ($patient_profile) { ?>
             <div class="patient-info-card">
-                <h5 class="mb-3" style="color: #0891b2; font-weight: 700;">
+                <h5 class="mb-3" style="color: #d2302c; font-weight: 700;">
                     <i class="fas fa-user-circle"></i> Thông tin cá nhân
                 </h5>
                 <div class="patient-info-grid">
@@ -472,7 +472,7 @@ try {
                         <!-- Vitals Section -->
                         <?php if ($record['height'] || $record['weight'] || $record['blood_pressure'] || $record['heart_rate'] || $record['temperature']) { ?>
                             <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-                                <h6 style="color: #0891b2; font-weight: 700; margin-bottom: 15px;">
+                                <h6 style="color: #d2302c; font-weight: 700; margin-bottom: 15px;">
                                     <i class="fas fa-heartbeat"></i> Chỉ số sức khỏe
                                 </h6>
                                 <div class="vitals-grid">
@@ -517,7 +517,7 @@ try {
                         <!-- Additional Notes -->
                         <?php if ($record['notes']) { ?>
                             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-                                <h6 style="color: #0891b2; font-weight: 700; margin-bottom: 10px;">
+                                <h6 style="color: #d2302c; font-weight: 700; margin-bottom: 10px;">
                                     <i class="fas fa-sticky-note"></i> Ghi chú
                                 </h6>
                                 <p style="color: #374151; margin: 0; line-height: 1.6;"><?php echo nl2br($record['notes']); ?></p>

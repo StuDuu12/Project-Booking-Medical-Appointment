@@ -1,9 +1,9 @@
 /* Modern Authentication Styles - Medical Theme */
 :root {
-    --primary-color: #0891b2;
-    --primary-dark: #0e7490;
-    --primary-light: #06b6d4;
-    --secondary-color: #10b981;
+    --primary-color: #d2302c;
+    --primary-dark: #8b0000;
+    --primary-light: #ff4d4d;
+    --secondary-color: #ffd700;
     --danger-color: #ef4444;
     --text-dark: #1f2937;
     --text-light: #6b7280;
@@ -17,13 +17,13 @@
 
 * {
     margin: 0;
-    padding: 0; 
+    padding: 0;
     box-sizing: border-box;
 }
 
 body {
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #14b8a6 100%);
+    background: linear-gradient(135deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -39,7 +39,7 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: 
+    background:
         radial-gradient(circle at 20% 80%, rgba(20, 184, 166, 0.2) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.2) 0%, transparent 50%),
         radial-gradient(circle at 40% 40%, rgba(34, 211, 238, 0.1) 0%, transparent 50%);
@@ -243,8 +243,13 @@ body::before {
 }
 
 @keyframes float {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(20px, -20px); }
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+    50% {
+        transform: translate(20px, -20px);
+    }
 }
 
 .auth-left-content {
@@ -419,19 +424,19 @@ body::before {
 }
 
 /* Override Bootstrap input styles */
-.form-control-modern[type="text"],
-.form-control-modern[type="password"],
-.form-control-modern[type="email"],
-.form-control-modern[type="number"] {
+.form-control-modern[type='text'],
+.form-control-modern[type='password'],
+.form-control-modern[type='email'],
+.form-control-modern[type='number'] {
     color: #000000 !important;
     background-color: #f0f9fb !important;
     border-color: var(--border-color) !important;
 }
 
-.form-control-modern[type="text"]:focus,
-.form-control-modern[type="password"]:focus,
-.form-control-modern[type="email"]:focus,
-.form-control-modern[type="number"]:focus {
+.form-control-modern[type='text']:focus,
+.form-control-modern[type='password']:focus,
+.form-control-modern[type='email']:focus,
+.form-control-modern[type='number']:focus {
     color: #000000 !important;
     background-color: #ffffff !important;
     border-color: var(--primary-color) !important;
@@ -564,9 +569,9 @@ body::before {
 }
 
 .alert-success {
-    background-color: #d1fae5;
-    color: #065f46;
-    border: 1px solid #10b981;
+    background-color: #fff9e6;
+    color: #b8860b;
+    border: 1px solid #ffd700;
 }
 
 .alert-danger {
@@ -941,7 +946,7 @@ select.form-input {
     cursor: pointer;
 }
 
-.gender-option input[type="radio"] {
+.gender-option input[type='radio'] {
     width: 20px;
     height: 20px;
     cursor: pointer;
@@ -1088,25 +1093,25 @@ select.form-input {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .auth-card {
         padding: 2rem 1.5rem;
     }
-    
+
     .info-card {
         display: none; /* Hide info card on mobile */
     }
-    
+
     .form-row-custom {
         flex-direction: column;
         gap: 0;
         margin-bottom: 0;
     }
-    
+
     .form-group-custom {
         margin-bottom: 1.25rem;
     }
-    
+
     .register-card {
         padding: 1.75rem;
         border-radius: 20px;
@@ -1118,7 +1123,7 @@ select.form-input {
         grid-template-columns: 1fr;
         max-width: 600px;
     }
-    
+
     .info-card {
         display: none; /* Hide info card on tablet */
     }
@@ -1180,9 +1185,9 @@ textarea.form-control:focus {
 }
 
 .alert-success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.2)) !important;
-    color: #059669 !important;
-    border-left: 4px solid #10b981 !important;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(218, 165, 32, 0.2)) !important;
+    color: #b8860b !important;
+    border-left: 4px solid #ffd700 !important;
 }
 
 .alert-danger,
@@ -1193,9 +1198,9 @@ textarea.form-control:focus {
 }
 
 .alert-info {
-    background: linear-gradient(135deg, rgba(8, 145, 178, 0.15), rgba(6, 182, 212, 0.2)) !important;
-    color: #0e7490 !important;
-    border-left: 4px solid #0891b2 !important;
+    background: linear-gradient(135deg, rgba(210, 48, 44, 0.15), rgba(255, 77, 77, 0.2)) !important;
+    color: #8b0000 !important;
+    border-left: 4px solid #d2302c !important;
 }
 
 .alert-warning {

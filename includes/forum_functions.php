@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Forum Helper Functions
  * Contains all helper functions for forum operations
@@ -7,20 +8,21 @@
 /**
  * Get forum posts with optional filters
  */
-function getForumPosts($pdo, $filters = []) {
+function getForumPosts($pdo, $filters = [])
+{
     $where = ["1=1"];
     $params = [];
-    
+
     if (isset($filters['category']) && $filters['category'] !== '') {
         $where[] = "fp.category = ?";
         $params[] = $filters['category'];
     }
-    
+
     if (isset($filters['status']) && $filters['status'] !== '') {
         $where[] = "fp.status = ?";
         $params[] = $filters['status'];
     }
-    
+
     if (isset($filters['search']) && $filters['search'] !== '') {
         $where[] = "(fp.title LIKE ? OR fp.content LIKE ? OR fp.tags LIKE ?)";
         $search = '%' . $filters['search'] . '%';
@@ -28,21 +30,21 @@ function getForumPosts($pdo, $filters = []) {
         $params[] = $search;
         $params[] = $search;
     }
-    
+
     if (isset($filters['user_id']) && $filters['user_id']) {
         $where[] = "fp.user_id = ? AND fp.user_type = ?";
         $params[] = $filters['user_id'];
         $params[] = $filters['user_type'];
     }
-    
+
     // Filter by approval status (for non-admin users)
     // Commented out until is_approved column is added to database
     // if (isset($filters['approved_only']) && $filters['approved_only']) {
     //     $where[] = "fp.is_approved = 1";
     // }
-    
+
     $whereClause = implode(' AND ', $where);
-    
+
     $orderBy = "fp.is_pinned DESC, fp.created_at DESC";
     if (isset($filters['sort'])) {
         switch ($filters['sort']) {
@@ -57,7 +59,7 @@ function getForumPosts($pdo, $filters = []) {
                 break;
         }
     }
-    
+
     $sql = "
         SELECT fp.*,
             CASE 
@@ -78,7 +80,7 @@ function getForumPosts($pdo, $filters = []) {
         WHERE $whereClause
         ORDER BY $orderBy
     ";
-    
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     return $stmt->fetchAll();
@@ -87,7 +89,8 @@ function getForumPosts($pdo, $filters = []) {
 /**
  * Get a single forum post by ID
  */
-function getForumPost($pdo, $post_id) {
+function getForumPost($pdo, $post_id)
+{
     $sql = "
         SELECT fp.*,
             CASE 
@@ -107,7 +110,7 @@ function getForumPost($pdo, $post_id) {
         LEFT JOIN doctb d ON (fp.user_id = d.id AND fp.user_type = 'doctor')
         WHERE fp.id = ?
     ";
-    
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$post_id]);
     return $stmt->fetch();
@@ -116,10 +119,11 @@ function getForumPost($pdo, $post_id) {
 /**
  * Create a new forum post
  */
-function createForumPost($pdo, $data) {
+function createForumPost($pdo, $data)
+{
     $sql = "INSERT INTO forum_posts (user_id, user_type, title, content, tags, category, privacy) 
             VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
+
     $stmt = $pdo->prepare($sql);
     return $stmt->execute([
         $data['user_id'],
@@ -135,7 +139,8 @@ function createForumPost($pdo, $data) {
 /**
  * Get comments for a post
  */
-function getForumComments($pdo, $post_id) {
+function getForumComments($pdo, $post_id)
+{
     $sql = "
         SELECT fc.*,
             CASE 
@@ -148,9 +153,9 @@ function getForumComments($pdo, $post_id) {
         LEFT JOIN patreg p ON (fc.user_id = p.pid AND fc.user_type = 'patient')
         LEFT JOIN doctb d ON (fc.user_id = d.id AND fc.user_type = 'doctor')
         WHERE fc.post_id = ?
-        ORDER BY fc.created_at ASC
+        ORDER BY COALESCE(fc.parent_id, fc.id), fc.created_at ASC
     ";
-    
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$post_id]);
     return $stmt->fetchAll();
@@ -159,10 +164,11 @@ function getForumComments($pdo, $post_id) {
 /**
  * Add a comment to a post
  */
-function addForumComment($pdo, $data) {
+function addForumComment($pdo, $data)
+{
     $sql = "INSERT INTO forum_comments (post_id, user_id, user_type, content, parent_id) 
             VALUES (?, ?, ?, ?, ?)";
-    
+
     $stmt = $pdo->prepare($sql);
     return $stmt->execute([
         $data['post_id'],
@@ -176,11 +182,12 @@ function addForumComment($pdo, $data) {
 /**
  * Toggle like on post or comment
  */
-function toggleForumLike($pdo, $user_id, $user_type, $target_id, $target_type) {
+function toggleForumLike($pdo, $user_id, $user_type, $target_id, $target_type)
+{
     // Check if already liked
     $check = $pdo->prepare("SELECT id FROM forum_likes WHERE user_id = ? AND user_type = ? AND target_id = ? AND target_type = ?");
     $check->execute([$user_id, $user_type, $target_id, $target_type]);
-    
+
     if ($check->fetch()) {
         // Unlike
         $stmt = $pdo->prepare("DELETE FROM forum_likes WHERE user_id = ? AND user_type = ? AND target_id = ? AND target_type = ?");
@@ -197,7 +204,8 @@ function toggleForumLike($pdo, $user_id, $user_type, $target_id, $target_type) {
 /**
  * Check if user has liked a target
  */
-function hasForumLiked($pdo, $user_id, $user_type, $target_id, $target_type) {
+function hasForumLiked($pdo, $user_id, $user_type, $target_id, $target_type)
+{
     $stmt = $pdo->prepare("SELECT id FROM forum_likes WHERE user_id = ? AND user_type = ? AND target_id = ? AND target_type = ?");
     $stmt->execute([$user_id, $user_type, $target_id, $target_type]);
     return $stmt->fetch() !== false;
@@ -206,7 +214,8 @@ function hasForumLiked($pdo, $user_id, $user_type, $target_id, $target_type) {
 /**
  * Increment post views
  */
-function incrementPostViews($pdo, $post_id) {
+function incrementPostViews($pdo, $post_id)
+{
     $stmt = $pdo->prepare("UPDATE forum_posts SET views = views + 1 WHERE id = ?");
     return $stmt->execute([$post_id]);
 }
@@ -214,7 +223,8 @@ function incrementPostViews($pdo, $post_id) {
 /**
  * Get forum attachments for a post
  */
-function getForumAttachments($pdo, $post_id) {
+function getForumAttachments($pdo, $post_id)
+{
     $stmt = $pdo->prepare("SELECT * FROM forum_attachments WHERE post_id = ? ORDER BY created_at ASC");
     $stmt->execute([$post_id]);
     return $stmt->fetchAll();
@@ -223,10 +233,11 @@ function getForumAttachments($pdo, $post_id) {
 /**
  * Add doctor rating
  */
-function addDoctorRating($pdo, $data) {
+function addDoctorRating($pdo, $data)
+{
     $sql = "INSERT INTO doctor_ratings (doctor_id, patient_id, appointment_id, rating, review, professionalism, communication, environment, wait_time, is_verified) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
+
     $stmt = $pdo->prepare($sql);
     $result = $stmt->execute([
         $data['doctor_id'],
@@ -240,24 +251,25 @@ function addDoctorRating($pdo, $data) {
         $data['wait_time'] ?? null,
         $data['is_verified'] ?? 0
     ]);
-    
+
     // Update doctor's average rating
     if ($result) {
         updateDoctorAverageRating($pdo, $data['doctor_id']);
     }
-    
+
     return $result;
 }
 
 /**
  * Update doctor's average rating
  */
-function updateDoctorAverageRating($pdo, $doctor_id) {
+function updateDoctorAverageRating($pdo, $doctor_id)
+{
     $sql = "SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM doctor_ratings WHERE doctor_id = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$doctor_id]);
     $result = $stmt->fetch();
-    
+
     $updateSql = "UPDATE doctb SET average_rating = ?, total_ratings = ? WHERE id = ?";
     $updateStmt = $pdo->prepare($updateSql);
     return $updateStmt->execute([
@@ -270,7 +282,8 @@ function updateDoctorAverageRating($pdo, $doctor_id) {
 /**
  * Get doctor ratings
  */
-function getDoctorRatings($pdo, $doctor_id, $limit = null) {
+function getDoctorRatings($pdo, $doctor_id, $limit = null)
+{
     $sql = "
         SELECT dr.*, 
             CONCAT(p.fname, ' ', p.lname) as patient_name,
@@ -280,11 +293,11 @@ function getDoctorRatings($pdo, $doctor_id, $limit = null) {
         WHERE dr.doctor_id = ?
         ORDER BY dr.created_at DESC
     ";
-    
+
     if ($limit) {
         $sql .= " LIMIT " . intval($limit);
     }
-    
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$doctor_id]);
     return $stmt->fetchAll();
@@ -293,7 +306,8 @@ function getDoctorRatings($pdo, $doctor_id, $limit = null) {
 /**
  * Get doctor rating statistics
  */
-function getDoctorRatingStats($pdo, $doctor_id) {
+function getDoctorRatingStats($pdo, $doctor_id)
+{
     $sql = "
         SELECT 
             AVG(rating) as avg_rating,
@@ -310,7 +324,7 @@ function getDoctorRatingStats($pdo, $doctor_id) {
         FROM doctor_ratings
         WHERE doctor_id = ?
     ";
-    
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$doctor_id]);
     return $stmt->fetch();
@@ -319,10 +333,11 @@ function getDoctorRatingStats($pdo, $doctor_id) {
 /**
  * Time ago helper
  */
-function timeAgo($datetime) {
+function timeAgo($datetime)
+{
     $timestamp = strtotime($datetime);
     $diff = time() - $timestamp;
-    
+
     if ($diff < 60) {
         return "Vừa xong";
     } elseif ($diff < 3600) {
@@ -342,6 +357,7 @@ function timeAgo($datetime) {
 /**
  * HTML escape helper
  */
-function h($str) {
+function h($str)
+{
     return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
 }
