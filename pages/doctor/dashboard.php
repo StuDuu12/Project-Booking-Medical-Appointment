@@ -4,6 +4,7 @@ session_start();
 require_once('../../config.php');
 require_once('../../includes/messages.php');
 require_once('../../includes/functions.php');
+
 $doctor = $_SESSION['dname'] ?? null;
 
 if (!$doctor) {
@@ -11,24 +12,33 @@ if (!$doctor) {
     exit();
 }
 
-// Handle page parameter
+// 1. LẤY ID BÁC SĨ (Dựa trên username)
+$stmt = $pdo->prepare("SELECT id FROM doctb WHERE username = :name");
+$stmt->execute([':name' => $doctor]);
+$currentDoctorObj = $stmt->fetch(PDO::FETCH_ASSOC);
+$doctor_id = $currentDoctorObj['id'] ?? 0;
+// Handle page
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-$allowed_pages = array('dashboard', 'appointments', 'prescriptions');
+$allowed_pages = array('dashboard', 'appointments', 'prescriptions', 'schedule');
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
 
+// Xử lý Hủy lịch hẹn
 if (isset($_GET['cancel'])) {
     try {
         $stmt = $pdo->prepare("UPDATE appointmenttb SET doctorStatus='0' WHERE ID = :id");
         $stmt->execute([':id' => $_GET['ID']]);
-        redirectWithMessage($_SERVER['PHP_SELF'], 'success', 'Your appointment successfully cancelled');
+        redirectWithMessage("dashboard.php?page=appointments", 'success', 'Đã hủy lịch hẹn thành công');
     } catch (PDOException $e) {
         error_log("Cancel appointment error: " . $e->getMessage());
     }
 }
+
+// Mảng hiển thị tên thứ
+$vnDays = [1 => 'Thứ 2', 2 => 'Thứ 3', 3 => 'Thứ 4', 4 => 'Thứ 5', 5 => 'Thứ 6', 6 => 'Thứ 7', 0 => 'Chủ Nhật'];
 ?>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="utf-8">
@@ -36,335 +46,49 @@ if (isset($_GET['cancel'])) {
     <link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.png" />
     <title>Bảng điều khiển Bác sĩ - Bệnh viện Global</title>
 
-    <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
     <style>
-        /* Dropdown Menu Styling */
-        .navbar-user.dropdown .dropdown-toggle::after {
-            display: none;
-        }
+        /* CSS Tùy chỉnh */
+        .navbar-user.dropdown .dropdown-toggle::after { display: none; }
+        .navbar-user .dropdown-menu { min-width: 220px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); border: none; padding: 0.5rem 0; margin-top: 0.5rem; }
+        .navbar-user .dropdown-item { padding: 0.75rem 1.5rem; font-size: 0.95rem; transition: all 0.2s; display: flex; align-items: center; }
+        .navbar-user .dropdown-item i { width: 20px; font-size: 0.9rem; }
+        .navbar-user .dropdown-item:hover { background: #f0f9ff; color: #0891b2; padding-left: 1.75rem; }
+        .navbar-user .dropdown-item.text-danger:hover { background: #fef2f2; color: #dc2626; }
+        .navbar-user .dropdown-divider { margin: 0.5rem 0; }
+        .navbar-user-info { margin-left: 1rem; }
 
-        .navbar-user .dropdown-menu {
-            min-width: 220px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            border: none;
-            padding: 0.5rem 0;
-            margin-top: 0.5rem;
-        }
+        .main-content { width: 100%; max-width: 100%; overflow-x: hidden; }
+        .content-section { width: 100%; max-width: 100%; padding: 1.5rem; }
+        .data-table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .data-table { min-width: 900px; white-space: nowrap; }
+        .btn-sm { font-size: 0.8rem; padding: 0.4rem 0.8rem; white-space: nowrap; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; width: 100%; }
+        .top-navbar { padding: 1rem 1.5rem; flex-wrap: wrap; }
+        .navbar-title { font-size: 1.25rem; }
+        .search-box-form .input-group { width: 100% !important; max-width: 100% !important; }
 
-        .navbar-user .dropdown-item {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-        }
-
-        .navbar-user .dropdown-item i {
-            width: 20px;
-            font-size: 0.9rem;
-        }
-
-        .navbar-user .dropdown-item:hover {
-            background: #f0f9ff;
-            color: #0891b2;
-            padding-left: 1.75rem;
-        }
-
-        .navbar-user .dropdown-item.text-danger:hover {
-            background: #fef2f2;
-            color: #dc2626;
-        }
-
-        .navbar-user .dropdown-divider {
-            margin: 0.5rem 0;
-        }
-
-        .navbar-user-info {
-            margin-left: 1rem;
-        }
-    </style>
-    <style>
-        /* Enhanced Responsive Styles */
-
-        /* Ensure main content is flexible */
-        .main-content {
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-
-        .content-section {
-            width: 100%;
-            max-width: 100%;
-            padding: 1.5rem;
-        }
-
-        /* Make tables responsive */
-        .data-table-container {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .data-table {
-            min-width: 900px;
-            white-space: nowrap;
-        }
-
-        /* Responsive buttons */
-        .btn-sm {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.8rem;
-            white-space: nowrap;
-        }
-
-        /* Stats grid responsive */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            width: 100%;
-        }
-
-        /* Navbar responsive */
-        .top-navbar {
-            padding: 1rem 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .navbar-title {
-            font-size: 1.25rem;
-        }
-
-        /* Search form responsive */
-        .search-box-form .input-group {
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-
-        /* Table text wrapping for smaller screens */
-        @media (max-width: 1200px) {
-            .data-table {
-                font-size: 0.9rem;
-            }
-        }
+        /* Style riêng cho trang Lịch (List View) */
+        .table-schedule th { background-color: #f8f9fa; color: #495057; font-weight: 600; text-align: center; }
+        .table-schedule td { vertical-align: middle; text-align: center; }
+        .schedule-badge { font-size: 0.95rem; padding: 6px 12px; border-radius: 4px; }
+        .today-row { background-color: #f0f9ff; }
 
         @media (max-width: 1024px) {
-            .sidebar {
-                position: fixed;
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-                z-index: 1000;
-                height: 100vh;
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0 !important;
-                width: 100%;
-            }
-
-            .mobile-menu-btn {
-                display: block !important;
-            }
-
-            .content-section {
-                padding: 1rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 1rem;
-            }
-
-            .top-navbar {
-                padding: 1rem;
-            }
-
-            .navbar-title {
-                font-size: 1.1rem;
-            }
+            .sidebar { position: fixed; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 1000; height: 100vh; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; width: 100%; }
+            .mobile-menu-btn { display: block !important; }
         }
-
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr !important;
-            }
-
-            .navbar-user-info {
-                display: none;
-            }
-
-            .section-title {
-                font-size: 1.3rem !important;
-            }
-
-            .section-subtitle {
-                font-size: 0.9rem;
-            }
-
-            .data-table {
-                font-size: 0.75rem;
-                min-width: 800px;
-            }
-
-            .data-table th,
-            .data-table td {
-                padding: 6px 4px !important;
-            }
-
-            .btn-sm {
-                font-size: 0.7rem;
-                padding: 0.3rem 0.6rem;
-            }
-
-            .badge {
-                font-size: 0.7rem;
-                padding: 0.3rem 0.5rem;
-            }
-
-            /* Make search input full width */
-            .search-box-form .form-control {
-                font-size: 0.9rem !important;
-            }
-
-            .search-box-form .btn {
-                padding: 0.5rem 0.8rem;
-                font-size: 0.9rem;
-            }
-
-            /* Adjust data table title */
-            .data-table-title {
-                font-size: 1.1rem;
-            }
-
-            /* Row spacing */
-            .row.mt-4 {
-                margin-top: 1rem !important;
-            }
-
-            .col-md-6 {
-                margin-bottom: 1rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .content-section {
-                padding: 0.75rem;
-            }
-
-            .stat-card {
-                padding: 1rem !important;
-            }
-
-            .stat-value {
-                font-size: 1.5rem !important;
-            }
-
-            .stat-label {
-                font-size: 0.85rem;
-            }
-
-            .section-title {
-                font-size: 1.1rem !important;
-            }
-
-            .section-subtitle {
-                font-size: 0.85rem;
-            }
-
-            .data-table {
-                font-size: 0.7rem;
-                min-width: 700px;
-            }
-
-            .btn-sm {
-                font-size: 0.65rem;
-                padding: 0.25rem 0.5rem;
-            }
-
-            .btn-sm i {
-                font-size: 0.7rem;
-            }
-
-            .badge {
-                font-size: 0.65rem;
-                padding: 0.25rem 0.4rem;
-            }
-
-            /* Mobile menu button adjustment */
-            .mobile-menu-btn {
-                top: 15px;
-                left: 15px;
-                width: 40px;
-                height: 40px;
-            }
-
-            .top-navbar {
-                padding: 0.75rem;
-                padding-left: 60px;
-            }
-
-            .navbar-title {
-                font-size: 1rem;
-            }
-
-            .navbar-user-avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
-            }
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1001;
-            background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
-            cursor: pointer;
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-        .sidebar-overlay.active {
-            display: block;
-        }
-
-        /* Ensure no horizontal overflow */
-        body {
-            overflow-x: hidden;
-        }
-
-        .dashboard-container {
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden;
-        }
+        .mobile-menu-btn { display: none; position: fixed; top: 20px; left: 20px; z-index: 1001; background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%); color: white; border: none; width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3); cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 999; }
+        .sidebar-overlay.active { display: block; }
+        body { overflow-x: hidden; }
+        .dashboard-container { width: 100%; max-width: 100%; overflow-x: hidden; }
     </style>
 </head>
 
@@ -375,407 +99,304 @@ if (isset($_GET['cancel'])) {
     </button>
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <i class="fas fa-user-md"></i>
-                </div>
-                <div>
-                    <h1 class="sidebar-title">Bệnh viện Global</h1>
-                    <div class="sidebar-subtitle">Cổng Bác sĩ</div>
-                </div>
+                <div class="sidebar-logo"><i class="fas fa-user-md"></i></div>
+                <div><h1 class="sidebar-title">Bệnh viện Global</h1><div class="sidebar-subtitle">Cổng Bác sĩ</div></div>
             </div>
 
             <ul class="sidebar-menu">
                 <li class="sidebar-menu-item">
                     <a href="?page=dashboard" class="sidebar-menu-link <?php echo ($page === 'dashboard') ? 'active' : ''; ?>">
-                        <i class="fas fa-th-large sidebar-menu-icon"></i>
-                        <span>Bảng điều khiển</span>
+                        <i class="fas fa-th-large sidebar-menu-icon"></i><span>Bảng điều khiển</span>
                     </a>
                 </li>
+
+                <li class="sidebar-menu-item">
+                    <a href="?page=schedule" class="sidebar-menu-link <?php echo ($page === 'schedule') ? 'active' : ''; ?>">
+                        <i class="fas fa-calendar-check sidebar-menu-icon"></i><span>Lịch làm việc</span>
+                    </a>
+                </li>
+
                 <li class="sidebar-menu-item">
                     <a href="?page=appointments" class="sidebar-menu-link <?php echo ($page === 'appointments') ? 'active' : ''; ?>">
-                        <i class="fas fa-calendar-alt sidebar-menu-icon"></i>
-                        <span>Lịch hẹn</span>
+                        <i class="fas fa-calendar-alt sidebar-menu-icon"></i><span>Lịch hẹn</span>
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
                     <a href="?page=prescriptions" class="sidebar-menu-link <?php echo ($page === 'prescriptions') ? 'active' : ''; ?>">
-                        <i class="fas fa-file-prescription sidebar-menu-icon"></i>
-                        <span>Danh sách đơn thuốc</span>
+                        <i class="fas fa-file-prescription sidebar-menu-icon"></i><span>Đơn thuốc</span>
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
                     <a href="medical-records.php" class="sidebar-menu-link">
-                        <i class="fas fa-file-medical sidebar-menu-icon"></i>
-                        <span>Hồ sơ bệnh án</span>
+                        <i class="fas fa-file-medical sidebar-menu-icon"></i><span>Hồ sơ bệnh án</span>
                     </a>
                 </li>
             </ul>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Top Navbar -->
             <nav class="top-navbar">
-                <div class="navbar-left">
-                    <h1 class="navbar-title">Bảng điều khiển Bác sĩ</h1>
-                </div>
+                <div class="navbar-left"><h1 class="navbar-title">Bảng điều khiển Bác sĩ</h1></div>
                 <div class="navbar-right">
                     <div class="navbar-user dropdown">
-                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="navbarUserDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
-                            <div class="navbar-user-avatar">
-                                <?php echo strtoupper(substr($doctor, 0, 1)); ?>
-                            </div>
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="navbarUserDropdown" data-toggle="dropdown">
+                            <div class="navbar-user-avatar"><?php echo strtoupper(substr($doctor, 0, 1)); ?></div>
                             <div class="navbar-user-info">
                                 <div class="navbar-user-name">BS. <?php echo $doctor; ?></div>
                                 <div class="navbar-user-role">Bác sĩ</div>
                             </div>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserDropdown">
-                            <a class="dropdown-item" href="../../index.php">
-                                <i class="fas fa-home mr-2"></i> Quay về trang chủ
-                            </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="../../index.php"><i class="fas fa-home mr-2"></i> Trang chủ</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="../auth/logout.php">
-                                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
-                            </a>
+                            <a class="dropdown-item text-danger" href="../auth/logout.php"><i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất</a>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <!-- Dashboard Section -->
-            <?php if ($page === 'dashboard') { ?>
+            <?php if ($page === 'dashboard') {
+                 $is_saturday = (date('N') == 6);
+            ?>
                 <section class="content-section">
+                    <?php if($is_saturday): ?>
+                        <div class="alert alert-info alert-dismissible fade show shadow-sm" role="alert" style="border-left: 5px solid #17a2b8;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clipboard-check fa-2x mr-3 animate__animated animate__headShake animate__infinite"></i>
+                                <div>
+                                    <strong>Nhắc nhở:</strong> Hôm nay là Thứ 7. Vui lòng kiểm tra lại lịch trực được phân công cho tuần sau!
+                                </div>
+                            </div>
+                            <a href="?page=schedule" class="btn btn-sm btn-info ml-auto" style="position: absolute; right: 40px; top: 15px;">Xem lịch ngay</a>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="section-header">
                         <h2 class="section-title">Xin chào, BS. <?php echo $doctor; ?>!</h2>
-                        <p class="section-subtitle">Quản lý lịch hẹn và đơn thuốc của bạn</p>
                     </div>
 
-                    <!-- Quick Stats -->
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-icon primary">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
+                            <div class="stat-icon primary"><i class="fas fa-calendar-check"></i></div>
                             <div class="stat-content">
                                 <div class="stat-label">Tổng lịch hẹn</div>
                                 <div class="stat-value">
                                     <?php
                                     $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor)");
                                     $stmt->execute([':doctor' => trim($doctor)]);
-                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                    echo $row['total'];
+                                    echo $stmt->fetch(PDO::FETCH_ASSOC)['total'];
                                     ?>
                                 </div>
                             </div>
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-icon success">
-                                <i class="fas fa-user-check"></i>
-                            </div>
+                            <div class="stat-icon success"><i class="fas fa-users"></i></div>
                             <div class="stat-content">
-                                <div class="stat-label">Lịch hẹn đang hoạt động</div>
+                                <div class="stat-label">Bệnh nhân hôm nay</div>
                                 <div class="stat-value">
                                     <?php
-                                    $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) AND userStatus = '1' AND doctorStatus = '1'");
-                                    $stmt->execute([':doctor' => trim($doctor)]);
-                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                    echo $row['active'];
+                                    $today = date('Y-m-d');
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) AND appdate = :today");
+                                    $stmt->execute([':doctor' => trim($doctor), ':today' => $today]);
+                                    echo $stmt->fetch(PDO::FETCH_ASSOC)['total'];
                                     ?>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="stat-card">
-                            <div class="stat-icon warning">
-                                <i class="fas fa-file-medical"></i>
-                            </div>
+                         <a href="?page=schedule" class="stat-card text-decoration-none">
+                            <div class="stat-icon warning" style="background: #fffbeb; color: #d97706;"><i class="fas fa-calendar-week"></i></div>
                             <div class="stat-content">
-                                <div class="stat-label">Đơn thuốc đã kê</div>
-                                <div class="stat-value">
-                                    <?php
-                                    $stmt = $pdo->prepare("SELECT COUNT(*) as pres FROM prestb WHERE doctor = :doctor");
-                                    $stmt->execute([':doctor' => $doctor]);
-                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                    echo $row['pres'];
-                                    ?>
-                                </div>
+                                <h5>Lịch làm việc</h5>
+                                <p class="text-muted mb-0 small">Xem ca trực hàng tuần</p>
                             </div>
-                        </div>
+                        </a>
+                    </div>
+                </section>
+            <?php } ?>
+
+            <?php if ($page === 'schedule') {
+                // 1. Lấy dữ liệu thô từ DB
+                $stmt = $pdo->prepare("
+                    SELECT day_of_week, start_time, end_time
+                    FROM doctor_schedules
+                    WHERE doctor_id = ?
+                    ORDER BY start_time ASC
+                ");
+                $stmt->execute([$doctor_id]);
+                $rawData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                // 2. Gom nhóm dữ liệu theo ngày (Key sẽ là 0, 1, 2... 6)
+                // Ví dụ: $grouped_schedule[1] = ['08:00 - 12:00', '13:00 - 17:00'];
+                $grouped_schedule = [];
+                if(count($rawData) > 0){
+                    foreach ($rawData as $row) {
+                        $day = $row['day_of_week'];
+                        $time_str = date('H:i', strtotime($row['start_time'])) . ' - ' . date('H:i', strtotime($row['end_time']));
+
+                        // Thêm vào mảng con của thứ đó
+                        $grouped_schedule[$day][] = $time_str;
+                    }
+                }
+
+                // Mảng tuần tự để lặp hiển thị (Thứ 2 -> CN)
+                $daysLoop = [1, 2, 3, 4, 5, 6, 0];
+            ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Lịch làm việc cố định</h2>
+                        <p class="section-subtitle">Dưới đây là thời khóa biểu hàng tuần của bạn.</p>
                     </div>
 
-                    <!-- Quick Actions -->
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <a href="?page=appointments" class="stat-card" style="cursor: pointer; text-decoration: none; color: inherit;">
-                                <div class="stat-icon primary">
-                                    <i class="fas fa-calendar-alt"></i>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-white font-weight-bold border-bottom-0 pt-3">
+                                    <i class="fas fa-calendar-alt text-primary"></i> Thời gian biểu
                                 </div>
-                                <div class="stat-content">
-                                    <h5>Xem lịch hẹn</h5>
-                                    <p class="text-muted mb-0">Quản lý và xem các lịch hẹn đã đặt</p>
-                                </div>
-                            </a>
-                        </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-schedule mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th style="width: 20%;">Thứ</th>
+                                                    <th>Khung giờ làm việc</th>
+                                                    <th style="width: 15%;">Trạng thái</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($daysLoop as $dayNum):
+                                                    // Kiểm tra xem hôm nay có phải là thứ đang xét không
+                                                    $isToday = (date('w') == $dayNum);
+                                                    $rowClass = $isToday ? "today-row" : "";
 
-                        <div class="col-md-6">
-                            <a href="?page=prescriptions" class="stat-card" style="cursor: pointer; text-decoration: none; color: inherit;">
-                                <div class="stat-icon success">
-                                    <i class="fas fa-file-prescription"></i>
+                                                    // Tạo nhãn tên thứ (Thêm badge nếu là hôm nay)
+                                                    $dayLabel = $vnDays[$dayNum];
+                                                    if ($isToday) $dayLabel .= ' <span class="badge badge-primary ml-1">Hôm nay</span>';
+                                                ?>
+                                                    <tr class="<?php echo $rowClass; ?>">
+                                                        <td class="font-weight-bold text-dark text-center align-middle">
+                                                            <?php echo $dayLabel; ?>
+                                                        </td>
+
+                                                        <td class="text-left pl-4 align-middle">
+                                                            <?php
+                                                            // Kiểm tra xem thứ này có dữ liệu trong mảng gom nhóm không
+                                                            if (isset($grouped_schedule[$dayNum]) && count($grouped_schedule[$dayNum]) > 0) {
+                                                                // Lặp qua tất cả khung giờ của ngày đó và hiển thị
+                                                                foreach ($grouped_schedule[$dayNum] as $timeSlot) {
+                                                                    echo '<span class="time-pill"><i class="far fa-clock"></i> ' . $timeSlot . '</span>';
+                                                                }
+                                                            } else {
+                                                                // Nếu không có lịch
+                                                                echo '<span class="off-day text-muted pl-2">-- Nghỉ --</span>';
+                                                            }
+                                                            ?>
+                                                        </td>
+
+                                                        <td class="text-center align-middle">
+                                                            <?php if (isset($grouped_schedule[$dayNum])): ?>
+                                                                <span class="text-success font-weight-bold small"><i class="fas fa-check-circle"></i> Có lịch</span>
+                                                            <?php else: ?>
+                                                                <span class="text-muted small">Vắng</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div class="stat-content">
-                                    <h5>Danh sách đơn thuốc</h5>
-                                    <p class="text-muted mb-0">Xem tất cả các đơn thuốc đã kê</p>
-                                </div>
-                            </a>
+                            </div>
+                            <div class="mt-3 text-muted small pl-2">
+                                <i class="fas fa-info-circle"></i> Lịch này được áp dụng lặp lại hàng tuần. Vui lòng liên hệ Admin nếu cần thay đổi.
+                            </div>
                         </div>
                     </div>
                 </section>
             <?php } ?>
 
-            <!-- Appointments Section -->
             <?php if ($page === 'appointments') { ?>
                 <section class="content-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Lịch hẹn bệnh nhân</h2>
-                        <p class="section-subtitle">Quản lý các lịch hẹn đã đặt của bạn</p>
-                    </div>
-
-                    <!-- Search Box -->
+                    <div class="section-header"><h2 class="section-title">Lịch hẹn bệnh nhân</h2></div>
                     <div class="mb-4">
                         <form method="post" action="search.php" class="search-box-form">
                             <div class="input-group" style="max-width: 500px;">
-                                <input type="text"
-                                    class="form-control"
-                                    placeholder="Tìm bệnh nhân theo số điện thoại..."
-                                    name="contact"
-                                    style="border-left: none; padding-left: 0; font-size: 0.95rem;">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="submit" style="background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%); border: none;">
-                                        <i class="fas fa-search"></i> Tìm kiếm
-                                    </button>
-                                </div>
+                                <input type="text" class="form-control" placeholder="Tìm theo SĐT..." name="contact">
+                                <div class="input-group-append"><button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Tìm</button></div>
                             </div>
                         </form>
                     </div>
-
                     <div class="data-table-container">
-                        <div class="data-table-header">
-                            <h3 class="data-table-title">Danh sách lịch hẹn</h3>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
-                                <thead>
+                        <table class="data-table">
+                            <thead><tr><th>Mã BN</th><th>Tên BN</th><th>Liên hệ</th><th>Ngày hẹn</th><th>Giờ</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+                            <tbody>
+                                <?php
+                                $stmt = $pdo->prepare("SELECT pid,ID,fname,lname,contact,appdate,apptime,userStatus,doctorStatus FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) ORDER BY appdate DESC");
+                                $stmt->execute([':doctor' => trim($doctor)]);
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                ?>
                                     <tr>
-                                        <th>Mã BN</th>
-                                        <th>Mã lịch hẹn</th>
-                                        <th>Tên bệnh nhân</th>
-                                        <th>Giới tính</th>
-                                        <th>Liên hệ</th>
-                                        <th>Ngày</th>
-                                        <th>Giờ</th>
-                                        <th>Trạng thái</th>
-                                        <th>Hành động</th>
-                                        <th>Kê đơn</th>
+                                        <td>#<?php echo $row['pid']; ?></td>
+                                        <td><?php echo $row['fname'] . ' ' . $row['lname']; ?></td>
+                                        <td><?php echo $row['contact']; ?></td>
+                                        <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
+                                        <td><?php echo $row['apptime']; ?></td>
+                                        <td>
+                                            <?php if($row['userStatus']==1 && $row['doctorStatus']==1) echo '<span class="badge badge-success">Hoạt động</span>'; else echo '<span class="badge badge-danger">Đã hủy</span>'; ?>
+                                        </td>
+                                        <td><a href="prescribe.php?pid=<?php echo $row['pid']; ?>&ID=<?php echo $row['ID']; ?>" class="btn btn-sm btn-primary">Kê đơn</a></td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    // Debug: Show all appointments (regardless of doctor name)
-                                    $debug_stmt = $pdo->prepare("SELECT DISTINCT doctor FROM appointmenttb ORDER BY doctor");
-                                    $debug_stmt->execute();
-                                    $all_doctors = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                    // Get appointments for this doctor
-                                    $stmt = $pdo->prepare("SELECT pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus,doctor FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) ORDER BY appdate DESC, apptime DESC");
-                                    $stmt->execute([':doctor' => trim($doctor)]);
-                                    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                    if (empty($appointments)) {
-                                        echo '<tr><td colspan="11" style="text-align: center; padding: 20px; color: #999;">
-                                            Không có lịch hẹn nào<br>
-                                            <small style="color: #ccc;">Session doctor: "' . htmlspecialchars($doctor) . '"</small><br>
-                                            <small style="color: #ccc;">Doctors in DB: ' . implode(', ', array_column($all_doctors, 'doctor')) . '</small>
-                                        </td></tr>';
-                                    } else {
-                                        foreach ($appointments as $row) {
-                                    ?>
-                                        <tr>
-                                            <td>#<?php echo $row['pid']; ?></td>
-                                            <td>#<?php echo $row['ID']; ?></td>
-                                            <td><?php echo $row['fname'] . ' ' . $row['lname']; ?></td>
-                                            <td><?php echo $row['gender']; ?></td>
-                                            <td><?php echo $row['contact']; ?></td>
-                                            <td><?php echo date('d M Y', strtotime($row['appdate'])); ?></td>
-                                            <td><?php echo date('h:i A', strtotime($row['apptime'])); ?></td>
-                                            <td>
-                                                <?php
-                                                if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 1)) {
-                                                    echo '<span class="badge badge-success">Đang hoạt động</span>';
-                                                } elseif (($row['userStatus'] == 0) && ($row['doctorStatus'] == 1)) {
-                                                    echo '<span class="badge badge-warning">Bệnh nhân đã hủy</span>';
-                                                } elseif (($row['userStatus'] == 1) && ($row['doctorStatus'] == 0)) {
-                                                    echo '<span class="badge badge-danger">Bạn đã hủy</span>';
-                                                } else {
-                                                    echo '<span class="badge badge-info">Chờ xác nhận</span>';
-                                                }
-                                                ?>
-                                            </td>
-                                            <td>
-                                                <?php if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 1)) { ?>
-                                                    <a href="dashboard.php?ID=<?php echo $row['ID'] ?>&cancel=update&page=appointments"
-                                                        onclick="return confirm('Bạn có chắc muốn hủy lịch hẹn này?')"
-                                                        class="btn btn-danger btn-sm">
-                                                        <i class="fas fa-times"></i> Hủy
-                                                    </a>
-                                                <?php } else {
-                                                    echo '<span class="text-muted">Đã hủy</span>';
-                                                } ?>
-                                            </td>
-                                            <td>
-                                                <a href="prescribe.php?pid=<?php echo $row['pid']; ?>&ID=<?php echo $row['ID']; ?>&fname=<?php echo $row['fname']; ?>&lname=<?php echo $row['lname']; ?>&appdate=<?php echo $row['appdate']; ?>&apptime=<?php echo $row['apptime']; ?>"
-                                                   class="btn btn-sm btn-primary"
-                                                   title="Kê đơn thuốc"
-                                                   style="white-space: nowrap;">
-                                                    <i class="fas fa-prescription"></i> Kê đơn
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    <?php }
-                                    } ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                <?php } ?>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
             <?php } ?>
 
-            <!-- Prescriptions Section -->
-            <?php if ($page === 'prescriptions') { ?>
+             <?php if ($page === 'prescriptions') { ?>
                 <section class="content-section">
-                    <div class="section-header">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <h2 class="section-title">Quản lý đơn thuốc</h2>
-                                <p class="section-subtitle">Danh sách các đơn thuốc đã kê</p>
-                            </div>
-                            <!-- Button removed as per request to move to appointment list -->
-                        </div>
-                    </div>
-
+                    <div class="section-header"><h2 class="section-title">Quản lý đơn thuốc</h2></div>
                     <div class="data-table-container">
-                        <div class="data-table-header">
-                            <h3 class="data-table-title">Danh sách đơn thuốc</h3>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
-                                <thead>
+                        <table class="data-table">
+                            <thead><tr><th>Mã ĐT</th><th>Bệnh nhân</th><th>Chẩn đoán</th><th>Số thuốc</th><th>Ngày kê</th><th>Thao tác</th></tr></thead>
+                            <tbody>
+                                <?php
+                                $stmt = $pdo->prepare("SELECT * FROM prestb WHERE doctor = :doctor ORDER BY appdate DESC");
+                                $stmt->execute([':doctor' => $doctor]);
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { ?>
                                     <tr>
-                                        <th>Mã ĐT</th>
-                                        <th>Bệnh nhân</th>
-                                        <th>Chẩn đoán</th>
-                                        <th>Số thuốc</th>
-                                        <th>Thời gian điều trị</th>
-                                        <th>Ngày kê</th>
-                                        <th>Thao tác</th>
+                                        <td>#<?php echo $row['ID']; ?></td>
+                                        <td><?php echo $row['fname'] . ' ' . $row['lname']; ?></td>
+                                        <td><?php echo $row['disease']; ?></td>
+                                        <td><span class="badge badge-info">Chi tiết</span></td>
+                                        <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
+                                        <td><a href="view_prescription.php?id=<?php echo $row['pres_id']; ?>" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a></td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    // Modified query to support enhanced prestb
-                                    // We select pres_id as ID for view/export links
-                                    $stmt = $pdo->prepare("
-                                        SELECT p.pres_id, p.ID as app_id, p.pid, p.disease, p.treatment_duration, p.created_at, p.appdate,
-                                               p.fname, p.lname,
-                                               (SELECT COUNT(id) FROM prescription_medications WHERE prescription_id = p.pres_id) as medication_count
-                                        FROM prestb p
-                                        WHERE p.doctor = :doctor
-                                        ORDER BY p.appdate DESC, p.created_at DESC
-                                    ");
-                                    $stmt->execute([':doctor' => $doctor]);
-                                    
-                                    if ($stmt->rowCount() > 0) {
-                                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                            // Handle cases where pres_id might be null (old records before migration)
-                                            // If pres_id is missing, we can't easily view details or export PDF for old records unless we backfill.
-                                            // But new records will have it.
-                                            $view_id = $row['pres_id']; 
-                                    ?>
-                                        <tr>
-                                            <td>#<?php echo $row['app_id']; ?></td>
-                                            <td><?php echo htmlspecialchars($row['fname'] . ' ' . $row['lname']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['disease']); ?></td>
-                                            <td>
-                                                <span class="badge badge-info">
-                                                    <?php echo $row['medication_count']; ?> thuốc
-                                                </span>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($row['treatment_duration'] ?? 'N/A'); ?></td>
-                                            <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
-                                            <td>
-                                                <?php if($view_id): ?>
-                                                <a href="view_prescription.php?id=<?php echo $view_id; ?>" 
-                                                   class="btn btn-sm btn-info" 
-                                                   title="Xem chi tiết">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="export_prescription_pdf.php?id=<?php echo $view_id; ?>" 
-                                                   class="btn btn-sm btn-danger" 
-                                                   target="_blank"
-                                                   title="Tải PDF">
-                                                    <i class="fas fa-file-pdf"></i>
-                                                </a>
-                                                <?php else: ?>
-                                                    <small class="text-muted">Đơn cũ</small>
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php 
-                                        }
-                                    } else {
-                                    ?>
-                                        <tr>
-                                            <td colspan="7" class="text-center text-muted">
-                                                <i class="fas fa-inbox fa-2x mb-2"></i>
-                                                <p>Chưa có đơn thuốc nào. Nhấn "Tạo đơn thuốc mới" để bắt đầu.</p>
-                                            </td>
-                                        </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                <?php } ?>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
-            <?php } ?>
+             <?php } ?>
         </main>
     </div>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
         }
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('DOMContentLoaded', function() {
-            const overlay = document.querySelector('.sidebar-overlay');
-            if (overlay) {
-                overlay.addEventListener('click', function() {
-                    toggleSidebar();
-                });
-            }
-        });
+        document.querySelector('.sidebar-overlay').addEventListener('click', toggleSidebar);
     </script>
 </body>
-
 </html>
