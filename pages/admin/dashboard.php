@@ -19,24 +19,40 @@ if (!in_array($page, $allowed_pages)) {
 
 if (isset($_POST['docsub'])) {
     try {
-        $doctor = $_POST['doctor'];
+        $fullname = $_POST['fullname'];
+        $username = $_POST['username'];
         $dpassword = password_hash($_POST['dpassword'], PASSWORD_DEFAULT);
         $demail = $_POST['demail'];
-        $spec = $_POST['special'];
+        $spec_id = $_POST['special_id'];
         $docFees = $_POST['docFees'];
 
-        $stmt = $pdo->prepare("INSERT INTO doctb(username,password,email,spec,docFees) VALUES(:doctor,:dpassword,:demail,:spec,:docFees)");
-        $stmt->execute([
-            ':doctor' => $doctor,
-            ':dpassword' => $dpassword,
-            ':demail' => $demail,
-            ':spec' => $spec,
-            ':docFees' => $docFees
-        ]);
-        redirectWithMessage($_SERVER['PHP_SELF'], 'success', 'Doctor added successfully!');
+        // Get Spec Name for legacy compatibility
+        $stmt_spec = $pdo->prepare("SELECT name FROM specializations WHERE id = ?");
+        $stmt_spec->execute([$spec_id]);
+        $spec_row = $stmt_spec->fetch();
+        $spec_name = $spec_row ? $spec_row['name'] : '';
+
+        // Check if username or email exists
+        $check = $pdo->prepare("SELECT * FROM doctb WHERE username = ? OR email = ?");
+        $check->execute([$username, $demail]);
+        if ($check->rowCount() > 0) {
+             redirectWithMessage($_SERVER['PHP_SELF'] . '?page=doctors', 'error', 'Username or Email already exists!');
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO doctb(username, fullname, password, email, spec, spec_id, docFees) VALUES(:username, :fullname, :dpassword, :demail, :spec, :spec_id, :docFees)");
+            $stmt->execute([
+                ':username' => $username,
+                ':fullname' => $fullname,
+                ':dpassword' => $dpassword,
+                ':demail' => $demail,
+                ':spec' => $spec_name,
+                ':spec_id' => $spec_id,
+                ':docFees' => $docFees
+            ]);
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=doctors', 'success', 'Doctor added successfully!');
+        }
     } catch (PDOException $e) {
         error_log("Add doctor error: " . $e->getMessage());
-        redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Error adding doctor!');
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=doctors', 'error', 'Error adding doctor: ' . $e->getMessage());
     }
 }
 
@@ -173,12 +189,6 @@ if (isset($_POST['docsub1'])) {
                     <a href="?page=medical-records" class="sidebar-menu-link <?php echo ($page === 'medical-records') ? 'active' : ''; ?>">
                         <i class="fas fa-file-medical sidebar-menu-icon"></i>
                         <span>Hồ sơ bệnh án</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
-                    <a href="../forum/index.php" class="sidebar-menu-link">
-                        <i class="fas fa-comments sidebar-menu-icon"></i>
-                        <span>Diễn đàn</span>
                     </a>
                 </li>
             </ul>
@@ -429,22 +439,29 @@ if (isset($_POST['docsub1'])) {
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label class="form-label"><i class="fas fa-user"></i> Tên bác sĩ *</label>
-                                            <input type="text" class="form-control" name="doctor" placeholder="Nhập họ tên đầy đủ" required>
+                                            <label class="form-label"><i class="fas fa-user"></i> Họ tên đầy đủ *</label>
+                                            <input type="text" class="form-control" name="fullname" placeholder="VD: Nguyễn Văn A" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-label"><i class="fas fa-user-tag"></i> Tên đăng nhập *</label>
+                                            <input type="text" class="form-control" name="username" placeholder="VD: dr.nguyena" required>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label class="form-label"><i class="fas fa-stethoscope"></i> Chuyên khoa *</label>
-                                            <select name="special" class="form-control" required>
+                                            <select name="special_id" class="form-control" required>
                                                 <option value="" disabled selected>Chọn chuyên khoa</option>
-                                                <option value="General">Đa khoa</option>
-                                                <option value="Cardiologist">Tim mạch</option>
-                                                <option value="Neurologist">Thần kinh</option>
-                                                <option value="Pediatrician">Nhi khoa</option>
-                                                <option value="Dermatologist">Da liễu</option>
-                                                <option value="Orthopedic">Chỉnh hình</option>
+                                                <?php
+                                                $specs = $pdo->query("SELECT * FROM specializations ORDER BY name_vi ASC");
+                                                while ($s = $specs->fetch(PDO::FETCH_ASSOC)) {
+                                                    echo "<option value='" . $s['id'] . "'>" . $s['name_vi'] . "</option>";
+                                                }
+                                                ?>
                                             </select>
                                         </div>
                                     </div>
@@ -502,11 +519,41 @@ if (isset($_POST['docsub1'])) {
                                 </span>
                             </div>
                         </div>
+
+                        <!-- Filter and Sort -->
+                        <div class="p-3 bg-light border-bottom">
+                            <form method="get" action="" class="form-inline">
+                                <input type="hidden" name="page" value="doctors">
+                                <input type="text" name="search" class="form-control form-control-sm mr-2" placeholder="Tìm tên/username/email..." value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+                                
+                                <select name="filter_spec" class="form-control form-control-sm mr-2">
+                                    <option value="">-- Tất cả chuyên khoa --</option>
+                                    <?php
+                                    $specs = $pdo->query("SELECT * FROM specializations ORDER BY name_vi ASC");
+                                    while ($s = $specs->fetch(PDO::FETCH_ASSOC)) {
+                                        $selected = (isset($_GET['filter_spec']) && $_GET['filter_spec'] == $s['id']) ? 'selected' : '';
+                                        echo "<option value='" . $s['id'] . "' $selected>" . $s['name_vi'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+
+                                <select name="sort" class="form-control form-control-sm mr-2">
+                                    <option value="newest" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'newest') ? 'selected' : ''; ?>>Mới nhất</option>
+                                    <option value="name_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_asc') ? 'selected' : ''; ?>>Tên A-Z</option>
+                                    <option value="fees_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'fees_asc') ? 'selected' : ''; ?>>Phí khám tăng dần</option>
+                                    <option value="fees_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'fees_desc') ? 'selected' : ''; ?>>Phí khám giảm dần</option>
+                                </select>
+
+                                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter"></i> Lọc</button>
+                                <a href="?page=doctors" class="btn btn-secondary btn-sm ml-2"><i class="fas fa-sync"></i> Đặt lại</a>
+                            </form>
+                        </div>
+
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Tên bác sĩ</th>
+                                    <th>Tên bác sĩ / Username</th>
                                     <th>Chuyên khoa</th>
                                     <th>Email</th>
                                     <th>Phí khám</th>
@@ -515,23 +562,56 @@ if (isset($_POST['docsub1'])) {
                             </thead>
                             <tbody>
                                 <?php
+                                $where = [];
+                                $params = [];
+
+                                if (!empty($_GET['search'])) {
+                                    $search = "%" . $_GET['search'] . "%";
+                                    $where[] = "(d.fullname LIKE ? OR d.username LIKE ? OR d.email LIKE ?)";
+                                    $params[] = $search;
+                                    $params[] = $search;
+                                    $params[] = $search;
+                                }
+
+                                if (!empty($_GET['filter_spec'])) {
+                                    $where[] = "d.spec_id = ?";
+                                    $params[] = $_GET['filter_spec'];
+                                }
+
+                                $where_sql = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
+
+                                $order_sql = "ORDER BY d.created_at DESC"; // Default
+                                if (isset($_GET['sort'])) {
+                                    switch ($_GET['sort']) {
+                                        case 'name_asc': $order_sql = "ORDER BY d.fullname ASC"; break;
+                                        case 'fees_asc': $order_sql = "ORDER BY d.docFees ASC"; break;
+                                        case 'fees_desc': $order_sql = "ORDER BY d.docFees DESC"; break;
+                                        case 'newest': $order_sql = "ORDER BY d.created_at DESC"; break;
+                                    }
+                                }
+
                                 $query = "SELECT d.*, s.name_vi FROM doctb d 
                                          LEFT JOIN specializations s ON d.spec_id = s.id 
-                                         ORDER BY d.fullname ASC";
-                                $result = $pdo->query($query);
+                                         $where_sql 
+                                         $order_sql";
+                                
+                                $stmt = $pdo->prepare($query);
+                                $stmt->execute($params);
                                 $serial = 1;
-                                while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                 ?>
                                     <tr>
                                         <td><?php echo $serial++; ?></td>
                                         <td>
-                                            <strong><i class="fas fa-user-md text-primary"></i> Dr. <?php echo htmlspecialchars($row['fullname']); ?></strong>
+                                            <strong><i class="fas fa-user-md text-primary"></i> <?php echo htmlspecialchars($row['fullname']); ?></strong><br>
+                                            <small class="text-muted">@<?php echo htmlspecialchars($row['username']); ?></small>
                                         </td>
                                         <td><span class="badge badge-primary"><?php echo htmlspecialchars($row['name_vi'] ?? $row['spec']); ?></span></td>
                                         <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                        <td><strong>₹<?php echo htmlspecialchars($row['docFees']); ?></strong></td>
+                                        <td><strong><?php echo number_format($row['docFees']); ?> VND</strong></td>
                                         <td>
-                                            <form method="post" action="?page=doctors" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn xóa BS. <?php echo htmlspecialchars($row['username']); ?>?');">
+                                            <form method="post" action="?page=doctors" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn xóa BS. <?php echo htmlspecialchars($row['fullname']); ?>?');">
                                                 <input type="hidden" name="demail" value="<?php echo htmlspecialchars($row['email']); ?>">
                                                 <button type="submit" name="docsub1" class="btn btn-danger btn-sm" title="Xóa bác sĩ">
                                                     <i class="fas fa-trash-alt"></i> Xóa

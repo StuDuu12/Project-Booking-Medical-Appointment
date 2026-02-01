@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
         ");
         
         $result = $stmt->execute([
-            ':doctor' => $doctor, // username
+            ':doctor' => $doctor_info['fullname'] ?? $doctor, // Use fullname to match legacy data structure
             ':pid' => $pid,
             ':ID' => $ID,
             ':fname' => $fname,

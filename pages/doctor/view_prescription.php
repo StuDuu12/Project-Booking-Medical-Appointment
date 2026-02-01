@@ -18,8 +18,8 @@ $stmt = $pdo->prepare("
            pat.email, pat.gender, pat.contact,
            d.fullname as doctor_name, d.spec as doctor_spec
     FROM prestb p
-    JOIN patreg pat ON p.pid = pat.pid
-    JOIN doctb d ON p.doctor = d.username
+    LEFT JOIN patreg pat ON p.pid = pat.pid
+    LEFT JOIN doctb d ON (p.doctor = d.username OR p.doctor = d.fullname)
     WHERE p.pres_id = ?
 ");
 $stmt->execute([$prescription_id]);
@@ -44,7 +44,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prescription Details</title>
+    <title>Chi tiết đơn thuốc</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
@@ -195,51 +195,51 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <div class="prescription-view">
         <div class="prescription-header">
-            <h1><i class="fas fa-file-medical"></i> Medical Prescription</h1>
-            <p class="mb-0">Global Hospitals - Professional Healthcare</p>
+            <h1><i class="fas fa-file-medical"></i> Đơn Thuốc</h1>
+            <p class="mb-0">Bệnh viện Global - Chăm sóc sức khỏe toàn diện</p>
         </div>
         
         <div class="prescription-body">
             <!-- Action Buttons -->
             <div class="text-right mb-4">
                 <a href="export_prescription_pdf.php?id=<?php echo $prescription_id; ?>" class="btn-action btn-pdf" target="_blank">
-                    <i class="fas fa-file-pdf mr-2"></i>Download PDF
+                    <i class="fas fa-file-pdf mr-2"></i>Tải PDF
                 </a>
                 <a href="dashboard.php?page=prescriptions" class="btn-action btn-back ml-2">
-                    <i class="fas fa-arrow-left mr-2"></i>Back
+                    <i class="fas fa-arrow-left mr-2"></i>Quay lại
                 </a>
             </div>
             
             <!-- Doctor Information -->
             <div class="info-section">
-                <h3><i class="fas fa-user-md mr-2"></i>Doctor Information</h3>
+                <h3><i class="fas fa-user-md mr-2"></i>Thông tin bác sĩ</h3>
                 <div class="info-row">
-                    <div class="info-label">Doctor Name:</div>
+                    <div class="info-label">Bác sĩ:</div>
                     <div class="info-value"><?php echo htmlspecialchars($prescription['doctor_name']); ?></div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Specialization:</div>
+                    <div class="info-label">Chuyên khoa:</div>
                     <div class="info-value"><?php echo htmlspecialchars($prescription['doctor_spec']); ?></div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Date:</div>
-                    <div class="info-value"><?php echo date('F d, Y', strtotime($prescription['created_at'])); ?></div>
+                    <div class="info-label">Ngày kê:</div>
+                    <div class="info-value"><?php echo date('d/m/Y', strtotime($prescription['created_at'])); ?></div>
                 </div>
             </div>
             
             <!-- Patient Information -->
             <div class="info-section">
-                <h3><i class="fas fa-user-injured mr-2"></i>Patient Information</h3>
+                <h3><i class="fas fa-user-injured mr-2"></i>Thông tin bệnh nhân</h3>
                 <div class="info-row">
-                    <div class="info-label">Patient Name:</div>
+                    <div class="info-label">Họ tên:</div>
                     <div class="info-value"><?php echo htmlspecialchars($prescription['fname'] . ' ' . $prescription['lname']); ?></div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Gender:</div>
+                    <div class="info-label">Giới tính:</div>
                     <div class="info-value"><?php echo htmlspecialchars($prescription['gender']); ?></div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Contact:</div>
+                    <div class="info-label">Số điện thoại:</div>
                     <div class="info-value"><?php echo htmlspecialchars($prescription['contact']); ?></div>
                 </div>
                 <div class="info-row">
@@ -250,35 +250,35 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <!-- Diagnosis -->
             <div class="info-section">
-                <h3><i class="fas fa-stethoscope mr-2"></i>Diagnosis</h3>
+                <h3><i class="fas fa-stethoscope mr-2"></i>Chẩn đoán</h3>
                 <div class="info-row">
-                    <div class="info-label">Disease:</div>
+                    <div class="info-label">Bệnh:</div>
                     <div class="info-value"><?php echo htmlspecialchars($prescription['disease']); ?></div>
                 </div>
                 <?php if (!empty($prescription['allergy'])): ?>
                 <div class="info-row">
-                    <div class="info-label">Allergies:</div>
+                    <div class="info-label">Dị ứng:</div>
                     <div class="info-value text-danger font-weight-bold"><?php echo htmlspecialchars($prescription['allergy']); ?></div>
                 </div>
                 <?php endif; ?>
                 <div class="info-row">
-                    <div class="info-label">Treatment Duration:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['treatment_duration']); ?></div>
+                    <div class="info-label">Thời gian điều trị:</div>
+                    <div class="info-value"><?php echo htmlspecialchars($prescription['treatment_duration'] ?? ''); ?></div>
                 </div>
             </div>
             
             <!-- Medications -->
             <div class="info-section">
-                <h3><i class="fas fa-pills mr-2"></i>Prescribed Medications</h3>
+                <h3><i class="fas fa-pills mr-2"></i>Danh sách thuốc</h3>
                 <?php if (count($medications) > 0): ?>
                 <table class="medications-table">
                     <thead>
                         <tr>
                             <th width="50">#</th>
-                            <th>Medication</th>
-                            <th>Dosage</th>
-                            <th>Frequency</th>
-                            <th>Duration</th>
+                            <th>Tên thuốc</th>
+                            <th>Liều lượng</th>
+                            <th>Tần suất</th>
+                            <th>Thời gian</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -299,22 +299,22 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </tbody>
                 </table>
                 <?php else: ?>
-                <p class="text-muted">No medications prescribed.</p>
+                <p class="text-muted">Chưa có thuốc nào được kê.</p>
                 <?php endif; ?>
             </div>
             
             <!-- General Instructions -->
             <?php if (!empty($prescription['general_notes'])): ?>
             <div class="info-section">
-                <h3><i class="fas fa-notes-medical mr-2"></i>General Instructions</h3>
+                <h3><i class="fas fa-notes-medical mr-2"></i>Lời dặn dò</h3>
                 <p class="mb-0"><?php echo nl2br(htmlspecialchars($prescription['general_notes'])); ?></p>
             </div>
             <?php endif; ?>
             
             <!-- Footer -->
             <div class="text-center mt-4 pt-4 border-top">
-                <p class="text-muted mb-1"><small>This is a computer-generated prescription</small></p>
-                <p class="text-muted mb-0"><small>Global Hospitals | Contact: (84) 123-456-789 | Email: info@globalhospitals.com</small></p>
+                <p class="text-muted mb-1"><small>Đơn thuốc được tạo tự động bởi hệ thống</small></p>
+                <p class="text-muted mb-0"><small>Bệnh viện Global | Hotline: (84) 123-456-789 | Email: info@globalhospitals.com</small></p>
             </div>
         </div>
     </div>

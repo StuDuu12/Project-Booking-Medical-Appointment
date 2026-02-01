@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 27, 2026 at 04:43 AM
--- Server version: 5.7.39
--- PHP Version: 8.1.10
+-- Generation Time: Jan 28, 2026 at 04:04 PM
+-- Server version: 10.11.11-MariaDB-cll-lve
+-- PHP Version: 8.3.23
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -16,20 +16,24 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
+SET FOREIGN_KEY_CHECKS = 0;
 
 --
 -- Database: `chuduyit_medical_k73`
 --
+
+CREATE DATABASE IF NOT EXISTS `chuduyit_medical_k73` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `chuduyit_medical_k73`;
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `admintb`
 --
-
+DROP TABLE IF EXISTS `admintb`;
 CREATE TABLE `admintb` (
-  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL
+  `username` varchar(50) NOT NULL,
+  `password` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -44,24 +48,24 @@ INSERT INTO `admintb` (`username`, `password`) VALUES
 --
 -- Table structure for table `appointmenttb`
 --
-
+DROP TABLE IF EXISTS `appointmenttb`;
 CREATE TABLE `appointmenttb` (
   `ID` int(11) NOT NULL,
   `pid` int(11) NOT NULL,
-  `fname` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `lname` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `gender` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `contact` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `doctor` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fname` varchar(20) NOT NULL,
+  `lname` varchar(20) NOT NULL,
+  `gender` varchar(10) NOT NULL,
+  `email` varchar(30) NOT NULL,
+  `contact` varchar(10) NOT NULL,
+  `doctor` varchar(30) NOT NULL,
   `docFees` int(5) NOT NULL,
   `appdate` date NOT NULL,
   `apptime` time NOT NULL,
   `slot_id` int(11) DEFAULT NULL,
   `userStatus` int(5) NOT NULL,
   `doctorStatus` int(5) NOT NULL,
-  `notes` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -69,27 +73,28 @@ CREATE TABLE `appointmenttb` (
 --
 
 INSERT INTO `appointmenttb` (`ID`, `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `slot_id`, `userStatus`, `doctorStatus`, `notes`, `created_at`) VALUES
-(1, 4, 'Kishan', 'Lal', 'Male', 'kishansmart0@gmail.com', '8838489464', 'Ganesh', 550, '2020-02-14', '10:00:00', NULL, 1, 0, NULL, '2026-01-14 18:04:44'),
-(2, 4, 'Kishan', 'Lal', 'Male', 'kishansmart0@gmail.com', '8838489464', 'Dinesh', 700, '2020-02-28', '10:00:00', NULL, 0, 1, NULL, '2026-01-14 18:04:44'),
-(3, 12, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'Abbis', 1500, '2026-01-15', '10:00:00', NULL, 0, 1, NULL, '2026-01-14 18:04:44'),
-(4, 4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'bui.viet', 400000, '2026-02-26', '13:30:00', 12, 0, 1, NULL, '2026-01-15 14:11:50'),
-(5, 4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'phan.son', 350000, '2026-11-18', '10:30:00', 24, 0, 1, NULL, '2026-01-15 14:12:09'),
-(6, 4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'Bùi Quốc Việt', 400000, '2026-03-18', '13:30:00', 48, 1, 1, NULL, '2026-01-15 14:19:48'),
-(7, 4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'truong.nam', 350000, '2026-12-28', '10:00:00', 59, 0, 1, NULL, '2026-01-21 03:01:59'),
-(8, 4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'truong.nam', 350000, '2026-06-30', '14:00:00', 85, 1, 1, NULL, '2026-01-21 03:03:27'),
-(9, 4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'bui.viet', 400000, '2026-04-15', '08:30:00', 92, 1, 1, NULL, '2026-01-21 03:07:09');
+(1, 1, 'An', 'Nguyễn Văn', 'Male', 'an.nguyen@email.com', '0912345678', 'Lê Minh Châu', 250000, '2026-02-14', '09:00:00', 1, 1, 1, 'Khám ho, sốt cho bé', '2026-01-28 09:00:00'),
+(2, 2, 'Bình', 'Trần Thị', 'Female', 'binh.tran@email.com', '0987654321', 'Vũ Thị Giang', 300000, '2026-02-15', '10:30:00', 2, 0, 1, 'Đau bụng dưới', '2026-01-28 09:15:00'),
+(3, 3, 'Cường', 'Lê Mạnh', 'Male', 'cuong.le@email.com', '0901234567', 'Hoàng Văn Em', 320000, '2026-02-16', '14:00:00', 3, 1, 0, 'Ngứa da, nổi mẩn đỏ', '2026-01-28 09:30:00'),
+(4, 4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'Bùi Quốc Việt', 400000, '2026-03-18', '13:30:00', 48, 1, 1, 'Tái khám xương khớp', '2026-01-15 14:11:50'),
+(5, 5, 'Hạnh', 'Phạm Thị', 'Female', 'hanh.pham@email.com', '0918273645', 'Lý Văn Minh', 320000, '2026-02-17', '08:30:00', 5, 1, 1, 'Đau dạ dày', '2026-01-28 10:00:00'),
+(6, 6, 'Lan', 'Hoàng Ngọc', 'Female', 'lan.hoang@email.com', '0922334455', 'Nguyễn Văn An', 300000, '2026-02-18', '15:00:00', 6, 0, 1, 'Khó thở, tim đập nhanh', '2026-01-28 10:30:00'),
+(7, 7, 'Minh', 'Vũ Đức', 'Male', 'minh.vu@email.com', '0933445566', 'Phan Văn Sơn', 350000, '2026-02-19', '11:00:00', 7, 1, 1, 'Đau lưng lan xuống chân', '2026-01-28 11:00:00'),
+(8, 8, 'Nhi', 'Đặng Uyên', 'Female', 'nhi.dang@email.com', '0944556677', 'Võ Thị Yến', 280000, '2026-02-20', '09:30:00', 8, 0, 1, 'Niềng răng tư vấn', '2026-01-28 11:30:00'),
+(9, 9, 'Quân', 'Trịnh Minh', 'Male', 'quan.trinh@email.com', '0955667788', 'Bùi Văn Kiên', 400000, '2026-02-21', '16:00:00', 9, 1, 0, 'Đau đầu thường xuyên', '2026-01-28 12:00:00'),
+(10, 10, 'Tâm', 'Lý Thanh', 'Female', 'tam.ly@email.com', '0966778899', 'Trần Thị Hương', 220000, '2026-02-22', '08:00:00', 10, 1, 1, 'Khám tổng quát', '2026-01-28 12:30:00');
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `contact`
 --
-
+DROP TABLE IF EXISTS `contact`;
 CREATE TABLE `contact` (
-  `name` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `contact` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `message` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL
+  `name` varchar(30) NOT NULL,
+  `email` text NOT NULL,
+  `contact` varchar(10) NOT NULL,
+  `message` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -97,33 +102,36 @@ CREATE TABLE `contact` (
 --
 
 INSERT INTO `contact` (`name`, `email`, `contact`, `message`) VALUES
-('Anu', 'anu@gmail.com', '7896677554', 'Hey Admin'),
-('Viki', 'viki@gmail.com', '9899778865', 'Good Job, Pal'),
-('Duy Chu Quang', 'duywinter@gmail.com', '0846181174', 'Hệ thống hoạt động tốt');
+('Nguyễn Văn An', 'an.nguyen@gmail.com', '0912345678', 'Hệ thống đặt lịch rất tiện lợi, cảm ơn đội ngũ phát triển.'),
+('Trần Thị Bình', 'binh.tran@gmail.com', '0987654321', 'Tôi gặp chút khó khăn khi tìm bác sĩ theo chuyên khoa, cần cải thiện bộ lọc.'),
+('Lê Minh', 'minh.le@hotmail.com', '0909090909', 'Dịch vụ tốt, bác sĩ tận tâm. Ủng hộ 5 sao!'),
+('Phạm Quang Huy', 'huy.pham@outlook.com', '0918273645', 'Giao diện web rất đẹp và dễ sử dụng.'),
+('Hoàng Thùy Linh', 'linh.hoang@gmail.com', '0922334455', 'Cần thêm tính năng nhắc lịch qua SMS thì tuyệt vời hơn.'),
+('Duy Chu Quang', 'duywinter@gmail.com', '0846181174', 'Hệ thống hoạt động ổn định, các chức năng mới cập nhật rất hữu ích.');
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `doctb`
 --
-
+DROP TABLE IF EXISTS `doctb`;
 CREATE TABLE `doctb` (
   `id` int(11) NOT NULL,
-  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `fullname` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `spec` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `fullname` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `spec` varchar(255) NOT NULL,
   `spec_id` int(11) DEFAULT NULL,
   `docFees` int(10) NOT NULL,
-  `phone` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bio` mediumtext COLLATE utf8mb4_unicode_ci,
-  `experience_years` int(3) DEFAULT '0',
-  `status` tinyint(1) DEFAULT '1',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `phone` varchar(15) DEFAULT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
+  `bio` mediumtext DEFAULT NULL,
+  `experience_years` int(3) DEFAULT 0,
+  `status` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
   `average_rating` decimal(3,2) DEFAULT NULL COMMENT 'Average rating 1.00-5.00',
-  `total_ratings` int(11) DEFAULT '0' COMMENT 'Total number of ratings'
+  `total_ratings` int(11) DEFAULT 0 COMMENT 'Total number of ratings'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -131,7 +139,7 @@ CREATE TABLE `doctb` (
 --
 
 INSERT INTO `doctb` (`id`, `username`, `password`, `fullname`, `email`, `spec`, `spec_id`, `docFees`, `phone`, `avatar`, `bio`, `experience_years`, `status`, `created_at`, `average_rating`, `total_ratings`) VALUES
-(1, 'le.chau', '123', 'Lê Minh Châu', 'le.chau@hospital.vn', 'Pediatrics', 1, 250000, '0901234569', NULL, 'Bác sĩ nhi khoa tận tâm, yêu trẻ em', 10, 1, '2026-01-14 18:04:43', 5.00, 1),
+(1, 'le.chau', '123', 'Lê Minh Châu', 'le.chau@hospital.vn', 'Pediatrics', 1, 250000, '0901234569', NULL, 'Bác sĩ nhi khoa tận tâm, yêu trẻ em', 10, 1, '2026-01-14 18:04:43', NULL, 0),
 (2, 'pham.dung', '123', 'Phạm Thị Dung', 'pham.dung@hospital.vn', 'Pediatrics', 1, 280000, '0901234570', NULL, 'Chuyên gia nhi khoa, đặc biệt về bệnh hô hấp trẻ em', 8, 1, '2026-01-14 18:04:43', NULL, 0),
 (3, 'vu.giang', '123', 'Vũ Thị Giang', 'vu.giang@hospital.vn', 'Obstetrics_Gynecology', 2, 300000, '0901234573', NULL, 'Chuyên gia sản phụ khoa, đỡ đẻ hơn 5000 ca', 16, 1, '2026-01-14 18:04:43', NULL, 0),
 (4, 'dang.hung', '123', 'Đặng Văn Hùng', 'dang.hung@hospital.vn', 'Obstetrics_Gynecology', 2, 350000, '0901234574', NULL, 'Bác sĩ sản khoa, chuyên thai kỳ nguy cơ cao', 13, 1, '2026-01-14 18:04:43', NULL, 0),
@@ -171,45 +179,39 @@ INSERT INTO `doctb` (`id`, `username`, `password`, `fullname`, `email`, `spec`, 
 --
 -- Table structure for table `doctor_ratings`
 --
-
+DROP TABLE IF EXISTS `doctor_ratings`;
 CREATE TABLE `doctor_ratings` (
   `id` int(11) NOT NULL,
   `doctor_id` int(11) NOT NULL,
   `patient_id` int(11) NOT NULL,
   `appointment_id` int(11) DEFAULT NULL,
-  `rating` tinyint(1) NOT NULL COMMENT '1-5 stars',
-  `review` text COLLATE utf8mb4_unicode_ci,
-  `professionalism` tinyint(1) DEFAULT NULL COMMENT '1-5 rating',
-  `communication` tinyint(1) DEFAULT NULL COMMENT '1-5 rating',
-  `environment` tinyint(1) DEFAULT NULL COMMENT '1-5 rating',
-  `wait_time` tinyint(1) DEFAULT NULL COMMENT '1-5 rating',
-  `is_verified` tinyint(1) DEFAULT '0' COMMENT 'Verified if linked to actual appointment',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `rating` int(1) NOT NULL COMMENT '1-5',
+  `review` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `doctor_ratings`
 --
 
-INSERT INTO `doctor_ratings` (`id`, `doctor_id`, `patient_id`, `appointment_id`, `rating`, `review`, `professionalism`, `communication`, `environment`, `wait_time`, `is_verified`, `created_at`, `updated_at`) VALUES
-(1, 1, 4, NULL, 5, 'Nice', NULL, NULL, NULL, NULL, 0, '2026-01-27 04:38:24', '2026-01-27 04:38:24');
+INSERT INTO `doctor_ratings` (`id`, `doctor_id`, `patient_id`, `appointment_id`, `rating`, `review`, `created_at`) VALUES
+(1, 1, 1, 1, 5, 'Bác sĩ rất nhiệt tình', '2026-01-27 03:17:16');
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `doctor_schedules`
 --
-
+DROP TABLE IF EXISTS `doctor_schedules`;
 CREATE TABLE `doctor_schedules` (
   `id` int(11) NOT NULL,
   `doctor_id` int(11) NOT NULL,
   `day_of_week` tinyint(1) NOT NULL COMMENT '0=CN, 1=T2, 2=T3, 3=T4, 4=T5, 5=T6, 6=T7',
   `start_time` time NOT NULL,
   `end_time` time NOT NULL,
-  `slot_duration` int(3) DEFAULT '30' COMMENT 'Thời gian mỗi slot (phút)',
-  `max_patients` int(3) DEFAULT '1' COMMENT 'Số bệnh nhân tối đa mỗi slot',
-  `is_active` tinyint(1) DEFAULT '1'
+  `slot_duration` int(3) DEFAULT 30 COMMENT 'Thời gian mỗi slot (phút)',
+  `max_patients` int(3) DEFAULT 1 COMMENT 'Số bệnh nhân tối đa mỗi slot',
+  `is_active` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -427,15 +429,15 @@ INSERT INTO `doctor_schedules` (`id`, `doctor_id`, `day_of_week`, `start_time`, 
 --
 -- Table structure for table `forum_attachments`
 --
-
+DROP TABLE IF EXISTS `forum_attachments`;
 CREATE TABLE `forum_attachments` (
   `id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL,
-  `file_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_path` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_name` varchar(255) NOT NULL,
+  `file_path` varchar(500) NOT NULL,
+  `file_type` varchar(50) NOT NULL,
   `file_size` int(11) DEFAULT NULL COMMENT 'Size in bytes',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -443,16 +445,16 @@ CREATE TABLE `forum_attachments` (
 --
 -- Table structure for table `forum_comments`
 --
-
+DROP TABLE IF EXISTS `forum_comments`;
 CREATE TABLE `forum_comments` (
   `id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `user_type` enum('patient','doctor','admin') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'patient',
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_type` enum('patient','doctor','admin') NOT NULL DEFAULT 'patient',
+  `content` text NOT NULL,
   `parent_id` int(11) DEFAULT NULL COMMENT 'For nested replies',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -467,14 +469,14 @@ INSERT INTO `forum_comments` (`id`, `post_id`, `user_id`, `user_type`, `content`
 --
 -- Table structure for table `forum_likes`
 --
-
+DROP TABLE IF EXISTS `forum_likes`;
 CREATE TABLE `forum_likes` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `user_type` enum('patient','doctor','admin') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'patient',
+  `user_type` enum('patient','doctor','admin') NOT NULL DEFAULT 'patient',
   `target_id` int(11) NOT NULL,
-  `target_type` enum('post','comment') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `target_type` enum('post','comment') NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -490,21 +492,21 @@ INSERT INTO `forum_likes` (`id`, `user_id`, `user_type`, `target_id`, `target_ty
 --
 -- Table structure for table `forum_posts`
 --
-
+DROP TABLE IF EXISTS `forum_posts`;
 CREATE TABLE `forum_posts` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `user_type` enum('patient','doctor','admin') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'patient',
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tags` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `category` enum('general','question','discussion','announcement') COLLATE utf8mb4_unicode_ci DEFAULT 'general',
-  `status` enum('open','closed','solved') COLLATE utf8mb4_unicode_ci DEFAULT 'open',
-  `privacy` enum('public','private') COLLATE utf8mb4_unicode_ci DEFAULT 'public',
-  `views` int(11) DEFAULT '0',
-  `is_pinned` tinyint(1) DEFAULT '0',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `user_type` enum('patient','doctor','admin') NOT NULL DEFAULT 'patient',
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `tags` varchar(255) DEFAULT NULL,
+  `category` enum('general','question','discussion','announcement') DEFAULT 'general',
+  `status` enum('open','closed','solved') DEFAULT 'open',
+  `privacy` enum('public','private') DEFAULT 'public',
+  `views` int(11) DEFAULT 0,
+  `is_pinned` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -521,16 +523,37 @@ INSERT INTO `forum_posts` (`id`, `user_id`, `user_type`, `title`, `content`, `ta
 -- Table structure for table `medical_attachments`
 --
 
+DROP TABLE IF EXISTS `medical_attachments`; 
 CREATE TABLE `medical_attachments` (
   `id` int(11) NOT NULL,
   `record_id` int(11) NOT NULL,
-  `file_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'image, pdf, doc, xray, etc',
+  `file_name` varchar(255) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `file_type` varchar(50) DEFAULT NULL COMMENT 'image, pdf, doc, xray, etc',
   `file_size` int(11) DEFAULT NULL COMMENT 'Kích thước file (bytes)',
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `description` text DEFAULT NULL,
   `uploaded_by` int(11) DEFAULT NULL,
-  `uploaded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `uploaded_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `medical_documents`
+--
+
+DROP TABLE IF EXISTS `medical_documents`;
+CREATE TABLE `medical_documents` (
+  `id` int(11) NOT NULL,
+  `pid` int(11) NOT NULL,
+  `doctor` varchar(50) NOT NULL,
+  `appointment_id` int(11) DEFAULT NULL,
+  `document_name` varchar(255) NOT NULL,
+  `file_path` varchar(500) NOT NULL,
+  `file_type` varchar(100) DEFAULT NULL,
+  `file_size` int(11) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `uploaded_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -539,36 +562,37 @@ CREATE TABLE `medical_attachments` (
 -- Table structure for table `medical_records`
 --
 
+DROP TABLE IF EXISTS `medical_records`;
 CREATE TABLE `medical_records` (
   `id` int(11) NOT NULL,
   `patient_id` int(11) NOT NULL,
   `doctor_id` int(11) DEFAULT NULL,
   `appointment_id` int(11) DEFAULT NULL,
   `record_date` date NOT NULL,
-  `record_type` enum('consultation','checkup','emergency','followup','surgery') COLLATE utf8mb4_unicode_ci DEFAULT 'consultation',
+  `record_type` enum('consultation','checkup','emergency','followup','surgery') DEFAULT 'consultation',
   `height` decimal(5,2) DEFAULT NULL COMMENT 'Chiều cao (cm)',
   `weight` decimal(5,2) DEFAULT NULL COMMENT 'Cân nặng (kg)',
   `bmi` decimal(4,2) DEFAULT NULL COMMENT 'BMI tự động tính',
-  `blood_pressure` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Huyết áp (VD: 120/80)',
+  `blood_pressure` varchar(20) DEFAULT NULL COMMENT 'Huyết áp (VD: 120/80)',
   `heart_rate` int(3) DEFAULT NULL COMMENT 'Nhịp tim (bpm)',
   `temperature` decimal(4,2) DEFAULT NULL COMMENT 'Nhiệt độ (°C)',
   `respiratory_rate` int(3) DEFAULT NULL COMMENT 'Nhịp thở (lần/phút)',
-  `chief_complaint` text COLLATE utf8mb4_unicode_ci COMMENT 'Lý do khám',
-  `symptoms` text COLLATE utf8mb4_unicode_ci COMMENT 'Triệu chứng',
-  `diagnosis` text COLLATE utf8mb4_unicode_ci COMMENT 'Chẩn đoán',
-  `medical_history` text COLLATE utf8mb4_unicode_ci COMMENT 'Tiền sử bệnh',
-  `family_history` text COLLATE utf8mb4_unicode_ci COMMENT 'Tiền sử gia đình',
-  `allergies` text COLLATE utf8mb4_unicode_ci COMMENT 'Dị ứng',
-  `lab_results` text COLLATE utf8mb4_unicode_ci COMMENT 'Kết quả xét nghiệm',
-  `imaging_results` text COLLATE utf8mb4_unicode_ci COMMENT 'Kết quả chẩn đoán hình ảnh',
-  `treatment_plan` text COLLATE utf8mb4_unicode_ci COMMENT 'Kế hoạch điều trị',
-  `prescription` text COLLATE utf8mb4_unicode_ci COMMENT 'Đơn thuốc',
-  `notes` text COLLATE utf8mb4_unicode_ci COMMENT 'Ghi chú thêm',
+  `chief_complaint` text DEFAULT NULL COMMENT 'Lý do khám',
+  `symptoms` text DEFAULT NULL COMMENT 'Triệu chứng',
+  `diagnosis` text DEFAULT NULL COMMENT 'Chẩn đoán',
+  `medical_history` text DEFAULT NULL COMMENT 'Tiền sử bệnh',
+  `family_history` text DEFAULT NULL COMMENT 'Tiền sử gia đình',
+  `allergies` text DEFAULT NULL COMMENT 'Dị ứng',
+  `lab_results` text DEFAULT NULL COMMENT 'Kết quả xét nghiệm',
+  `imaging_results` text DEFAULT NULL COMMENT 'Kết quả chẩn đoán hình ảnh',
+  `treatment_plan` text DEFAULT NULL COMMENT 'Kế hoạch điều trị',
+  `prescription` text DEFAULT NULL COMMENT 'Đơn thuốc',
+  `notes` text DEFAULT NULL COMMENT 'Ghi chú thêm',
   `follow_up_date` date DEFAULT NULL COMMENT 'Ngày tái khám',
-  `status` enum('active','completed','archived') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
+  `status` enum('active','completed','archived') DEFAULT 'active',
   `created_by` int(11) DEFAULT NULL COMMENT 'ID bác sĩ tạo',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -576,7 +600,67 @@ CREATE TABLE `medical_records` (
 --
 
 INSERT INTO `medical_records` (`id`, `patient_id`, `doctor_id`, `appointment_id`, `record_date`, `record_type`, `height`, `weight`, `bmi`, `blood_pressure`, `heart_rate`, `temperature`, `respiratory_rate`, `chief_complaint`, `symptoms`, `diagnosis`, `medical_history`, `family_history`, `allergies`, `lab_results`, `imaging_results`, `treatment_plan`, `prescription`, `notes`, `follow_up_date`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 12, 1, NULL, '2026-01-10', 'checkup', 175.00, 70.00, NULL, '120/80', 75, 36.50, NULL, 'Khám sức khỏe định kỳ', 'Không có triệu chứng bất thường', 'Sức khỏe tốt, các chỉ số bình thường', NULL, NULL, NULL, NULL, NULL, 'Duy trì chế độ ăn uống và tập thể dục', 'Vitamin C 500mg, 1 viên/ngày', NULL, NULL, 'completed', 1, '2026-01-15 14:37:31', '2026-01-15 14:37:31');
+(1, 4, 17, 4, '2026-01-10', 'checkup', 175.00, 70.00, 22.86, '120/80', 75, 36.50, 18, 'Khám sức khỏe định kỳ', 'Không có triệu chứng bất thường', 'Sức khỏe tốt, các chỉ số bình thường', 'Chưa có tiền sử bệnh lý', 'Gia đình khỏe mạnh', 'Không', 'Công thức máu bình thường', 'X-quang lồng ngực bình thường', 'Duy trì chế độ ăn uống và tập thể dục', 'Vitamin C 500mg, 1 viên/ngày', 'Bệnh nhân có ý thức bảo vệ sức khỏe tốt', NULL, 'completed', 1, '2026-01-15 14:37:31', '2026-01-15 14:37:31'),
+(2, 1, 1, 1, '2026-01-15', 'consultation', 110.00, 20.00, 16.53, '100/60', 90, 38.50, 22, 'Sốt cao, ho nhiều', 'Ho đờm, sốt 39 độ, chảy mũi', 'Viêm phế quản phổi', 'Hay bị viêm họng', 'Không có', 'Không', 'Bạch cầu tăng cao', 'Phổi có đám mờ nhỏ', 'Kháng sinh, hạ sốt, long đờm', 'Augmentin, Hapacol, Bisolvon', 'Theo dõi nhiệt độ thường xuyên', '2026-01-20', 'active', 1, '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(3, 2, 3, 2, '2026-01-16', 'checkup', 158.00, 55.00, 22.03, '110/70', 80, 37.00, 20, 'Khám thai 8 tuần', 'Nghén nhẹ, mệt mỏi', 'Thai 8 tuần phát triển bình thường', 'Sinh thường 1 lần', 'Không', 'Không', 'Beta hCG bình thường', 'Siêu âm có tim thai', 'Bổ sung sắt, canxi, nghỉ ngơi', 'Ferrovit, Calcium Corbiere', 'Hẹn khám lại mốc 12 tuần', '2026-02-15', 'completed', 3, '2026-01-28 09:30:00', '2026-01-28 09:30:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `medicines`
+--
+
+DROP TABLE IF EXISTS `medicines`;
+CREATE TABLE `medicines` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `generic_name` varchar(255) DEFAULT NULL,
+  `category` varchar(100) NOT NULL,
+  `dosage_form` varchar(100) NOT NULL,
+  `strength` varchar(100) DEFAULT NULL,
+  `manufacturer` varchar(255) DEFAULT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 0,
+  `unit_price` decimal(10,2) NOT NULL,
+  `expiry_date` date DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `medicines`
+--
+
+INSERT INTO `medicines` (`id`, `name`, `generic_name`, `category`, `dosage_form`, `strength`, `manufacturer`, `quantity`, `unit_price`, `expiry_date`, `description`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 'Panadol Extra', 'Paracetamol + Caffeine', 'Thuốc giảm đau', 'Viên nén', '500mg/65mg', 'Sandoz', 500, 1500.00, '2027-12-31', 'Giảm đau đầu, hạ sốt nhanh', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(2, 'Efferalgan', 'Paracetamol', 'Thuốc giảm đau', 'Viên sủi', '500mg', 'UPSA SAS', 300, 3000.00, '2027-06-30', 'Hạ sốt, giảm đau nhanh chóng dạng sủi', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(3, 'Augmentin', 'Amoxicillin + Clavulanic acid', 'Thuốc kháng sinh', 'Viên nén bao phim', '625mg', 'GlaxoSmithKline', 150, 18000.00, '2026-11-20', 'Kháng sinh điều trị nhiễm khuẩn đường hô hấp', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(4, 'Berberin', 'Berberine Chloride', 'Thuốc tiêu hóa', 'Viên nén', '10mg', 'Dược phẩm TW3', 1000, 500.00, '2028-05-15', 'Điều trị lỵ, tiêu chảy, đau bụng', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(5, 'Smecta', 'Diosmectite', 'Thuốc tiêu hóa', 'Gói bột', '3g', 'Ipsen', 400, 3500.00, '2027-08-10', 'Điều trị tiêu chảy cấp và mãn tính', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(6, 'Eugica Fort', 'Eucalyptol, Menthol...', 'Thuốc hô hấp', 'Viên nang mềm', '100mg', 'Mega We Care', 600, 1200.00, '2026-12-25', 'Trị ho, đau họng, sổ mũi, cảm cúm', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(7, 'Fugacar', 'Mebendazole', 'Thuốc tấy giun', 'Viên nén nhai', '500mg', 'Janssen', 200, 25000.00, '2028-02-14', 'Điều trị nhiễm các loại giun', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(8, 'Salonpas', 'Methyl Salicylate', 'Cao dán', 'Miếng dán', '6.5cm x 4.2cm', 'Hisamitsu', 1000, 2000.00, '2029-01-01', 'Giảm đau cơ, đau khớp, đau lưng', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(9, 'Nước muối sinh lý', 'Natri Clorid', 'Dung dịch sát khuẩn', 'Chai', '0.9% 500ml', 'Vĩnh Phúc', 500, 10000.00, '2027-09-09', 'Rửa vết thương, súc miệng', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(10, 'Vitamin C 500mg', 'Ascorbic Acid', 'Vitamin & Khoáng chất', 'Viên nang', '500mg', 'Dược Hậu Giang', 800, 800.00, '2027-03-20', 'Bổ sung Vitamin C tăng sức đề kháng', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(11, 'Hoạt huyết dưỡng não', 'Cao đinh lăng, cao bạch quả', 'Thực phẩm chức năng', 'Viên bao đường', 'N/A', 'Traphaco', 450, 2500.00, '2027-11-11', 'Tăng cường tuần hoàn máu não, giảm đau đầu', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
+(12, 'Strepsils Cool', '2,4-Dichlorobenzyl alcohol', 'Thuốc hô hấp', 'Viên ngậm', 'Viên', 'Reckitt Benckiser', 1000, 3000.00, '2028-06-15', 'Ngậm trị đau họng, the mát', 'admin', '2026-01-28 09:00:00', '2026-01-28 09:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `medicine_stock_log`
+--
+
+DROP TABLE IF EXISTS `medicine_stock_log`;
+CREATE TABLE `medicine_stock_log` (
+  `id` int(11) NOT NULL,
+  `medicine_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `action` varchar(50) DEFAULT 'update',
+  `note` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -584,22 +668,23 @@ INSERT INTO `medical_records` (`id`, `patient_id`, `doctor_id`, `appointment_id`
 -- Table structure for table `patreg`
 --
 
+DROP TABLE IF EXISTS `patreg`;
 CREATE TABLE `patreg` (
   `pid` int(11) NOT NULL,
-  `fname` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `lname` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `gender` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `contact` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `cpassword` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fname` varchar(20) NOT NULL,
+  `lname` varchar(20) NOT NULL,
+  `gender` varchar(10) NOT NULL,
+  `email` varchar(30) NOT NULL,
+  `contact` varchar(10) NOT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `cpassword` varchar(255) NOT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
-  `blood_group` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'A+, A-, B+, B-, O+, O-, AB+, AB-',
-  `emergency_contact` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `emergency_contact_name` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `blood_group` varchar(5) DEFAULT NULL COMMENT 'A+, A-, B+, B-, O+, O-, AB+, AB-',
+  `emergency_contact` varchar(10) DEFAULT NULL,
+  `emergency_contact_name` varchar(50) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -607,15 +692,16 @@ CREATE TABLE `patreg` (
 --
 
 INSERT INTO `patreg` (`pid`, `fname`, `lname`, `gender`, `email`, `contact`, `address`, `password`, `cpassword`, `avatar`, `date_of_birth`, `blood_group`, `emergency_contact`, `emergency_contact_name`, `updated_at`) VALUES
-(1, 'Ram', 'Kumar', 'Male', 'ram@gmail.com', '9876543210', NULL, '123', '123', NULL, NULL, NULL, NULL, NULL, '2026-01-15 14:37:31'),
-(2, 'Alia', 'Bhatt', 'Female', 'alia@gmail.com', '8976897689', NULL, '123', '123', NULL, NULL, NULL, NULL, NULL, '2026-01-15 14:37:31'),
-(3, 'Kishan', 'Lal', 'Male', 'kishansmart0@gmail.com', '8838489464', NULL, '123', '123', NULL, NULL, NULL, NULL, NULL, '2026-01-15 14:37:31'),
-(4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', NULL, '123', '123', 'uploads/avatars/avatar_4_1768488136.jpg', NULL, NULL, NULL, NULL, '2026-01-15 14:42:16'),
-(5, 'Nguyễn Văn', 'Hùng', 'Nam', 'hung.nguyen@email.com', '0912345678', NULL, '123', '123', NULL, NULL, NULL, NULL, NULL, '2026-01-15 14:37:31'),
-(6, 'Trần Thị', 'Lan', 'Nữ', 'lan.tran@email.com', '0923456789', NULL, '123', '123', NULL, NULL, NULL, NULL, NULL, '2026-01-15 14:37:31'),
-(7, 'Lê Văn', 'Minh', 'Nam', 'minh.le@email.com', '0934567890', NULL, '123', '123', NULL, NULL, NULL, NULL, NULL, '2026-01-15 14:37:31'),
-(8, 'Phạm Thị', 'Hoa', 'Nữ', 'hoa.pham@email.com', '0945678901', NULL, '123', '123', NULL, NULL, NULL, NULL, NULL, '2026-01-15 14:37:31'),
-(9, 'Hoàng Văn', 'Đức', 'Nam', 'duc.hoang@email.com', '0956789012', NULL, '123', '123', NULL, NULL, NULL, NULL, NULL, '2026-01-15 14:37:31');
+(1, 'An', 'Nguyễn Văn', 'Male', 'an.nguyen@email.com', '0912345678', '123 Kim Mã, Ba Đình, Hà Nội', '123', '123', NULL, '1990-05-15', 'A+', '0911223344', 'Nguyễn Thị Hoa', '2026-01-28 08:00:00'),
+(2, 'Bình', 'Trần Thị', 'Female', 'binh.tran@email.com', '0987654321', '45 Nguyễn Trãi, Thanh Xuân, Hà Nội', '123', '123', NULL, '1985-08-20', 'O+', '0922334455', 'Trần Văn Cường', '2026-01-28 08:00:00'),
+(3, 'Cường', 'Lê Mạnh', 'Male', 'cuong.le@email.com', '0901234567', '78 Cầu Giấy, Cầu Giấy, Hà Nội', '123', '123', NULL, '1995-12-10', 'B-', '0933445566', 'Lê Thị Mai', '2026-01-28 08:00:00'),
+(4, 'Duy', 'Chu Quang', 'Male', 'duywinter@gmail.com', '0846181174', 'Hà Đông, Hà Nội', '123', '123', 'uploads/avatars/avatar_4_1768488136.jpg', '2000-01-01', 'AB+', '0988776655', 'Chu Văn Ba', '2026-01-15 14:42:16'),
+(5, 'Hạnh', 'Phạm Thị', 'Female', 'hanh.pham@email.com', '0918273645', 'Số 5, Ngõ 10, Láng Hạ, Đống Đa, Hà Nội', '123', '123', NULL, '1992-03-25', 'O-', '0944556677', 'Phạm Văn Hùng', '2026-01-28 08:00:00'),
+(6, 'Lan', 'Hoàng Ngọc', 'Female', 'lan.hoang@email.com', '0922334455', 'KĐT Times City, Hai Bà Trưng, Hà Nội', '123', '123', NULL, '1988-11-11', 'A-', '0955667788', 'Hoàng Tuấn', '2026-01-28 08:00:00'),
+(7, 'Minh', 'Vũ Đức', 'Male', 'minh.vu@email.com', '0933445566', '102 Trần Phú, Hà Đông, Hà Nội', '123', '123', NULL, '1975-06-30', 'B+', '0966778899', 'Vũ Thị Loan', '2026-01-28 08:00:00'),
+(8, 'Nhi', 'Đặng Uyên', 'Female', 'nhi.dang@email.com', '0944556677', '88 Lê Văn Lương, Thanh Xuân, Hà Nội', '123', '123', NULL, '1998-09-09', 'AB-', '0977889900', 'Đặng Văn Minh', '2026-01-28 08:00:00'),
+(9, 'Quân', 'Trịnh Minh', 'Male', 'quan.trinh@email.com', '0955667788', 'P202, Chung cư B1, Mỹ Đình, Hà Nội', '123', '123', NULL, '2005-02-14', 'O+', '0988990011', 'Trịnh Thị Thu', '2026-01-28 08:00:00'),
+(10, 'Tâm', 'Lý Thanh', 'Female', 'tam.ly@email.com', '0966778899', 'Số 1, Đại Cồ Việt, Hai Bà Trưng, Hà Nội', '123', '123', NULL, '1980-07-22', 'A+', '0999001122', 'Lý Văn Hải', '2026-01-28 08:00:00');
 
 -- --------------------------------------------------------
 
@@ -623,6 +709,7 @@ INSERT INTO `patreg` (`pid`, `fname`, `lname`, `gender`, `email`, `contact`, `ad
 -- Table structure for table `prescription_medications`
 --
 
+DROP TABLE IF EXISTS `prescription_medications`;
 CREATE TABLE `prescription_medications` (
   `id` int(11) NOT NULL,
   `prescription_id` int(11) NOT NULL,
@@ -630,9 +717,9 @@ CREATE TABLE `prescription_medications` (
   `dosage` varchar(100) NOT NULL,
   `frequency` varchar(100) NOT NULL,
   `duration` varchar(100) NOT NULL,
-  `special_notes` text,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `special_notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -640,29 +727,36 @@ CREATE TABLE `prescription_medications` (
 -- Table structure for table `prestb`
 --
 
+DROP TABLE IF EXISTS `prestb`;
 CREATE TABLE `prestb` (
   `pres_id` int(11) NOT NULL,
-  `doctor` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `doctor` varchar(50) NOT NULL,
   `pid` int(11) NOT NULL,
   `ID` int(11) NOT NULL,
-  `fname` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `lname` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fname` varchar(50) NOT NULL,
+  `lname` varchar(50) NOT NULL,
   `appdate` date NOT NULL,
   `apptime` time NOT NULL,
-  `disease` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `allergy` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `prescription` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `treatment_duration` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `general_notes` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `disease` varchar(250) NOT NULL,
+  `allergy` varchar(250) NOT NULL,
+  `prescription` varchar(1000) NOT NULL,
+  `treatment_duration` varchar(100) DEFAULT NULL,
+  `general_notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `prestb`
 --
 
-INSERT INTO `prestb` (`pres_id`, `doctor`, `pid`, `ID`, `fname`, `lname`, `appdate`, `apptime`, `disease`, `allergy`, `prescription`, `treatment_duration`, `general_notes`, `created_at`) VALUES
-(1, 'Bùi Quốc Việt', 4, 6, 'Duy', 'Chu Quang', '2026-03-18', '13:30:00', 'Sốt', 'Không có', '123, 123, 234, 234', NULL, NULL, '2026-01-27 03:39:02');
+INSERT INTO `prestb` (`pres_id`, `doctor`, `pid`, `ID`, `fname`, `lname`, `appdate`, `apptime`, `disease`, `allergy`, `prescription`, `treatment_duration`, `created_at`) VALUES
+(1, 'Bùi Quốc Việt', 4, 6, 'Duy', 'Chu Quang', '2026-03-18', '13:30:00', 'Sốt virus', 'Không có', 'Paracetamol 500mg: 1 viên x 3 lần/ngày (sau ăn); Vitamin C: 2 viên/ngày', NULL, '2026-01-28 09:03:03'),
+(2, 'Lê Minh Châu', 1, 101, 'An', 'Nguyễn Văn', '2026-02-14', '09:00:00', 'Viêm họng cấp', 'Penicillin', 'Augmentin 625mg: 1 viên x 2 lần/ngày (uống 7 ngày); Efferalgan: khi sốt > 38.5 độ', NULL, '2026-01-28 09:03:03'),
+(3, 'Vũ Thị Giang', 2, 102, 'Bình', 'Trần Thị', '2026-02-15', '10:30:00', 'Khám thai định kỳ 12 tuần', 'Không có', 'Sắt và Axit Folic: 1 viên/ngày; Canxi: 1 viên/ngày (uống sáng)', NULL, '2026-01-28 09:03:03'),
+(4, 'Hoàng Văn Em', 3, 103, 'Cường', 'Lê Mạnh', '2026-02-16', '14:00:00', 'Viêm da dị ứng', 'Hải sản', 'Fucicort kem bôi: 2 lần/ngày; Loratadin 10mg: 1 viên/tối', NULL, '2026-01-28 09:03:03'),
+(5, 'Lý Văn Minh', 5, 104, 'Hạnh', 'Phạm Thị', '2026-02-17', '08:30:00', 'Rối loạn tiêu hóa', 'Không có', 'Berberin: 10 viên x 2 lần/ngày; Oresol: uống bù nước; Men vi sinh: 2 ống/ngày', NULL, '2026-01-28 09:03:03'),
+(6, 'Phan Văn Sơn', 7, 105, 'Minh', 'Vũ Đức', '2026-02-18', '15:00:00', 'Đau lưng cấp', 'Không có', 'Mobic 7.5mg: 1 viên/ngày (sau ăn no); Myonal 50mg: 2 viên/ngày; Salonpas dán tại chỗ', NULL, '2026-01-28 09:03:03'),
+(7, 'Bùi Văn Kiên', 10, 106, 'Tâm', 'Lý Thanh', '2026-02-19', '11:00:00', 'Đau đầu vận mạch', 'Không có', 'Hoạt huyết dưỡng não: 2 viên x 2 lần/ngày; Magne-B6: 2 viên/ngày; Nghỉ ngơi hợp lý', NULL, '2026-01-28 09:03:03');
 
 -- --------------------------------------------------------
 
@@ -670,13 +764,14 @@ INSERT INTO `prestb` (`pres_id`, `doctor`, `pid`, `ID`, `fname`, `lname`, `appda
 -- Table structure for table `service_ratings`
 --
 
+DROP TABLE IF EXISTS `service_ratings`;
 CREATE TABLE `service_ratings` (
   `id` int(11) NOT NULL,
   `spec_id` int(11) NOT NULL,
   `patient_id` int(11) NOT NULL,
   `rating` int(1) NOT NULL,
-  `review` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `review` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -685,16 +780,17 @@ CREATE TABLE `service_ratings` (
 -- Table structure for table `specializations`
 --
 
+DROP TABLE IF EXISTS `specializations`;
 CREATE TABLE `specializations` (
   `id` int(11) NOT NULL,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name_vi` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `icon` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'fas fa-stethoscope',
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `status` tinyint(1) DEFAULT '1',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `average_rating` float DEFAULT '0',
-  `total_ratings` int(11) DEFAULT '0'
+  `name` varchar(100) NOT NULL,
+  `name_vi` varchar(100) NOT NULL,
+  `icon` varchar(100) DEFAULT 'fas fa-stethoscope',
+  `description` text DEFAULT NULL,
+  `status` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `average_rating` float DEFAULT 0,
+  `total_ratings` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -703,26 +799,26 @@ CREATE TABLE `specializations` (
 
 INSERT INTO `specializations` (`id`, `name`, `name_vi`, `icon`, `description`, `status`, `created_at`, `average_rating`, `total_ratings`) VALUES
 (1, 'Pediatrics', 'Nhi khoa', 'fas fa-baby', 'Khám và điều trị bệnh cho trẻ em từ sơ sinh đến 18 tuổi', 1, '2026-01-14 18:04:43', 0, 0),
-(2, 'Obstetrics_Gynecology', 'Sản phụ khoa', 'fas fa-stethoscope', 'Chăm sóc sức khỏe phụ nữ, thai sản và sinh đẻ', 1, '2026-01-14 18:04:43', 0, 0),
+(2, 'Obstetrics_Gynecology', 'Sản phụ khoa', 'fas fa-female', 'Chăm sóc sức khỏe phụ nữ, thai sản và sinh đẻ', 1, '2026-01-14 18:04:43', 0, 0),
 (3, 'Dermatology', 'Da liễu', 'fas fa-allergies', 'Khám và điều trị các bệnh về da, tóc, móng', 1, '2026-01-14 18:04:43', 0, 0),
-(4, 'Gastroenterology', 'Tiêu hóa', 'fas fa-utensils', 'Khám và điều trị các bệnh về dạ dày, ruột, gan, mật', 1, '2026-01-14 18:04:43', 0, 0),
+(4, 'Gastroenterology', 'Tiêu hóa', 'fas fa-stomach', 'Khám và điều trị các bệnh về dạ dày, ruột, gan, mật', 1, '2026-01-14 18:04:43', 0, 0),
 (5, 'Rheumatology', 'Cơ xương khớp', 'fas fa-bone', 'Khám và điều trị các bệnh về xương, khớp, cơ', 1, '2026-01-14 18:04:43', 0, 0),
 (6, 'Allergy_Immunology', 'Dị ứng - Miễn dịch', 'fas fa-shield-virus', 'Khám và điều trị các bệnh dị ứng và hệ miễn dịch', 1, '2026-01-14 18:04:43', 0, 0),
 (7, 'Anesthesiology', 'Gây mê hồi sức', 'fas fa-syringe', 'Chuyên khoa gây mê và hồi sức trong phẫu thuật', 1, '2026-01-14 18:04:43', 0, 0),
-(8, 'ENT', 'Tai - Mũi - Họng', 'fas fa-stethoscope', 'Khám và điều trị các bệnh tai, mũi, họng', 1, '2026-01-14 18:04:43', 0, 0),
+(8, 'ENT', 'Tai - Mũi - Họng', 'fas fa-head-side-cough', 'Khám và điều trị các bệnh tai, mũi, họng', 1, '2026-01-14 18:04:43', 0, 0),
 (9, 'Oncology', 'Ung bướu', 'fas fa-ribbon', 'Chẩn đoán và điều trị các bệnh ung thư', 1, '2026-01-14 18:04:43', 0, 0),
 (10, 'Cardiology', 'Tim mạch', 'fas fa-heartbeat', 'Khám và điều trị các bệnh về tim và mạch máu', 1, '2026-01-14 18:04:43', 0, 0),
-(11, 'Geriatrics', 'Lão khoa', 'fas fa-crutch', 'Chăm sóc sức khỏe người cao tuổi', 1, '2026-01-14 18:04:43', 0, 0),
+(11, 'Geriatrics', 'Lão khoa', 'fas fa-user-clock', 'Chăm sóc sức khỏe người cao tuổi', 1, '2026-01-14 18:04:43', 0, 0),
 (12, 'Orthopedics', 'Chấn thương chỉnh hình', 'fas fa-bone', 'Phẫu thuật và điều trị chấn thương xương khớp', 1, '2026-01-14 18:04:43', 0, 0),
 (13, 'Emergency_Medicine', 'Hồi sức cấp cứu', 'fas fa-ambulance', 'Cấp cứu và hồi sức tích cực', 1, '2026-01-14 18:04:43', 0, 0),
 (14, 'General_Surgery', 'Ngoại tổng quát', 'fas fa-cut', 'Phẫu thuật tổng quát các cơ quan', 1, '2026-01-14 18:04:43', 0, 0),
 (15, 'Preventive_Medicine', 'Y học dự phòng', 'fas fa-shield-alt', 'Phòng ngừa bệnh tật và nâng cao sức khỏe', 1, '2026-01-14 18:04:43', 0, 0),
 (16, 'Dentistry', 'Răng - Hàm - Mặt', 'fas fa-tooth', 'Khám và điều trị các bệnh về răng, hàm, mặt', 1, '2026-01-14 18:04:43', 0, 0),
 (17, 'Infectious_Disease', 'Truyền nhiễm', 'fas fa-virus', 'Khám và điều trị các bệnh truyền nhiễm', 1, '2026-01-14 18:04:43', 0, 0),
-(18, 'Nephrology', 'Nội thận', 'fas fa-water', 'Khám và điều trị các bệnh về thận', 1, '2026-01-14 18:04:43', 0, 0),
-(19, 'Endocrinology', 'Nội tiết', 'fas fa-stethoscope', 'Khám và điều trị các bệnh về nội tiết, tiểu đường', 1, '2026-01-14 18:04:43', 0, 0),
+(18, 'Nephrology', 'Nội thận', 'fas fa-kidneys', 'Khám và điều trị các bệnh về thận', 1, '2026-01-14 18:04:43', 0, 0),
+(19, 'Endocrinology', 'Nội tiết', 'fas fa-disease', 'Khám và điều trị các bệnh về nội tiết, tiểu đường', 1, '2026-01-14 18:04:43', 0, 0),
 (20, 'Psychiatry', 'Tâm thần', 'fas fa-brain', 'Khám và điều trị các bệnh tâm thần', 1, '2026-01-14 18:04:43', 0, 0),
-(21, 'Pulmonology', 'Hô hấp', 'fas fa-wind', 'Khám và điều trị các bệnh về phổi và đường hô hấp', 1, '2026-01-14 18:04:43', 0, 0),
+(21, 'Pulmonology', 'Hô hấp', 'fas fa-lungs', 'Khám và điều trị các bệnh về phổi và đường hô hấp', 1, '2026-01-14 18:04:43', 0, 0),
 (22, 'Laboratory', 'Xét nghiệm', 'fas fa-vials', 'Xét nghiệm máu, nước tiểu và các chỉ số', 1, '2026-01-14 18:04:43', 0, 0),
 (23, 'Hematology', 'Huyết học', 'fas fa-tint', 'Khám và điều trị các bệnh về máu', 1, '2026-01-14 18:04:43', 0, 0),
 (24, 'Psychology', 'Tâm lý', 'fas fa-comments', 'Tư vấn và trị liệu tâm lý', 1, '2026-01-14 18:04:43', 0, 0),
@@ -751,14 +847,15 @@ INSERT INTO `specializations` (`id`, `name`, `name_vi`, `icon`, `description`, `
 -- Table structure for table `time_slots`
 --
 
+DROP TABLE IF EXISTS `time_slots`;
 CREATE TABLE `time_slots` (
   `id` int(11) NOT NULL,
   `doctor_id` int(11) NOT NULL,
   `slot_date` date NOT NULL,
   `slot_time` time NOT NULL,
-  `status` enum('available','booked','blocked') COLLATE utf8mb4_unicode_ci DEFAULT 'available',
+  `status` enum('available','booked','blocked') DEFAULT 'available',
   `appointment_id` int(11) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -819,61 +916,7 @@ INSERT INTO `time_slots` (`id`, `doctor_id`, `slot_date`, `slot_time`, `status`,
 (51, 17, '2026-03-18', '15:00:00', 'available', NULL, '2026-01-15 14:19:46'),
 (52, 17, '2026-03-18', '15:30:00', 'available', NULL, '2026-01-15 14:19:46'),
 (53, 17, '2026-03-18', '16:00:00', 'available', NULL, '2026-01-15 14:19:46'),
-(54, 17, '2026-03-18', '16:30:00', 'available', NULL, '2026-01-15 14:19:46'),
-(55, 18, '2026-12-28', '08:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(56, 18, '2026-12-28', '08:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(57, 18, '2026-12-28', '09:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(58, 18, '2026-12-28', '09:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(59, 18, '2026-12-28', '10:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(60, 18, '2026-12-28', '10:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(61, 18, '2026-12-28', '11:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(62, 18, '2026-12-28', '11:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(63, 18, '2026-12-28', '12:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(64, 18, '2026-12-28', '12:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(65, 18, '2026-12-28', '13:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(66, 18, '2026-12-28', '13:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(67, 18, '2026-12-28', '14:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(68, 18, '2026-12-28', '14:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(69, 18, '2026-12-28', '15:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(70, 18, '2026-12-28', '15:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(71, 18, '2026-12-28', '16:00:00', 'available', NULL, '2026-01-21 03:01:55'),
-(72, 18, '2026-12-28', '16:30:00', 'available', NULL, '2026-01-21 03:01:55'),
-(73, 18, '2026-06-30', '08:00:00', 'available', NULL, '2026-01-21 03:03:25'),
-(74, 18, '2026-06-30', '08:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(75, 18, '2026-06-30', '09:00:00', 'available', NULL, '2026-01-21 03:03:25'),
-(76, 18, '2026-06-30', '09:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(77, 18, '2026-06-30', '10:00:00', 'available', NULL, '2026-01-21 03:03:25'),
-(78, 18, '2026-06-30', '10:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(79, 18, '2026-06-30', '11:00:00', 'available', NULL, '2026-01-21 03:03:25'),
-(80, 18, '2026-06-30', '11:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(81, 18, '2026-06-30', '12:00:00', 'available', NULL, '2026-01-21 03:03:25'),
-(82, 18, '2026-06-30', '12:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(83, 18, '2026-06-30', '13:00:00', 'available', NULL, '2026-01-21 03:03:25'),
-(84, 18, '2026-06-30', '13:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(85, 18, '2026-06-30', '14:00:00', 'booked', 8, '2026-01-21 03:03:25'),
-(86, 18, '2026-06-30', '14:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(87, 18, '2026-06-30', '15:00:00', 'available', NULL, '2026-01-21 03:03:25'),
-(88, 18, '2026-06-30', '15:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(89, 18, '2026-06-30', '16:00:00', 'available', NULL, '2026-01-21 03:03:25'),
-(90, 18, '2026-06-30', '16:30:00', 'available', NULL, '2026-01-21 03:03:25'),
-(91, 17, '2026-04-15', '08:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(92, 17, '2026-04-15', '08:30:00', 'booked', 9, '2026-01-21 03:07:07'),
-(93, 17, '2026-04-15', '09:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(94, 17, '2026-04-15', '09:30:00', 'available', NULL, '2026-01-21 03:07:07'),
-(95, 17, '2026-04-15', '10:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(96, 17, '2026-04-15', '10:30:00', 'available', NULL, '2026-01-21 03:07:07'),
-(97, 17, '2026-04-15', '11:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(98, 17, '2026-04-15', '11:30:00', 'available', NULL, '2026-01-21 03:07:07'),
-(99, 17, '2026-04-15', '12:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(100, 17, '2026-04-15', '12:30:00', 'available', NULL, '2026-01-21 03:07:07'),
-(101, 17, '2026-04-15', '13:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(102, 17, '2026-04-15', '13:30:00', 'available', NULL, '2026-01-21 03:07:07'),
-(103, 17, '2026-04-15', '14:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(104, 17, '2026-04-15', '14:30:00', 'available', NULL, '2026-01-21 03:07:07'),
-(105, 17, '2026-04-15', '15:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(106, 17, '2026-04-15', '15:30:00', 'available', NULL, '2026-01-21 03:07:07'),
-(107, 17, '2026-04-15', '16:00:00', 'available', NULL, '2026-01-21 03:07:07'),
-(108, 17, '2026-04-15', '16:30:00', 'available', NULL, '2026-01-21 03:07:07');
+(54, 17, '2026-03-18', '16:30:00', 'available', NULL, '2026-01-15 14:19:46');
 
 -- --------------------------------------------------------
 
@@ -881,19 +924,20 @@ INSERT INTO `time_slots` (`id`, `doctor_id`, `slot_date`, `slot_time`, `status`,
 -- Table structure for table `vaccination_records`
 --
 
+DROP TABLE IF EXISTS `vaccination_records`;
 CREATE TABLE `vaccination_records` (
   `id` int(11) NOT NULL,
   `patient_id` int(11) NOT NULL,
-  `vaccine_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `vaccine_type` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `dose_number` int(2) DEFAULT '1',
+  `vaccine_name` varchar(100) NOT NULL,
+  `vaccine_type` varchar(100) DEFAULT NULL,
+  `dose_number` int(2) DEFAULT 1,
   `vaccination_date` date NOT NULL,
   `next_dose_date` date DEFAULT NULL,
   `administered_by` int(11) DEFAULT NULL COMMENT 'ID bác sĩ',
-  `location` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `batch_number` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `notes` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `location` varchar(100) DEFAULT NULL,
+  `batch_number` varchar(50) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -902,6 +946,8 @@ CREATE TABLE `vaccination_records` (
 -- Stand-in structure for view `v_doctors`
 -- (See below for the actual view)
 --
+DROP VIEW IF EXISTS `v_doctors`;
+DROP TABLE IF EXISTS `v_doctors`;
 CREATE TABLE `v_doctors` (
 `id` int(11)
 ,`username` varchar(255)
@@ -924,6 +970,8 @@ CREATE TABLE `v_doctors` (
 -- Stand-in structure for view `v_medical_records_summary`
 -- (See below for the actual view)
 --
+DROP VIEW IF EXISTS `v_medical_records_summary`;
+DROP TABLE IF EXISTS `v_medical_records_summary`;
 CREATE TABLE `v_medical_records_summary` (
 `id` int(11)
 ,`patient_id` int(11)
@@ -945,6 +993,8 @@ CREATE TABLE `v_medical_records_summary` (
 -- Stand-in structure for view `v_patient_profiles`
 -- (See below for the actual view)
 --
+DROP VIEW IF EXISTS `v_patient_profiles`;
+DROP TABLE IF EXISTS `v_patient_profiles`;
 CREATE TABLE `v_patient_profiles` (
 `pid` int(11)
 ,`fname` varchar(20)
@@ -1040,6 +1090,15 @@ ALTER TABLE `medical_attachments`
   ADD KEY `record_id` (`record_id`);
 
 --
+-- Indexes for table `medical_documents`
+--
+ALTER TABLE `medical_documents`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pid` (`pid`),
+  ADD KEY `doctor` (`doctor`),
+  ADD KEY `appointment_id` (`appointment_id`);
+
+--
 -- Indexes for table `medical_records`
 --
 ALTER TABLE `medical_records`
@@ -1047,6 +1106,22 @@ ALTER TABLE `medical_records`
   ADD KEY `patient_id` (`patient_id`),
   ADD KEY `doctor_id` (`doctor_id`),
   ADD KEY `record_date` (`record_date`);
+
+--
+-- Indexes for table `medicines`
+--
+ALTER TABLE `medicines`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_name` (`name`),
+  ADD KEY `idx_category` (`category`),
+  ADD KEY `idx_expiry_date` (`expiry_date`);
+
+--
+-- Indexes for table `medicine_stock_log`
+--
+ALTER TABLE `medicine_stock_log`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `medicine_id` (`medicine_id`);
 
 --
 -- Indexes for table `patreg`
@@ -1105,7 +1180,7 @@ ALTER TABLE `vaccination_records`
 -- AUTO_INCREMENT for table `appointmenttb`
 --
 ALTER TABLE `appointmenttb`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `doctb`
@@ -1156,16 +1231,34 @@ ALTER TABLE `medical_attachments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `medical_documents`
+--
+ALTER TABLE `medical_documents`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `medical_records`
 --
 ALTER TABLE `medical_records`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `medicines`
+--
+ALTER TABLE `medicines`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT for table `medicine_stock_log`
+--
+ALTER TABLE `medicine_stock_log`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `patreg`
 --
 ALTER TABLE `patreg`
-  MODIFY `pid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `pid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `prescription_medications`
@@ -1177,7 +1270,7 @@ ALTER TABLE `prescription_medications`
 -- AUTO_INCREMENT for table `prestb`
 --
 ALTER TABLE `prestb`
-  MODIFY `pres_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `pres_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `service_ratings`
@@ -1195,7 +1288,7 @@ ALTER TABLE `specializations`
 -- AUTO_INCREMENT for table `time_slots`
 --
 ALTER TABLE `time_slots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `vaccination_records`
@@ -1210,7 +1303,7 @@ ALTER TABLE `vaccination_records`
 --
 DROP TABLE IF EXISTS `v_doctors`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_doctors`  AS SELECT `d`.`id` AS `id`, `d`.`username` AS `username`, `d`.`fullname` AS `fullname`, `d`.`email` AS `email`, `d`.`spec` AS `spec`, `d`.`spec_id` AS `spec_id`, `s`.`name_vi` AS `spec_name_vi`, `s`.`icon` AS `spec_icon`, `d`.`docFees` AS `docFees`, `d`.`phone` AS `phone`, `d`.`bio` AS `bio`, `d`.`experience_years` AS `experience_years`, `d`.`status` AS `status` FROM (`doctb` `d` left join `specializations` `s` on((`d`.`spec_id` = `s`.`id`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_chxtz4re7g`@`localhost` SQL SECURITY DEFINER VIEW `v_doctors`  AS SELECT `d`.`id` AS `id`, `d`.`username` AS `username`, `d`.`fullname` AS `fullname`, `d`.`email` AS `email`, `d`.`spec` AS `spec`, `d`.`spec_id` AS `spec_id`, `s`.`name_vi` AS `spec_name_vi`, `s`.`icon` AS `spec_icon`, `d`.`docFees` AS `docFees`, `d`.`phone` AS `phone`, `d`.`bio` AS `bio`, `d`.`experience_years` AS `experience_years`, `d`.`status` AS `status` FROM (`doctb` `d` left join `specializations` `s` on(`d`.`spec_id` = `s`.`id`)) ;
 
 -- --------------------------------------------------------
 
@@ -1219,7 +1312,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_medical_records_summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_medical_records_summary`  AS SELECT `mr`.`id` AS `id`, `mr`.`patient_id` AS `patient_id`, concat(`p`.`fname`,' ',`p`.`lname`) AS `patient_name`, `p`.`contact` AS `patient_contact`, `p`.`blood_group` AS `blood_group`, `mr`.`doctor_id` AS `doctor_id`, `d`.`fullname` AS `doctor_name`, `mr`.`record_date` AS `record_date`, `mr`.`record_type` AS `record_type`, `mr`.`diagnosis` AS `diagnosis`, `mr`.`status` AS `status`, `mr`.`created_at` AS `created_at` FROM ((`medical_records` `mr` left join `patreg` `p` on((`mr`.`patient_id` = `p`.`pid`))) left join `doctb` `d` on((`mr`.`doctor_id` = `d`.`id`))) ORDER BY `mr`.`record_date` DESC, `mr`.`created_at` DESC ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_chxtz4re7g`@`localhost` SQL SECURITY DEFINER VIEW `v_medical_records_summary`  AS SELECT `mr`.`id` AS `id`, `mr`.`patient_id` AS `patient_id`, concat(`p`.`fname`,' ',`p`.`lname`) AS `patient_name`, `p`.`contact` AS `patient_contact`, `p`.`blood_group` AS `blood_group`, `mr`.`doctor_id` AS `doctor_id`, `d`.`fullname` AS `doctor_name`, `mr`.`record_date` AS `record_date`, `mr`.`record_type` AS `record_type`, `mr`.`diagnosis` AS `diagnosis`, `mr`.`status` AS `status`, `mr`.`created_at` AS `created_at` FROM ((`medical_records` `mr` left join `patreg` `p` on(`mr`.`patient_id` = `p`.`pid`)) left join `doctb` `d` on(`mr`.`doctor_id` = `d`.`id`)) ORDER BY `mr`.`record_date` DESC, `mr`.`created_at` DESC ;
 
 -- --------------------------------------------------------
 
@@ -1228,7 +1321,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_patient_profiles`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_patient_profiles`  AS SELECT `p`.`pid` AS `pid`, `p`.`fname` AS `fname`, `p`.`lname` AS `lname`, `p`.`gender` AS `gender`, `p`.`email` AS `email`, `p`.`contact` AS `contact`, `p`.`address` AS `address`, `p`.`avatar` AS `avatar`, `p`.`date_of_birth` AS `date_of_birth`, `p`.`blood_group` AS `blood_group`, `p`.`emergency_contact` AS `emergency_contact`, `p`.`emergency_contact_name` AS `emergency_contact_name`, timestampdiff(YEAR,`p`.`date_of_birth`,curdate()) AS `age`, count(distinct `a`.`ID`) AS `total_appointments`, count(distinct `mr`.`id`) AS `total_records` FROM ((`patreg` `p` left join `appointmenttb` `a` on((`p`.`pid` = `a`.`pid`))) left join `medical_records` `mr` on((`p`.`pid` = `mr`.`patient_id`))) GROUP BY `p`.`pid` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_chxtz4re7g`@`localhost` SQL SECURITY DEFINER VIEW `v_patient_profiles`  AS SELECT `p`.`pid` AS `pid`, `p`.`fname` AS `fname`, `p`.`lname` AS `lname`, `p`.`gender` AS `gender`, `p`.`email` AS `email`, `p`.`contact` AS `contact`, `p`.`address` AS `address`, `p`.`avatar` AS `avatar`, `p`.`date_of_birth` AS `date_of_birth`, `p`.`blood_group` AS `blood_group`, `p`.`emergency_contact` AS `emergency_contact`, `p`.`emergency_contact_name` AS `emergency_contact_name`, timestampdiff(YEAR,`p`.`date_of_birth`,curdate()) AS `age`, count(distinct `a`.`ID`) AS `total_appointments`, count(distinct `mr`.`id`) AS `total_records` FROM ((`patreg` `p` left join `appointmenttb` `a` on(`p`.`pid` = `a`.`pid`)) left join `medical_records` `mr` on(`p`.`pid` = `mr`.`patient_id`)) GROUP BY `p`.`pid` ;
 
 --
 -- Constraints for dumped tables
@@ -1254,6 +1347,12 @@ ALTER TABLE `forum_attachments`
 ALTER TABLE `forum_comments`
   ADD CONSTRAINT `forum_comments_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `forum_posts` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `forum_comments_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `forum_comments` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `medicine_stock_log`
+--
+ALTER TABLE `medicine_stock_log`
+  ADD CONSTRAINT `medicine_stock_log_ibfk_1` FOREIGN KEY (`medicine_id`) REFERENCES `medicines` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `prescription_medications`
