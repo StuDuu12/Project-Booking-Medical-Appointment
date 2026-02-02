@@ -175,12 +175,6 @@ if (isset($_POST['docsub1'])) {
                         <span>Hồ sơ bệnh án</span>
                     </a>
                 </li>
-                <li class="sidebar-menu-item">
-                    <a href="../forum/index.php" class="sidebar-menu-link">
-                        <i class="fas fa-comments sidebar-menu-icon"></i>
-                        <span>Diễn đàn</span>
-                    </a>
-                </li>
             </ul>
         </aside>
 

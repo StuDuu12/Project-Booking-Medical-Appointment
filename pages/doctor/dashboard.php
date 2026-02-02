@@ -16,9 +16,38 @@ if (empty($doctor)) {
     die("Session error: Doctor name not found. Please login again.");
 }
 
+// Create services table if it doesn't exist
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS services (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        service_name VARCHAR(255) NOT NULL,
+        description LONGTEXT,
+        price DECIMAL(10, 2) NOT NULL DEFAULT 0,
+        status ENUM('0', '1') NOT NULL DEFAULT '1' COMMENT '0: Inactive, 1: Active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        created_by VARCHAR(255),
+        INDEX idx_service_name (service_name),
+        INDEX idx_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    
+    // Insert sample data if table is empty
+    $stmt = $pdo->query("SELECT COUNT(*) as cnt FROM services");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($result['cnt'] == 0) {
+        $pdo->exec("INSERT INTO services (service_name, description, price, status, created_by) VALUES
+            ('Khám tổng quát', 'Khám sức khỏe tổng quát đầy đủ', 500000, '1', 'System'),
+            ('Siêu âm', 'Siêu âm chẩn đoán', 300000, '1', 'System'),
+            ('Xét nghiệm máu', 'Xét nghiệm máu toàn bộ', 350000, '1', 'System'),
+            ('Chụp X-quang', 'Chụp X-quang các bộ phận', 400000, '1', 'System'),
+            ('Nhổ răng', 'Dịch vụ nhổ răng', 200000, '1', 'System')");
+    }
+} catch (PDOException $e) {
+    error_log("Services table creation error: " . $e->getMessage());
+}
 // Handle page parameter
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-$allowed_pages = array('dashboard', 'appointments', 'prescriptions', 'documents', 'patient_history', 'medicine_inventory');
+$allowed_pages = array('dashboard', 'appointments', 'documents', 'patient_history', 'medicine_inventory', 'service_pricing');
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
@@ -46,7 +75,6 @@ if (isset($_POST['upload_document'])) {
         $fileSize = $file['size'];
         $fileType = $file['type'];
 
-        // Validate file type (allow common medical document types)
         $allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (!in_array($fileType, $allowedTypes)) {
             redirectWithMessage($_SERVER['PHP_SELF'] . '?page=documents', 'error', 'Loại file không được phép. Chỉ cho phép PDF, hình ảnh và tài liệu Word.');
@@ -83,8 +111,6 @@ if (isset($_POST['upload_document'])) {
         } else {
             redirectWithMessage($_SERVER['PHP_SELF'] . '?page=documents', 'error', 'Lỗi khi upload file.');
         }
-    } else {
-        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=documents', 'error', 'Vui lòng chọn file để upload.');
     }
 }
 
@@ -140,29 +166,25 @@ if (isset($_POST['update_medicine'])) {
     $expiry_date = $_POST['expiry_date'];
     $description = trim($_POST['description']);
 
-    if (empty($name) || $quantity < 0 || $unit_price < 0) {
-        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=medicine_inventory', 'error', 'Vui lòng điền đầy đủ thông tin và đảm bảo số lượng và giá không âm.');
-    } else {
-        try {
-            $stmt = $pdo->prepare("UPDATE medicines SET name = :name, generic_name = :generic_name, category = :category, dosage_form = :dosage_form, strength = :strength, manufacturer = :manufacturer, quantity = :quantity, unit_price = :unit_price, expiry_date = :expiry_date, description = :description WHERE id = :id");
-            $stmt->execute([
-                ':name' => $name,
-                ':generic_name' => $generic_name,
-                ':category' => $category,
-                ':dosage_form' => $dosage_form,
-                ':strength' => $strength,
-                ':manufacturer' => $manufacturer,
-                ':quantity' => $quantity,
-                ':unit_price' => $unit_price,
-                ':expiry_date' => $expiry_date,
-                ':description' => $description,
-                ':id' => $id
-            ]);
-            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=medicine_inventory', 'success', 'Thuốc đã được cập nhật thành công.');
-        } catch (PDOException $e) {
-            error_log("Update medicine error: " . $e->getMessage());
-            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=medicine_inventory', 'error', 'Lỗi khi cập nhật thuốc.');
-        }
+    try {
+        $stmt = $pdo->prepare("UPDATE medicines SET name = :name, generic_name = :generic_name, category = :category, dosage_form = :dosage_form, strength = :strength, manufacturer = :manufacturer, quantity = :quantity, unit_price = :unit_price, expiry_date = :expiry_date, description = :description WHERE id = :id");
+        $stmt->execute([
+            ':name' => $name,
+            ':generic_name' => $generic_name,
+            ':category' => $category,
+            ':dosage_form' => $dosage_form,
+            ':strength' => $strength,
+            ':manufacturer' => $manufacturer,
+            ':quantity' => $quantity,
+            ':unit_price' => $unit_price,
+            ':expiry_date' => $expiry_date,
+            ':description' => $description,
+            ':id' => $id
+        ]);
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=medicine_inventory', 'success', 'Thuốc đã được cập nhật.');
+    } catch (PDOException $e) {
+        error_log("Update medicine error: " . $e->getMessage());
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=medicine_inventory', 'error', 'Lỗi khi cập nhật thuốc.');
     }
 }
 
@@ -186,7 +208,6 @@ if (isset($_POST['update_stock'])) {
     try {
         $pdo->beginTransaction();
         
-        // Get current quantity
         $stmt = $pdo->prepare("SELECT quantity FROM medicines WHERE id = :id");
         $stmt->execute([':id' => $id]);
         $current_quantity = $stmt->fetchColumn();
@@ -198,11 +219,9 @@ if (isset($_POST['update_stock'])) {
             exit;
         }
         
-        // Update quantity
         $stmt = $pdo->prepare("UPDATE medicines SET quantity = :quantity WHERE id = :id");
         $stmt->execute([':quantity' => $new_quantity, ':id' => $id]);
         
-        // Log stock change
         $stmt = $pdo->prepare("INSERT INTO medicine_stock_log (medicine_id, quantity_change, new_quantity, reason, updated_by) VALUES (:medicine_id, :quantity_change, :new_quantity, :reason, :updated_by)");
         $stmt->execute([
             ':medicine_id' => $id,
@@ -218,6 +237,73 @@ if (isset($_POST['update_stock'])) {
         $pdo->rollBack();
         error_log("Update stock error: " . $e->getMessage());
         redirectWithMessage($_SERVER['PHP_SELF'] . '?page=medicine_inventory', 'error', 'Lỗi khi cập nhật kho.');
+    }
+}
+
+// Handle service pricing operations
+if (isset($_POST['add_service'])) {
+    try {
+        $service_name = $_POST['service_name'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $price = $_POST['price'] ?? 0;
+        $status = $_POST['status'] ?? '1';
+
+        if (empty($service_name) || $price < 0) {
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=service_pricing', 'error', 'Vui lòng điền đầy đủ thông tin.');
+        }
+
+        $stmt = $pdo->prepare("INSERT INTO services (service_name, description, price, status) VALUES (:name, :desc, :price, :status)");
+        $stmt->execute([
+            ':name' => $service_name,
+            ':desc' => $description,
+            ':price' => $price,
+            ':status' => $status
+        ]);
+
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=service_pricing', 'success', 'Dịch vụ đã được thêm thành công.');
+    } catch (PDOException $e) {
+        error_log("Add service error: " . $e->getMessage());
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=service_pricing', 'error', 'Lỗi khi thêm dịch vụ.');
+    }
+}
+
+if (isset($_POST['edit_service'])) {
+    try {
+        $service_id = $_POST['service_id'] ?? '';
+        $service_name = $_POST['service_name'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $price = $_POST['price'] ?? 0;
+        $status = $_POST['status'] ?? '1';
+
+        if (empty($service_id) || empty($service_name) || $price < 0) {
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=service_pricing', 'error', 'Vui lòng điền đầy đủ thông tin.');
+        }
+
+        $stmt = $pdo->prepare("UPDATE services SET service_name = :name, description = :desc, price = :price, status = :status WHERE id = :id");
+        $stmt->execute([
+            ':id' => $service_id,
+            ':name' => $service_name,
+            ':desc' => $description,
+            ':price' => $price,
+            ':status' => $status
+        ]);
+
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=service_pricing', 'success', 'Dịch vụ đã được cập nhật.');
+    } catch (PDOException $e) {
+        error_log("Edit service error: " . $e->getMessage());
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=service_pricing', 'error', 'Lỗi khi cập nhật dịch vụ.');
+    }
+}
+
+if (isset($_GET['delete_service'])) {
+    try {
+        $service_id = $_GET['delete_service'];
+        $stmt = $pdo->prepare("DELETE FROM services WHERE id = :id");
+        $stmt->execute([':id' => $service_id]);
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=service_pricing', 'success', 'Dịch vụ đã được xóa thành công.');
+    } catch (PDOException $e) {
+        error_log("Delete service error: " . $e->getMessage());
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=service_pricing', 'error', 'Lỗi khi xóa dịch vụ.');
     }
 }
 ?>
@@ -280,6 +366,195 @@ if (isset($_POST['update_stock'])) {
         .navbar-user-info {
             margin-left: 1rem;
         }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8f0f7 100%) !important;
+            border: 2px solid #0891b2 !important;
+            border-radius: 50% !important;
+            width: 45px !important;
+            height: 45px !important;
+            cursor: pointer !important;
+            color: #0891b2 !important;
+            font-size: 1.2rem !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin-right: 1rem !important;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.2) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            outline: none !important;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 6px 20px rgba(8, 145, 178, 0.35) !important;
+            border-color: #14b8a6 !important;
+        }
+        }
+
+        .dark-mode-toggle:active {
+            transform: translateY(-1px);
+        }
+
+        .dark-mode-toggle i {
+            transition: transform 0.4s ease;
+        }
+
+        /* Hide desktop button on mobile */
+        .desktop-dark-mode-toggle {
+            display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .desktop-dark-mode-toggle {
+                display: none;
+            }
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background: linear-gradient(135deg, #2a2a2a 0%, #333 100%) !important;
+            border-color: #14b8a6 !important;
+            color: #14b8a6 !important;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2) !important;
+        }
+
+        body.dark-mode .dark-mode-toggle:hover {
+            border-color: #06b6d4 !important;
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.35) !important;
+            transform: translateY(-3px) !important;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .sidebar {
+            background-color: #252525;
+            border-right: 1px solid #333;
+        }
+
+        body.dark-mode .sidebar-menu-link {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .sidebar-menu-link:hover,
+        body.dark-mode .sidebar-menu-link.active {
+            color: #0891b2;
+            background-color: #2a2a2a;
+        }
+
+        body.dark-mode .top-navbar {
+            background-color: #252525;
+            border-bottom: 1px solid #333;
+        }
+
+        body.dark-mode .navbar-title {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .navbar-user-name {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .navbar-user-role {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .content-section {
+            background-color: #1a1a1a;
+        }
+
+        body.dark-mode .section-title {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .section-subtitle {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .stat-card {
+            background-color: #252525;
+            border: 1px solid #333;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .stat-label {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .dropdown-menu {
+            background-color: #252525;
+            border: 1px solid #333;
+        }
+
+        body.dark-mode .dropdown-item {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .dropdown-item:hover {
+            background-color: #2a2a2a;
+            color: #0891b2;
+        }
+
+        body.dark-mode .dropdown-divider {
+            border-top-color: #333;
+        }
+
+        body.dark-mode .data-table {
+            background-color: #252525;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .data-table thead {
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .data-table tbody tr {
+            border-bottom: 1px solid #333;
+        }
+
+        body.dark-mode .data-table tbody tr:hover {
+            background-color: #2a2a2a;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-control:focus,
+        body.dark-mode textarea.form-control {
+            background-color: #252525;
+            color: #e0e0e0;
+            border-color: #333;
+        }
+
+        body.dark-mode .card {
+            background-color: #252525;
+            border: 1px solid #333;
+        }
+
+        /* Navbar Right Alignment */
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dark-mode-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
     <style>
         /* Enhanced Responsive Styles */
@@ -319,7 +594,7 @@ if (isset($_POST['update_stock'])) {
         /* Stats grid responsive */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
             width: 100%;
         }
@@ -388,6 +663,10 @@ if (isset($_POST['update_stock'])) {
         }
 
         @media (max-width: 768px) {
+            .mobile-controls {
+                display: flex;
+            }
+
             .stats-grid {
                 grid-template-columns: 1fr !important;
             }
@@ -517,12 +796,18 @@ if (isset($_POST['update_stock'])) {
             }
         }
 
-        .mobile-menu-btn {
+        /* Mobile Controls Container */
+        .mobile-controls {
             display: none;
             position: fixed;
             top: 20px;
             left: 20px;
             z-index: 1001;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .mobile-menu-btn {
             background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
             color: white;
             border: none;
@@ -531,6 +816,16 @@ if (isset($_POST['update_stock'])) {
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
             cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .mobile-menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(8, 145, 178, 0.4);
         }
 
         .sidebar-overlay {
@@ -541,6 +836,7 @@ if (isset($_POST['update_stock'])) {
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
         }
 
         .sidebar-overlay.active {
@@ -557,81 +853,59 @@ if (isset($_POST['update_stock'])) {
             max-width: 100%;
             overflow-x: hidden;
         }
-
-        /* Fee management styles */
-        .fee-info-item {
-            margin-bottom: 1rem;
-        }
-
-        .fee-label {
-            display: block;
-            font-weight: 600;
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .fee-value {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .current-fee {
-            color: #0891b2;
-            font-size: 1.3rem;
-        }
-
-        .total-revenue {
-            color: #28a745;
-            font-size: 1.2rem;
-        }
-
-        .fee-comparison {
-            padding: 1rem;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .fee-comparison.text-success {
-            background: rgba(40, 167, 69, 0.1);
-        }
-
-        .fee-comparison.text-warning {
-            background: rgba(255, 193, 7, 0.1);
-        }
-
-        .fee-comparison.text-info {
-            background: rgba(23, 162, 184, 0.1);
-        }
-
-        /* Custom Switch Styles */
-        .custom-control-label {
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .custom-switch .custom-control-label::before {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-
-        .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-
-        .custom-switch .custom-control-label::after {
-            background-color: #fff;
-        }
     </style>
+
+    <!-- jQuery and Bootstrap JS for dropdown functionality -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Dark Mode Function -->
+    <script>
+        function toggleDarkMode() {
+            // Toggle dark mode class on body
+            const isDarkMode = document.body.classList.toggle('dark-mode');
+            
+            // Save preference to localStorage
+            localStorage.setItem('darkMode', isDarkMode);
+            
+            // Update all dark mode buttons
+            const darkModeToggles = document.querySelectorAll('#darkModeToggle');
+            darkModeToggles.forEach(btn => {
+                if (isDarkMode) {
+                    btn.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    btn.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+            });
+            
+            console.log('Dark mode toggled:', isDarkMode);
+        }
+
+        // Initialize dark mode from localStorage on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+                const darkModeToggles = document.querySelectorAll('#darkModeToggle');
+                darkModeToggles.forEach(btn => {
+                    btn.innerHTML = '<i class="fas fa-sun"></i>';
+                });
+            }
+        });
+    </script>
 </head>
 
 <body>
     <?php displayMessage(); ?>
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </button>
+    <div class="mobile-controls">
+        <button class="dark-mode-toggle" id="darkModeToggle" onclick="toggleDarkMode()" title="Chế độ tối/sáng">
+            <i class="fas fa-moon"></i>
+        </button>
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -660,12 +934,6 @@ if (isset($_POST['update_stock'])) {
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="?page=prescriptions" class="sidebar-menu-link <?php echo ($page === 'prescriptions') ? 'active' : ''; ?>">
-                        <i class="fas fa-file-prescription sidebar-menu-icon"></i>
-                        <span>Danh sách đơn thuốc</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
                     <a href="?page=documents" class="sidebar-menu-link <?php echo ($page === 'documents') ? 'active' : ''; ?>">
                         <i class="fas fa-file-upload sidebar-menu-icon"></i>
                         <span>Upload tài liệu</span>
@@ -684,12 +952,24 @@ if (isset($_POST['update_stock'])) {
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
+                    <a href="?page=service_pricing" class="sidebar-menu-link <?php echo ($page === 'service_pricing') ? 'active' : ''; ?>">
+                        <i class="fas fa-tag sidebar-menu-icon"></i>
+                        <span>Giá dịch vụ</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
                     <a href="medical-records.php" class="sidebar-menu-link">
                         <i class="fas fa-file-medical sidebar-menu-icon"></i>
                         <span>Hồ sơ bệnh án</span>
                     </a>
                 </li>
             </ul>
+
+            <div class="sidebar-footer">
+                <a href="../auth/logout.php" class="btn btn-danger btn-block">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </a>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -700,6 +980,9 @@ if (isset($_POST['update_stock'])) {
                     <h1 class="navbar-title">Bảng điều khiển Bác sĩ</h1>
                 </div>
                 <div class="navbar-right">
+                    <button class="dark-mode-toggle desktop-dark-mode-toggle" id="darkModeToggle" onclick="toggleDarkMode()" title="Chế độ tối/sáng">
+                        <i class="fas fa-moon"></i>
+                    </button>
                     <div class="navbar-user dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="navbarUserDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
                             <div class="navbar-user-avatar">
@@ -741,15 +1024,10 @@ if (isset($_POST['update_stock'])) {
                                 <div class="stat-label">Tổng lịch hẹn</div>
                                 <div class="stat-value">
                                     <?php
-                                    try {
-                                        $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM appointmenttb WHERE doctor = :doctor");
-                                        $stmt->execute([':doctor' => $doctor]);
-                                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                        echo $row['total'] ?? 0;
-                                    } catch (PDOException $e) {
-                                        echo "0";
-                                        error_log("Dashboard stats error: " . $e->getMessage());
-                                    }
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor)");
+                                    $stmt->execute([':doctor' => trim($doctor)]);
+                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    echo $row['total'];
                                     ?>
                                 </div>
                             </div>
@@ -763,15 +1041,10 @@ if (isset($_POST['update_stock'])) {
                                 <div class="stat-label">Lịch hẹn đang hoạt động</div>
                                 <div class="stat-value">
                                     <?php
-                                    try {
-                                        $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM appointmenttb WHERE doctor = :doctor AND userStatus = '1' AND doctorStatus = '1'");
-                                        $stmt->execute([':doctor' => $doctor]);
-                                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                        echo $row['active'] ?? 0;
-                                    } catch (PDOException $e) {
-                                        echo "0";
-                                        error_log("Dashboard stats error: " . $e->getMessage());
-                                    }
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) AND userStatus = '1' AND doctorStatus = '1'");
+                                    $stmt->execute([':doctor' => trim($doctor)]);
+                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    echo $row['active'];
                                     ?>
                                 </div>
                             </div>
@@ -785,15 +1058,10 @@ if (isset($_POST['update_stock'])) {
                                 <div class="stat-label">Đơn thuốc đã kê</div>
                                 <div class="stat-value">
                                     <?php
-                                    try {
-                                        $stmt = $pdo->prepare("SELECT COUNT(*) as pres FROM prestb WHERE doctor = :doctor");
-                                        $stmt->execute([':doctor' => $doctor]);
-                                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                        echo $row['pres'] ?? 0;
-                                    } catch (PDOException $e) {
-                                        echo "0";
-                                        error_log("Dashboard stats error: " . $e->getMessage());
-                                    }
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as pres FROM prestb WHERE doctor = :doctor");
+                                    $stmt->execute([':doctor' => $doctor]);
+                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    echo $row['pres'];
                                     ?>
                                 </div>
                             </div>
@@ -801,43 +1069,16 @@ if (isset($_POST['update_stock'])) {
 
                         <div class="stat-card">
                             <div class="stat-icon info">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-label">Tổng bệnh nhân</div>
-                                <div class="stat-value">
-                                    <?php
-                                    try {
-                                        $stmt = $pdo->prepare("SELECT COUNT(DISTINCT pid) as patients FROM appointmenttb WHERE doctor = :doctor");
-                                        $stmt->execute([':doctor' => $doctor]);
-                                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                        echo $row['patients'] ?? 0;
-                                    } catch (PDOException $e) {
-                                        echo "0";
-                                        error_log("Dashboard stats error: " . $e->getMessage());
-                                    }
-                                    ?>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon secondary">
                                 <i class="fas fa-file-upload"></i>
                             </div>
                             <div class="stat-content">
                                 <div class="stat-label">Tài liệu đã upload</div>
                                 <div class="stat-value">
                                     <?php
-                                    try {
-                                        $stmt = $pdo->prepare("SELECT COUNT(*) as docs FROM medical_documents WHERE doctor = :doctor");
-                                        $stmt->execute([':doctor' => $doctor]);
-                                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                        echo $row['docs'] ?? 0;
-                                    } catch (PDOException $e) {
-                                        echo "0";
-                                        error_log("Dashboard stats error: " . $e->getMessage());
-                                    }
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as docs FROM medical_documents WHERE doctor = :doctor");
+                                    $stmt->execute([':doctor' => $doctor]);
+                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    echo $row['docs'];
                                     ?>
                                 </div>
                             </div>
@@ -866,33 +1107,6 @@ if (isset($_POST['update_stock'])) {
                                 <div class="stat-content">
                                     <h5>Danh sách đơn thuốc</h5>
                                     <p class="text-muted mb-0">Xem tất cả các đơn thuốc đã kê</p>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Additional Quick Actions -->
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <a href="?page=patient_history" class="stat-card" style="cursor: pointer; text-decoration: none; color: inherit;">
-                                <div class="stat-icon warning">
-                                    <i class="fas fa-history"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <h5>Lịch sử bệnh án</h5>
-                                    <p class="text-muted mb-0">Tìm kiếm và xem bệnh án bệnh nhân</p>
-                                </div>
-                            </a>
-                        </div>
-
-                        <div class="col-md-6">
-                            <a href="?page=documents" class="stat-card" style="cursor: pointer; text-decoration: none; color: inherit;">
-                                <div class="stat-icon info">
-                                    <i class="fas fa-file-upload"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <h5>Upload tài liệu</h5>
-                                    <p class="text-muted mb-0">Upload và quản lý tài liệu y tế</p>
                                 </div>
                             </a>
                         </div>
@@ -944,14 +1158,28 @@ if (isset($_POST['update_stock'])) {
                                         <th>Trạng thái</th>
                                         <th>Hành động</th>
                                         <th>Kê đơn</th>
-                                        <th>Tài liệu</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $stmt = $pdo->prepare("SELECT pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus FROM appointmenttb WHERE doctor = :doctor ORDER BY appdate DESC, apptime DESC");
-                                    $stmt->execute([':doctor' => $doctor]);
-                                    while ($row = $stmt->fetch(PDO::FETCH_BOTH)) {
+                                    // Debug: Show all appointments (regardless of doctor name)
+                                    $debug_stmt = $pdo->prepare("SELECT DISTINCT doctor FROM appointmenttb ORDER BY doctor");
+                                    $debug_stmt->execute();
+                                    $all_doctors = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                    // Get appointments for this doctor
+                                    $stmt = $pdo->prepare("SELECT pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus,doctor FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) ORDER BY appdate DESC, apptime DESC");
+                                    $stmt->execute([':doctor' => trim($doctor)]);
+                                    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                    if (empty($appointments)) {
+                                        echo '<tr><td colspan="11" style="text-align: center; padding: 20px; color: #999;">
+                                            Không có lịch hẹn nào<br>
+                                            <small style="color: #ccc;">Session doctor: "' . htmlspecialchars($doctor) . '"</small><br>
+                                            <small style="color: #ccc;">Doctors in DB: ' . implode(', ', array_column($all_doctors, 'doctor')) . '</small>
+                                        </td></tr>';
+                                    } else {
+                                        foreach ($appointments as $row) {
                                     ?>
                                         <tr>
                                             <td>#<?php echo $row['pid']; ?></td>
@@ -965,12 +1193,12 @@ if (isset($_POST['update_stock'])) {
                                                 <?php
                                                 if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 1)) {
                                                     echo '<span class="badge badge-success">Đang hoạt động</span>';
-                                                }
-                                                if (($row['userStatus'] == 0) && ($row['doctorStatus'] == 1)) {
+                                                } elseif (($row['userStatus'] == 0) && ($row['doctorStatus'] == 1)) {
                                                     echo '<span class="badge badge-warning">Bệnh nhân đã hủy</span>';
-                                                }
-                                                if (($row['userStatus'] == 1) && ($row['doctorStatus'] == 0)) {
+                                                } elseif (($row['userStatus'] == 1) && ($row['doctorStatus'] == 0)) {
                                                     echo '<span class="badge badge-danger">Bạn đã hủy</span>';
+                                                } else {
+                                                    echo '<span class="badge badge-info">Chờ xác nhận</span>';
                                                 }
                                                 ?>
                                             </td>
@@ -993,13 +1221,9 @@ if (isset($_POST['update_stock'])) {
                                                     <i class="fas fa-prescription"></i> Kê đơn
                                                 </a>
                                             </td>
-                                            <td>
-                                                <a href="?page=documents&appointment_id=<?php echo $row['ID']; ?>" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-file-medical"></i> Xem tài liệu
-                                                </a>
-                                            </td>
                                         </tr>
-                                    <?php } ?>
+                                    <?php }
+                                    } ?>
                                 </tbody>
                             </table>
                         </div>
@@ -1008,266 +1232,120 @@ if (isset($_POST['update_stock'])) {
             <?php } ?>
 
             <!-- Prescriptions Section -->
-            <?php if ($page === 'prescriptions') { ?>
+            <!-- Documents Section -->
+            <?php if ($page === 'documents') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <h2 class="section-title">Quản lý đơn thuốc</h2>
-                                <p class="section-subtitle">Danh sách các đơn thuốc đã kê</p>
-                            </div>
-                            <!-- Button removed as per request to move to appointment list -->
-                        </div>
+                        <h2 class="section-title">Upload tài liệu y tế</h2>
+                        <p class="section-subtitle">Quản lý tài liệu y tế của bệnh nhân</p>
                     </div>
 
-                    <div class="data-table-container">
-                        <div class="data-table-header">
-                            <h3 class="data-table-title">Danh sách đơn thuốc</h3>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
+                    <div class="data-card">
+                        <h5 class="mb-3"><i class="fas fa-file-upload"></i> Upload tài liệu mới</h5>
+                        <form method="POST" enctype="multipart/form-data">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Bệnh nhân *</label>
+                                        <select name="pid" class="form-control" required>
+                                            <option value="">Chọn bệnh nhân</option>
+                                            <?php
+                                            $stmt = $pdo->prepare("SELECT DISTINCT pid, pname, pemail FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor)");
+                                            $stmt->execute([':doctor' => trim($doctor)]);
+                                            while ($patient = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                                echo "<option value='{$patient['pid']}'>{$patient['pname']} ({$patient['pemail']})</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Lịch hẹn (Tùy chọn)</label>
+                                        <select name="appointment_id" class="form-control">
+                                            <option value="">Không liên kết lịch hẹn</option>
+                                            <?php
+                                            $stmt = $pdo->prepare("SELECT ID, pid, pname, appdate FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) ORDER BY appdate DESC");
+                                            $stmt->execute([':doctor' => trim($doctor)]);
+                                            while ($appt = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                                echo "<option value='{$appt['ID']}'>{$appt['pname']} - " . date('d/m/Y', strtotime($appt['appdate'])) . "</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>File tài liệu *</label>
+                                        <input type="file" name="document_file" class="form-control" required accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx">
+                                        <small class="text-muted">PDF, hình ảnh, Word (Tối đa 10MB)</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Mô tả</label>
+                                <textarea name="description" class="form-control" rows="2" placeholder="Mô tả tài liệu..."></textarea>
+                            </div>
+                            <button type="submit" name="upload_document" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Upload tài liệu
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="data-card mt-4">
+                        <h5 class="mb-3"><i class="fas fa-file-medical"></i> Danh sách tài liệu</h5>
+                        <div class="data-table-container">
+                            <table class="table table-hover data-table">
                                 <thead>
                                     <tr>
-                                        <th>Mã ĐT</th>
                                         <th>Bệnh nhân</th>
-                                        <th>Chẩn đoán</th>
-                                        <th>Số thuốc</th>
-                                        <th>Thời gian điều trị</th>
-                                        <th>Ngày kê</th>
+                                        <th>Tên file</th>
+                                        <th>Loại</th>
+                                        <th>Kích thước</th>
+                                        <th>Mô tả</th>
+                                        <th>Ngày upload</th>
                                         <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    // Modified query to support enhanced prestb
-                                    // We select pres_id as ID for view/export links
-                                    $stmt = $pdo->prepare("
-                                        SELECT p.pres_id, p.ID as app_id, p.pid, p.disease, p.treatment_duration, p.created_at, p.appdate,
-                                               p.fname, p.lname,
-                                               (SELECT COUNT(id) FROM prescription_medications WHERE prescription_id = p.pres_id) as medication_count
-                                        FROM prestb p
-                                        WHERE p.doctor = :doctor
-                                        ORDER BY p.appdate DESC, p.created_at DESC
-                                    ");
-                                    $stmt->execute([':doctor' => $doctor]);
-                                    
-                                    if ($stmt->rowCount() > 0) {
-                                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                            // Handle cases where pres_id might be null (old records before migration)
-                                            // If pres_id is missing, we can't easily view details or export PDF for old records unless we backfill.
-                                            // But new records will have it.
-                                            $view_id = $row['pres_id']; 
-                                    ?>
-                                        <tr>
-                                            <td>#<?php echo $row['app_id']; ?></td>
-                                            <td><?php echo htmlspecialchars($row['fname'] . ' ' . $row['lname']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['disease']); ?></td>
-                                            <td>
-                                                <span class="badge badge-info">
-                                                    <?php echo $row['medication_count']; ?> thuốc
-                                                </span>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($row['treatment_duration'] ?? 'N/A'); ?></td>
-                                            <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
-                                            <td>
-                                                <?php if($view_id): ?>
-                                                <a href="view_prescription.php?id=<?php echo $view_id; ?>" 
-                                                   class="btn btn-sm btn-info" 
-                                                   title="Xem chi tiết">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="export_prescription_pdf.php?id=<?php echo $view_id; ?>" 
-                                                   class="btn btn-sm btn-danger" 
-                                                   target="_blank"
-                                                   title="Tải PDF">
-                                                    <i class="fas fa-file-pdf"></i>
-                                                </a>
-                                                <?php else: ?>
-                                                    <small class="text-muted">Đơn cũ</small>
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php 
-                                        }
-                                    } else {
-                                    ?>
-                                        <tr>
-                                            <td colspan="7" class="text-center text-muted">
-                                                <i class="fas fa-inbox fa-2x mb-2"></i>
-                                                <p>Chưa có đơn thuốc nào. Nhấn "Tạo đơn thuốc mới" để bắt đầu.</p>
-                                            </td>
-                                        </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-            <?php } ?>
-
-            <!-- Documents Section -->
-            <?php if ($page === 'documents') { 
-                $appointment_filter = isset($_GET['appointment_id']) ? $_GET['appointment_id'] : null;
-            ?>
-                <section class="content-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Upload tài liệu y tế</h2>
-                        <p class="section-subtitle">
-                            <?php if ($appointment_filter) { 
-                                // Get appointment details
-                                $stmt = $pdo->prepare("SELECT fname, lname, appdate FROM appointmenttb WHERE ID = :id AND doctor = :doctor");
-                                $stmt->execute([':id' => $appointment_filter, ':doctor' => $doctor]);
-                                $appt = $stmt->fetch(PDO::FETCH_ASSOC);
-                                if ($appt) {
-                                    echo 'Quản lý tài liệu cho lịch hẹn: ' . $appt['fname'] . ' ' . $appt['lname'] . ' - ' . date('d M Y', strtotime($appt['appdate']));
-                                } else {
-                                    echo 'Quản lý tài liệu y tế cho bệnh nhân';
-                                }
-                            } else { 
-                                echo 'Upload và quản lý tài liệu y tế cho bệnh nhân';
-                            } ?>
-                        </p>
-                        <?php if ($appointment_filter) { ?>
-                            <div class="mb-3">
-                                <a href="?page=documents" class="btn btn-secondary btn-sm">
-                                    <i class="fas fa-arrow-left"></i> Quay lại tất cả tài liệu
-                                </a>
-                            </div>
-                        <?php } ?>
-                    </div>
-
-                    <!-- Upload Form -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Upload tài liệu mới</h5>
-                                </div>
-                                <div class="card-body">
-                                    <form method="post" enctype="multipart/form-data" action="?page=documents">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="pid">Chọn bệnh nhân</label>
-                                                    <select class="form-control" id="pid" name="pid" required <?php echo $appointment_filter ? 'disabled' : ''; ?>>
-                                                        <option value="">-- Chọn bệnh nhân --</option>
-                                                        <?php
-                                                        $stmt = $pdo->prepare("SELECT pid, fname, lname FROM patreg ORDER BY fname, lname");
-                                                        $stmt->execute();
-                                                        while ($patient = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                                            $selected = '';
-                                                            if ($appointment_filter) {
-                                                                // Get patient from appointment
-                                                                $stmt2 = $pdo->prepare("SELECT pid FROM appointmenttb WHERE ID = :id");
-                                                                $stmt2->execute([':id' => $appointment_filter]);
-                                                                $appt_pid = $stmt2->fetchColumn();
-                                                                if ($appt_pid == $patient['pid']) $selected = 'selected';
-                                                            }
-                                                            echo '<option value="' . $patient['pid'] . '" ' . $selected . '>' . $patient['fname'] . ' ' . $patient['lname'] . ' (#' . $patient['pid'] . ')</option>';
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                    <?php if ($appointment_filter) { ?>
-                                                        <input type="hidden" name="pid" value="<?php 
-                                                            $stmt2 = $pdo->prepare("SELECT pid FROM appointmenttb WHERE ID = :id");
-                                                            $stmt2->execute([':id' => $appointment_filter]);
-                                                            echo $stmt2->fetchColumn();
-                                                        ?>">
-                                                    <?php } ?>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="appointment_id">Lịch hẹn (tùy chọn)</label>
-                                                    <select class="form-control" id="appointment_id" name="appointment_id" <?php echo $appointment_filter ? 'disabled' : ''; ?>>
-                                                        <option value="">-- Không liên kết với lịch hẹn --</option>
-                                                        <?php
-                                                        $stmt = $pdo->prepare("SELECT ID, pid, fname, lname, appdate FROM appointmenttb WHERE doctor = :doctor ORDER BY appdate DESC");
-                                                        $stmt->execute([':doctor' => $doctor]);
-                                                        while ($appt = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                                            $selected = ($appointment_filter == $appt['ID']) ? 'selected' : '';
-                                                            echo '<option value="' . $appt['ID'] . '" ' . $selected . '>' . $appt['fname'] . ' ' . $appt['lname'] . ' - ' . date('d M Y', strtotime($appt['appdate'])) . ' (#' . $appt['ID'] . ')</option>';
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                    <?php if ($appointment_filter) { ?>
-                                                        <input type="hidden" name="appointment_id" value="<?php echo $appointment_filter; ?>">
-                                                    <?php } ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="document_file">Chọn file</label>
-                                            <input type="file" class="form-control-file" id="document_file" name="document_file" accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx" required>
-                                            <small class="form-text text-muted">Chấp nhận: PDF, hình ảnh (JPG, PNG, GIF), tài liệu Word. Tối đa 10MB.</small>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="description">Mô tả (tùy chọn)</label>
-                                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Mô tả về tài liệu này..."></textarea>
-                                        </div>
-                                        <button type="submit" name="upload_document" class="btn btn-primary">
-                                            <i class="fas fa-upload"></i> Upload tài liệu
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Uploaded Documents List -->
-                    <div class="data-table-container">
-                        <div class="data-table-header">
-                            <h3 class="data-table-title">
-                                Tài liệu đã upload
-                                <?php if ($appointment_filter) echo ' (cho lịch hẹn này)'; ?>
-                            </h3>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Mã BN</th>
-                                        <th>Tên bệnh nhân</th>
-                                        <th>Tên tài liệu</th>
-                                        <th>Mô tả</th>
-                                        <th>Kích thước</th>
-                                        <th>Ngày upload</th>
-                                        <th>Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $query = "SELECT md.*, p.fname, p.lname FROM medical_documents md LEFT JOIN patreg p ON md.pid = p.pid WHERE md.doctor = :doctor";
-                                    $params = [':doctor' => $doctor];
-                                    
-                                    if ($appointment_filter) {
+                                    $filter_appointment = isset($_GET['appointment']) ? $_GET['appointment'] : '';
+                                    $query = "SELECT md.*, p.fname, p.lname FROM medical_documents md 
+                                              LEFT JOIN patreg p ON md.pid = p.pid 
+                                              WHERE md.doctor = :doctor";
+                                    if ($filter_appointment) {
                                         $query .= " AND md.appointment_id = :appointment_id";
-                                        $params[':appointment_id'] = $appointment_filter;
                                     }
-                                    
                                     $query .= " ORDER BY md.uploaded_at DESC";
                                     
                                     $stmt = $pdo->prepare($query);
+                                    $params = [':doctor' => $doctor];
+                                    if ($filter_appointment) {
+                                        $params[':appointment_id'] = $filter_appointment;
+                                    }
                                     $stmt->execute($params);
-                                    while ($doc = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    
+                                    if ($stmt->rowCount() > 0) {
+                                        while ($doc = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            $file_size_mb = round($doc['file_size'] / (1024 * 1024), 2);
+                                            echo "<tr>";
+                                            echo "<td>" . htmlspecialchars($doc['fname'] . ' ' . $doc['lname']) . "</td>";
+                                            echo "<td>" . htmlspecialchars($doc['document_name']) . "</td>";
+                                            echo "<td><span class='badge badge-info'>" . strtoupper(pathinfo($doc['file_path'], PATHINFO_EXTENSION)) . "</span></td>";
+                                            echo "<td>{$file_size_mb} MB</td>";
+                                            echo "<td>" . htmlspecialchars($doc['description']) . "</td>";
+                                            echo "<td>" . date('d/m/Y H:i', strtotime($doc['uploaded_at'])) . "</td>";
+                                            echo "<td>
+                                                    <a href='../../uploads/medical_documents/{$doc['file_path']}' target='_blank' class='btn btn-sm btn-primary' title='Xem'>
+                                                        <i class='fas fa-eye'></i>
+                                                    </a>
+                                                  </td>";
+                                            echo "</tr>";
+                                        }
+                                    } else {
+                                        echo "<tr><td colspan='7' class='text-center text-muted'>Chưa có tài liệu nào được upload.</td></tr>";
+                                    }
                                     ?>
-                                        <tr>
-                                            <td>#<?php echo $doc['pid']; ?></td>
-                                            <td><?php echo $doc['fname'] . ' ' . $doc['lname']; ?></td>
-                                            <td><?php echo htmlspecialchars($doc['document_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($doc['description'] ?? ''); ?></td>
-                                            <td><?php echo number_format($doc['file_size'] / 1024, 1) . ' KB'; ?></td>
-                                            <td><?php echo date('d M Y H:i', strtotime($doc['uploaded_at'])); ?></td>
-                                            <td>
-                                                <a href="../../uploads/medical_documents/<?php echo $doc['file_path']; ?>" target="_blank" class="btn btn-sm btn-info">
-                                                    <i class="fas fa-eye"></i> Xem
-                                                </a>
-                                                <a href="../../uploads/medical_documents/<?php echo $doc['file_path']; ?>" download class="btn btn-sm btn-success">
-                                                    <i class="fas fa-download"></i> Tải
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    <?php } ?>
                                 </tbody>
                             </table>
                         </div>
@@ -1276,280 +1354,193 @@ if (isset($_POST['update_stock'])) {
             <?php } ?>
 
             <!-- Patient History Section -->
-            <?php if ($page === 'patient_history') { 
-                $selected_pid = isset($_GET['pid']) ? $_GET['pid'] : null;
-                $patient_info = null;
-                $appointments = [];
-                $prescriptions = [];
-                $documents = [];
-
-                if ($selected_pid) {
-                    // Get patient info
-                    $stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
-                    $stmt->execute([':pid' => $selected_pid]);
-                    $patient_info = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                    if ($patient_info) {
-                        // Get appointments
-                        $stmt = $pdo->prepare("SELECT * FROM appointmenttb WHERE pid = :pid AND doctor = :doctor ORDER BY appdate DESC, apptime DESC");
-                        $stmt->execute([':pid' => $selected_pid, ':doctor' => $doctor]);
-                        $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                        // Get prescriptions
-                        $stmt = $pdo->prepare("SELECT * FROM prestb WHERE pid = :pid AND doctor = :doctor ORDER BY appdate DESC");
-                        $stmt->execute([':pid' => $selected_pid, ':doctor' => $doctor]);
-                        $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                        // Get documents
-                        $stmt = $pdo->prepare("SELECT * FROM medical_documents WHERE pid = :pid AND doctor = :doctor ORDER BY uploaded_at DESC");
-                        $stmt->execute([':pid' => $selected_pid, ':doctor' => $doctor]);
-                        $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    }
-                }
-            ?>
+            <?php if ($page === 'patient_history') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title">Lịch sử bệnh án bệnh nhân</h2>
-                        <p class="section-subtitle">Tìm kiếm và xem lịch sử bệnh án đầy đủ của bệnh nhân</p>
+                        <h2 class="section-title">Lịch sử bệnh án</h2>
+                        <p class="section-subtitle">Tìm kiếm và xem lịch sử điều trị của bệnh nhân</p>
                     </div>
 
-                    <!-- Search Patient -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Tìm kiếm bệnh nhân</h5>
+                    <div class="data-card">
+                        <h5 class="mb-3"><i class="fas fa-search"></i> Tìm kiếm bệnh nhân</h5>
+                        <form method="GET" action="">
+                            <input type="hidden" name="page" value="patient_history">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Chọn bệnh nhân</label>
+                                        <select name="search_pid" class="form-control">
+                                            <option value="">-- Chọn bệnh nhân --</option>
+                                            <?php
+                                            // Get patients from appointments or all patients
+                                            $stmt = $pdo->prepare("SELECT DISTINCT p.pid, p.pname, p.pemail FROM appointmenttb a 
+                                                                   INNER JOIN patienttb p ON a.pid = p.pid 
+                                                                   WHERE TRIM(a.doctor) = TRIM(:doctor) 
+                                                                   ORDER BY p.pname");
+                                            $stmt->execute([':doctor' => trim($doctor)]);
+                                            $hasPatients = false;
+                                            while ($patient = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                                $hasPatients = true;
+                                                $selected = (isset($_GET['search_pid']) && $_GET['search_pid'] == $patient['pid']) ? 'selected' : '';
+                                                echo "<option value='{$patient['pid']}' $selected>{$patient['pname']} ({$patient['pemail']})</option>";
+                                            }
+                                            
+                                            // If no patients found, show all patients
+                                            if (!$hasPatients) {
+                                                $stmt = $pdo->query("SELECT pid, pname, pemail FROM patienttb ORDER BY pname");
+                                                while ($patient = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                                    $selected = (isset($_GET['search_pid']) && $_GET['search_pid'] == $patient['pid']) ? 'selected' : '';
+                                                    echo "<option value='{$patient['pid']}' $selected>{$patient['pname']} ({$patient['pemail']})</option>";
+                                                }
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <form method="get" action="?page=patient_history">
-                                        <input type="hidden" name="page" value="patient_history">
-                                        <div class="row">
-                                            <div class="col-md-8">
-                                                <div class="form-group">
-                                                    <label for="search_patient">Tìm theo tên hoặc số điện thoại</label>
-                                                    <input type="text" class="form-control" id="search_patient" name="search" 
-                                                           placeholder="Nhập tên hoặc số điện thoại bệnh nhân..." 
-                                                           value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label>&nbsp;</label>
-                                                    <button type="submit" class="btn btn-primary btn-block">
-                                                        <i class="fas fa-search"></i> Tìm kiếm
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary btn-block">
+                                            <i class="fas fa-search"></i> Tìm kiếm
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
 
-                                    <?php if (isset($_GET['search']) && !empty($_GET['search'])) { ?>
-                                        <div class="mt-3">
-                                            <h6>Kết quả tìm kiếm:</h6>
-                                            <div class="row">
-                                                <?php
-                                                $search = $_GET['search'];
-                                                try {
-                                                    $stmt = $pdo->prepare("SELECT * FROM patreg WHERE fname LIKE ? OR lname LIKE ? OR contact LIKE ? ORDER BY fname, lname");
-                                                    $stmt->execute(['%' . $search . '%', '%' . $search . '%', '%' . $search . '%']);
-                                                    $search_results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                                } catch (PDOException $e) {
-                                                    $search_results = [];
-                                                    error_log("Patient search error: " . $e->getMessage());
-                                                }
-                                                
-                                                if (empty($search_results)) {
-                                                    echo '<div class="col-12"><p class="text-muted">Không tìm thấy bệnh nhân nào.</p></div>';
-                                                } else {
-                                                    foreach ($search_results as $patient) {
-                                                        echo '<div class="col-md-6 col-lg-4 mb-3">';
-                                                        echo '<div class="card h-100">';
-                                                        echo '<div class="card-body">';
-                                                        echo '<h6 class="card-title">' . $patient['fname'] . ' ' . $patient['lname'] . '</h6>';
-                                                        echo '<p class="card-text small text-muted">#' . $patient['pid'] . ' | ' . $patient['contact'] . '</p>';
-                                                        echo '<a href="?page=patient_history&pid=' . $patient['pid'] . '" class="btn btn-sm btn-primary">Xem bệnh án</a>';
-                                                        echo '</div></div></div>';
-                                                    }
-                                                }
-                                                ?>
-                                            </div>
-                                        </div>
-                                    <?php } ?>
-                                </div>
+                    <?php if (isset($_GET['search_pid']) && !empty($_GET['search_pid'])) {
+                        $search_pid = $_GET['search_pid'];
+                        
+                        // Get patient info
+                        $stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
+                        $stmt->execute([':pid' => $search_pid]);
+                        $patient_info = $stmt->fetch(PDO::FETCH_ASSOC);
+                        
+                        if ($patient_info) {
+                    ?>
+                    <div class="data-card mt-4">
+                        <h5 class="mb-3"><i class="fas fa-user"></i> Thông tin bệnh nhân</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p><strong>Họ tên:</strong> <?php echo htmlspecialchars($patient_info['fname'] . ' ' . $patient_info['lname']); ?></p>
+                                <p><strong>Email:</strong> <?php echo htmlspecialchars($patient_info['email']); ?></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Số điện thoại:</strong> <?php echo htmlspecialchars($patient_info['contact']); ?></p>
+                                <p><strong>Giới tính:</strong> <?php echo htmlspecialchars($patient_info['gender']); ?></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Ngày sinh:</strong> <?php echo date('d/m/Y', strtotime($patient_info['dob'])); ?></p>
                             </div>
                         </div>
                     </div>
 
-                    <?php if ($selected_pid && $patient_info) { ?>
-                        <!-- Patient Information -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header bg-primary text-white">
-                                        <h5 class="mb-0">
-                                            <i class="fas fa-user"></i> Thông tin bệnh nhân: <?php echo $patient_info['fname'] . ' ' . $patient_info['lname']; ?>
-                                            <a href="?page=patient_history" class="btn btn-light btn-sm float-right">
-                                                <i class="fas fa-arrow-left"></i> Quay lại tìm kiếm
-                                            </a>
-                                        </h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <p><strong>Mã bệnh nhân:</strong> #<?php echo $patient_info['pid']; ?></p>
-                                                <p><strong>Họ tên:</strong> <?php echo $patient_info['fname'] . ' ' . $patient_info['lname']; ?></p>
-                                                <p><strong>Giới tính:</strong> <?php echo $patient_info['gender']; ?></p>
-                                                <p><strong>Email:</strong> <?php echo $patient_info['email']; ?></p>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <p><strong>Số điện thoại:</strong> <?php echo $patient_info['contact']; ?></p>
-                                                <p><strong>Ngày sinh:</strong> <?php echo $patient_info['date_of_birth'] ? date('d/m/Y', strtotime($patient_info['date_of_birth'])) : 'Chưa cập nhật'; ?></p>
-                                                <p><strong>Nhóm máu:</strong> <?php echo $patient_info['blood_group'] ?: 'Chưa cập nhật'; ?></p>
-                                                <p><strong>Địa chỉ:</strong> <?php echo $patient_info['address'] ?: 'Chưa cập nhật'; ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="data-card mt-4">
+                        <h5 class="mb-3"><i class="fas fa-calendar-alt"></i> Lịch sử lịch hẹn</h5>
+                        <div class="data-table-container">
+                            <table class="table table-hover data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày hẹn</th>
+                                        <th>Giờ hẹn</th>
+                                        <th>Triệu chứng</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $stmt = $pdo->prepare("SELECT * FROM appointmenttb WHERE pid = :pid AND TRIM(doctor) = TRIM(:doctor) ORDER BY appdate DESC");
+                                    $stmt->execute([':pid' => $search_pid, ':doctor' => trim($doctor)]);
+                                    while ($appt = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                        $status = ($appt['userStatus'] == 1 && $appt['doctorStatus'] == 1) ? 
+                                                  '<span class="badge badge-success">Đang hoạt động</span>' : 
+                                                  '<span class="badge badge-secondary">Đã hủy</span>';
+                                        echo "<tr>";
+                                        echo "<td>" . date('d/m/Y', strtotime($appt['appdate'])) . "</td>";
+                                        echo "<td>" . htmlspecialchars($appt['apptime']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($appt['symptoms']) . "</td>";
+                                        echo "<td>$status</td>";
+                                        echo "</tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
 
-                        <!-- Appointments History -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header bg-info text-white">
-                                        <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Lịch sử lịch hẹn</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <?php if (empty($appointments)) { ?>
-                                            <p class="text-muted">Chưa có lịch hẹn nào.</p>
-                                        <?php } else { ?>
-                                            <div class="table-responsive">
-                                                <table class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Mã lịch hẹn</th>
-                                                            <th>Ngày</th>
-                                                            <th>Giờ</th>
-                                                            <th>Trạng thái</th>
-                                                            <th>Ghi chú</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <?php foreach ($appointments as $appt) { ?>
-                                                            <tr>
-                                                                <td>#<?php echo $appt['ID']; ?></td>
-                                                                <td><?php echo date('d/m/Y', strtotime($appt['appdate'])); ?></td>
-                                                                <td><?php echo date('H:i', strtotime($appt['apptime'])); ?></td>
-                                                                <td>
-                                                                    <?php
-                                                                    if ($appt['userStatus'] == 1 && $appt['doctorStatus'] == 1) {
-                                                                        echo '<span class="badge badge-success">Hoàn thành</span>';
-                                                                    } elseif ($appt['userStatus'] == 0 && $appt['doctorStatus'] == 1) {
-                                                                        echo '<span class="badge badge-warning">Bệnh nhân hủy</span>';
-                                                                    } elseif ($appt['userStatus'] == 1 && $appt['doctorStatus'] == 0) {
-                                                                        echo '<span class="badge badge-danger">Bác sĩ hủy</span>';
-                                                                    } else {
-                                                                        echo '<span class="badge badge-secondary">Chưa xác nhận</span>';
-                                                                    }
-                                                                    ?>
-                                                                </td>
-                                                                <td><?php echo htmlspecialchars($appt['notes'] ?? ''); ?></td>
-                                                            </tr>
-                                                        <?php } ?>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        <?php } ?>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="data-card mt-4">
+                        <h5 class="mb-3"><i class="fas fa-file-prescription"></i> Lịch sử đơn thuốc</h5>
+                        <div class="data-table-container">
+                            <table class="table table-hover data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày kê đơn</th>
+                                        <th>Bệnh</th>
+                                        <th>Dị ứng</th>
+                                        <th>Đơn thuốc</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $stmt = $pdo->prepare("SELECT * FROM prestb WHERE pid = :pid AND doctor = :doctor ORDER BY appdate DESC");
+                                    $stmt->execute([':pid' => $search_pid, ':doctor' => $doctor]);
+                                    while ($pres = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                        echo "<tr>";
+                                        echo "<td>" . date('d/m/Y', strtotime($pres['appdate'])) . "</td>";
+                                        echo "<td>" . htmlspecialchars($pres['disease']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($pres['allergy']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($pres['prescription']) . "</td>";
+                                        echo "</tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
 
-                        <!-- Prescriptions History -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header bg-success text-white">
-                                        <h5 class="mb-0"><i class="fas fa-prescription"></i> Lịch sử đơn thuốc</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <?php if (empty($prescriptions)) { ?>
-                                            <p class="text-muted">Chưa có đơn thuốc nào.</p>
-                                        <?php } else { ?>
-                                            <div class="table-responsive">
-                                                <table class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Ngày kê</th>
-                                                            <th>Bệnh</th>
-                                                            <th>Dị ứng</th>
-                                                            <th>Đơn thuốc</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <?php foreach ($prescriptions as $pres) { ?>
-                                                            <tr>
-                                                                <td><?php echo date('d/m/Y', strtotime($pres['appdate'])); ?></td>
-                                                                <td><?php echo htmlspecialchars($pres['disease']); ?></td>
-                                                                <td><?php echo htmlspecialchars($pres['allergy']); ?></td>
-                                                                <td><?php echo htmlspecialchars($pres['prescription']); ?></td>
-                                                            </tr>
-                                                        <?php } ?>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        <?php } ?>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="data-card mt-4">
+                        <h5 class="mb-3"><i class="fas fa-file-medical"></i> Tài liệu y tế</h5>
+                        <div class="data-table-container">
+                            <table class="table table-hover data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên file</th>
+                                        <th>Loại</th>
+                                        <th>Mô tả</th>
+                                        <th>Ngày upload</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $stmt = $pdo->prepare("SELECT * FROM medical_documents WHERE pid = :pid AND doctor = :doctor ORDER BY uploaded_at DESC");
+                                    $stmt->execute([':pid' => $search_pid, ':doctor' => $doctor]);
+                                    if ($stmt->rowCount() > 0) {
+                                        while ($doc = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            echo "<tr>";
+                                            echo "<td>" . htmlspecialchars($doc['document_name']) . "</td>";
+                                            echo "<td><span class='badge badge-info'>" . strtoupper(pathinfo($doc['file_path'], PATHINFO_EXTENSION)) . "</span></td>";
+                                            echo "<td>" . htmlspecialchars($doc['description']) . "</td>";
+                                            echo "<td>" . date('d/m/Y H:i', strtotime($doc['uploaded_at'])) . "</td>";
+                                            echo "<td>
+                                                    <a href='../../uploads/medical_documents/{$doc['file_path']}' target='_blank' class='btn btn-sm btn-primary'>
+                                                        <i class='fas fa-eye'></i>
+                                                    </a>
+                                                  </td>";
+                                            echo "</tr>";
+                                        }
+                                    } else {
+                                        echo "<tr><td colspan='5' class='text-center text-muted'>Chưa có tài liệu nào.</td></tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
                         </div>
-
-                        <!-- Medical Documents -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header bg-warning text-dark">
-                                        <h5 class="mb-0"><i class="fas fa-file-medical"></i> Tài liệu y tế</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <?php if (empty($documents)) { ?>
-                                            <p class="text-muted">Chưa có tài liệu y tế nào.</p>
-                                        <?php } else { ?>
-                                            <div class="row">
-                                                <?php foreach ($documents as $doc) { ?>
-                                                    <div class="col-md-6 col-lg-4 mb-3">
-                                                        <div class="card h-100">
-                                                            <div class="card-body">
-                                                                <h6 class="card-title">
-                                                                    <i class="fas fa-file"></i> <?php echo htmlspecialchars($doc['document_name']); ?>
-                                                                </h6>
-                                                                <?php if ($doc['description']) { ?>
-                                                                    <p class="card-text small"><?php echo htmlspecialchars($doc['description']); ?></p>
-                                                                <?php } ?>
-                                                                <div class="small text-muted mb-2">
-                                                                    <i class="fas fa-calendar"></i> <?php echo date('d/m/Y H:i', strtotime($doc['uploaded_at'])); ?><br>
-                                                                    <i class="fas fa-weight"></i> <?php echo number_format($doc['file_size'] / 1024, 1); ?> KB
-                                                                </div>
-                                                                <div class="btn-group btn-group-sm">
-                                                                    <a href="../../uploads/medical_documents/<?php echo $doc['file_path']; ?>" target="_blank" class="btn btn-info">
-                                                                        <i class="fas fa-eye"></i> Xem
-                                                                    </a>
-                                                                    <a href="../../uploads/medical_documents/<?php echo $doc['file_path']; ?>" download class="btn btn-success">
-                                                                        <i class="fas fa-download"></i> Tải
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                <?php } ?>
-                                            </div>
-                                        <?php } ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php } ?>
+                    </div>
+                    <?php 
+                        }
+                    } ?>
                 </section>
             <?php } ?>
 
@@ -1557,472 +1548,126 @@ if (isset($_POST['update_stock'])) {
             <?php if ($page === 'medicine_inventory') { ?>
                 <section class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title">
-                            <i class="fas fa-pills section-icon"></i>
-                            Quản lý kho thuốc
-                        </h2>
-                        <p class="section-description">
-                            Quản lý tồn kho, thêm, sửa, xóa thuốc và theo dõi lịch sử nhập xuất
-                        </p>
+                        <h2 class="section-title">Quản lý kho thuốc</h2>
+                        <p class="section-subtitle">Quản lý kho thuốc và tồn kho</p>
                     </div>
 
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addMedicineModal">
+                    <div class="data-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="fas fa-pills"></i> Danh sách thuốc</h5>
+                            <button class="btn btn-primary" data-toggle="modal" data-target="#addMedicineModal">
                                 <i class="fas fa-plus"></i> Thêm thuốc mới
                             </button>
-                            <button type="button" class="btn btn-info ml-2" onclick="location.reload()">
-                                <i class="fas fa-sync"></i> Làm mới
-                            </button>
                         </div>
-                    </div>
-
-                    <!-- Medicine Inventory Table -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Danh sách thuốc trong kho</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th>Tên thuốc</th>
-                                            <th>Tên gốc</th>
-                                            <th>Danh mục</th>
-                                            <th>Dạng bào chế</th>
-                                            <th>Hàm lượng</th>
-                                            <th>Số lượng</th>
-                                            <th>Giá (VND)</th>
-                                            <th>Hạn sử dụng</th>
-                                            <th>Thao tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                        <div class="data-table-container">
+                            <table class="table table-hover data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên thuốc</th>
+                                        <th>Tên chung</th>
+                                        <th>Danh mục</th>
+                                        <th>Dạng thuốc</th>
+                                        <th>Hàm lượng</th>
+                                        <th>Số lượng</th>
+                                        <th>Đơn giá</th>
+                                        <th>Hạn dùng</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
                                     <?php
-                                        try {
-                                            $stmt = $pdo->query("SELECT * FROM medicines ORDER BY name");
-                                            $medicines = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                            if (count($medicines) > 0) {
-                                                foreach ($medicines as $medicine) {
-                                                    $expiry_status = '';
-                                                    $expiry_class = '';
-                                                    
-                                                    if ($medicine['expiry_date']) {
-                                                        $expiry_date = new DateTime($medicine['expiry_date']);
-                                                        $today = new DateTime();
-                                                        $days_until_expiry = $today->diff($expiry_date)->days;
-                                                        
-                                                        if ($expiry_date < $today) {
-                                                            $expiry_status = 'Đã hết hạn';
-                                                            $expiry_class = 'text-danger';
-                                                        } elseif ($days_until_expiry <= 30) {
-                                                            $expiry_status = 'Sắp hết hạn (' . $days_until_expiry . ' ngày)';
-                                                            $expiry_class = 'text-warning';
-                                                        } else {
-                                                            $expiry_status = date('d/m/Y', strtotime($medicine['expiry_date']));
-                                                            $expiry_class = 'text-success';
-                                                        }
-                                                    }
+                                    $stmt = $pdo->query("SELECT * FROM medicines ORDER BY name ASC");
+                                    while ($medicine = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                        $low_stock = $medicine['quantity'] < 10 ? 'text-danger font-weight-bold' : '';
+                                        $expired = (strtotime($medicine['expiry_date']) < time()) ? 'text-danger' : '';
+                                        echo "<tr>";
+                                        echo "<td>" . htmlspecialchars($medicine['name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($medicine['generic_name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($medicine['category']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($medicine['dosage_form']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($medicine['strength']) . "</td>";
+                                        echo "<td class='$low_stock'>" . $medicine['quantity'] . "</td>";
+                                        echo "<td>" . number_format($medicine['unit_price'], 0, ',', '.') . " VNĐ</td>";
+                                        echo "<td class='$expired'>" . date('d/m/Y', strtotime($medicine['expiry_date'])) . "</td>";
+                                        echo "<td>
+                                                <button class='btn btn-sm btn-info' onclick='editMedicine(" . json_encode($medicine) . ")' title='Sửa'>
+                                                    <i class='fas fa-edit'></i>
+                                                </button>
+                                                <button class='btn btn-sm btn-warning' onclick='updateStock({$medicine['id']}, \"{$medicine['name']}\")' title='Cập nhật kho'>
+                                                    <i class='fas fa-box'></i>
+                                                </button>
+                                                <button class='btn btn-sm btn-danger' onclick='deleteMedicine({$medicine['id']}, \"{$medicine['name']}\")' title='Xóa'>
+                                                    <i class='fas fa-trash'></i>
+                                                </button>
+                                              </td>";
+                                        echo "</tr>";
+                                    }
                                     ?>
-                                                <tr>
-                                                    <td><?php echo htmlspecialchars($medicine['name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($medicine['generic_name'] ?: '-'); ?></td>
-                                                    <td><?php echo htmlspecialchars($medicine['category']); ?></td>
-                                                    <td><?php echo htmlspecialchars($medicine['dosage_form']); ?></td>
-                                                    <td><?php echo htmlspecialchars($medicine['strength'] ?: '-'); ?></td>
-                                                    <td>
-                                                        <span class="badge badge-<?php echo $medicine['quantity'] > 10 ? 'success' : ($medicine['quantity'] > 0 ? 'warning' : 'danger'); ?>">
-                                                            <?php echo $medicine['quantity']; ?>
-                                                        </span>
-                                                    </td>
-                                                    <td><?php echo number_format($medicine['unit_price']); ?> VND</td>
-                                                    <td class="<?php echo $expiry_class; ?>"><?php echo $expiry_status; ?></td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-warning edit-medicine-btn" 
-                                                                data-id="<?php echo $medicine['id']; ?>"
-                                                                data-name="<?php echo htmlspecialchars($medicine['name']); ?>"
-                                                                data-generic-name="<?php echo htmlspecialchars($medicine['generic_name'] ?: ''); ?>"
-                                                                data-category="<?php echo htmlspecialchars($medicine['category']); ?>"
-                                                                data-dosage-form="<?php echo htmlspecialchars($medicine['dosage_form']); ?>"
-                                                                data-strength="<?php echo htmlspecialchars($medicine['strength'] ?: ''); ?>"
-                                                                data-manufacturer="<?php echo htmlspecialchars($medicine['manufacturer'] ?: ''); ?>"
-                                                                data-quantity="<?php echo $medicine['quantity']; ?>"
-                                                                data-unit-price="<?php echo $medicine['unit_price']; ?>"
-                                                                data-expiry-date="<?php echo $medicine['expiry_date'] ?: ''; ?>"
-                                                                data-description="<?php echo htmlspecialchars($medicine['description'] ?: ''); ?>">
-                                                            <i class="fas fa-edit"></i> Sửa
-                                                        </button>
-                                                        <button class="btn btn-sm btn-info" onclick="updateStock(<?php echo $medicine['id']; ?>, '<?php echo addslashes(htmlspecialchars($medicine['name'])); ?>')">
-                                                            <i class="fas fa-plus-minus"></i> Cập nhật kho
-                                                        </button>
-                                                        <button class="btn btn-sm btn-danger" onclick="deleteMedicine(<?php echo $medicine['id']; ?>, '<?php echo addslashes(htmlspecialchars($medicine['name'])); ?>')">
-                                                            <i class="fas fa-trash"></i> Xóa
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                    <?php
-                                                }
-                                            } else {
-                                    ?>
-                                                <tr>
-                                                    <td colspan="9" class="text-center text-muted">Chưa có thuốc nào trong kho.</td>
-                                                </tr>
-                                    <?php
-                                            }
-                                        } catch (PDOException $e) {
-                                            error_log("Get medicines error: " . $e->getMessage());
-                                    ?>
-                                        <tr>
-                                            <td colspan="9" class="text-center text-danger">Lỗi khi tải danh sách thuốc.</td>
-                                        </tr>
-                                    <?php
-                                        }
-                                    ?>
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
-
-                <!-- Add Medicine Modal -->
-                <div class="modal fade" id="addMedicineModal" tabindex="-1" role="dialog" aria-labelledby="addMedicineModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="addMedicineModalLabel">Thêm thuốc mới</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <form method="post" action="?page=medicine_inventory">
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Tên thuốc *</label>
-                                                <input type="text" name="name" class="form-control" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Tên gốc</label>
-                                                <input type="text" name="generic_name" class="form-control">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Danh mục</label>
-                                                <select name="category" class="form-control" required>
-                                                    <option value="Thuốc kháng sinh">Thuốc kháng sinh</option>
-                                                    <option value="Thuốc giảm đau">Thuốc giảm đau</option>
-                                                    <option value="Thuốc tim mạch">Thuốc tim mạch</option>
-                                                    <option value="Thuốc tiêu hóa">Thuốc tiêu hóa</option>
-                                                    <option value="Thuốc hô hấp">Thuốc hô hấp</option>
-                                                    <option value="Vitamin & Khoáng chất">Vitamin & Khoáng chất</option>
-                                                    <option value="Thuốc khác">Thuốc khác</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Dạng bào chế</label>
-                                                <select name="dosage_form" class="form-control" required>
-                                                    <option value="Viên nén">Viên nén</option>
-                                                    <option value="Viên nang">Viên nang</option>
-                                                    <option value="Si rô">Si rô</option>
-                                                    <option value="Thuốc tiêm">Thuốc tiêm</option>
-                                                    <option value="Thuốc mỡ">Thuốc mỡ</option>
-                                                    <option value="Thuốc bột">Thuốc bột</option>
-                                                    <option value="Dạng khác">Dạng khác</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Hàm lượng</label>
-                                                <input type="text" name="strength" class="form-control" placeholder="VD: 500mg, 10ml">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Nhà sản xuất</label>
-                                                <input type="text" name="manufacturer" class="form-control">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Số lượng *</label>
-                                                <input type="number" name="quantity" class="form-control" min="0" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Giá đơn vị (VND) *</label>
-                                                <input type="number" name="unit_price" class="form-control" min="0" step="100" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Hạn sử dụng</label>
-                                                <input type="date" name="expiry_date" class="form-control">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Mô tả</label>
-                                        <textarea name="description" class="form-control" rows="3"></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                                    <button type="submit" name="add_medicine" class="btn btn-primary">Thêm thuốc</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Edit Medicine Modal -->
-                <div class="modal fade" id="editMedicineModal" tabindex="-1" role="dialog" aria-labelledby="editMedicineModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editMedicineModalLabel">Chỉnh sửa thuốc</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <form method="post" action="?page=medicine_inventory">
-                                <input type="hidden" name="medicine_id" id="edit_medicine_id">
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Tên thuốc *</label>
-                                                <input type="text" name="name" id="edit_name" class="form-control" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Tên gốc</label>
-                                                <input type="text" name="generic_name" id="edit_generic_name" class="form-control">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Danh mục</label>
-                                                <select name="category" id="edit_category" class="form-control" required>
-                                                    <option value="Thuốc kháng sinh">Thuốc kháng sinh</option>
-                                                    <option value="Thuốc giảm đau">Thuốc giảm đau</option>
-                                                    <option value="Thuốc tim mạch">Thuốc tim mạch</option>
-                                                    <option value="Thuốc tiêu hóa">Thuốc tiêu hóa</option>
-                                                    <option value="Thuốc hô hấp">Thuốc hô hấp</option>
-                                                    <option value="Vitamin & Khoáng chất">Vitamin & Khoáng chất</option>
-                                                    <option value="Thuốc khác">Thuốc khác</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Dạng bào chế</label>
-                                                <select name="dosage_form" id="edit_dosage_form" class="form-control" required>
-                                                    <option value="Viên nén">Viên nén</option>
-                                                    <option value="Viên nang">Viên nang</option>
-                                                    <option value="Si rô">Si rô</option>
-                                                    <option value="Thuốc tiêm">Thuốc tiêm</option>
-                                                    <option value="Thuốc mỡ">Thuốc mỡ</option>
-                                                    <option value="Thuốc bột">Thuốc bột</option>
-                                                    <option value="Dạng khác">Dạng khác</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Hàm lượng</label>
-                                                <input type="text" name="strength" id="edit_strength" class="form-control">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Nhà sản xuất</label>
-                                                <input type="text" name="manufacturer" id="edit_manufacturer" class="form-control">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Số lượng *</label>
-                                                <input type="number" name="quantity" id="edit_quantity" class="form-control" min="0" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Giá đơn vị (VND) *</label>
-                                                <input type="number" name="unit_price" id="edit_unit_price" class="form-control" min="0" step="100" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Hạn sử dụng</label>
-                                                <input type="date" name="expiry_date" id="edit_expiry_date" class="form-control">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Mô tả</label>
-                                        <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                                    <button type="submit" name="update_medicine" class="btn btn-primary">Cập nhật</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Update Stock Modal -->
-                <div class="modal fade" id="updateStockModal" tabindex="-1" role="dialog" aria-labelledby="updateStockModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="updateStockModalLabel">Cập nhật kho</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <form method="post" action="?page=medicine_inventory">
-                                <input type="hidden" name="medicine_id" id="stock_medicine_id">
-                                <div class="modal-body">
-                                    <div class="form-group">
-                                        <label>Thuốc: <span id="stock_medicine_name"></span></label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Số lượng thay đổi</label>
-                                        <input type="number" name="quantity_change" class="form-control" placeholder="VD: 10 (nhập), -5 (xuất)" required>
-                                        <small class="form-text text-muted">Số dương để nhập kho, số âm để xuất kho</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Lý do</label>
-                                        <select name="reason" class="form-control" required>
-                                            <option value="Nhập kho">Nhập kho</option>
-                                            <option value="Xuất sử dụng">Xuất sử dụng</option>
-                                            <option value="Hết hạn">Hết hạn</option>
-                                            <option value="Hỏng hóc">Hỏng hóc</option>
-                                            <option value="Điều chuyển">Điều chuyển</option>
-                                            <option value="Khác">Khác</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                                    <button type="submit" name="update_stock" class="btn btn-primary">Cập nhật</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
             <?php } ?>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        }
+            <!-- Service Pricing Section -->
+            <?php if ($page === 'service_pricing') { ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Quản lý giá dịch vụ</h2>
+                        <p class="section-subtitle">Cập nhật giá dịch vụ y tế</p>
+                    </div>
 
-        // Medicine management functions
-        function editMedicine(id, name, genericName, category, dosageForm, strength, manufacturer, quantity, unitPrice, expiryDate, description) {
-            document.getElementById('edit_medicine_id').value = id;
-            document.getElementById('edit_name').value = name;
-            document.getElementById('edit_generic_name').value = genericName;
-            document.getElementById('edit_category').value = category;
-            document.getElementById('edit_dosage_form').value = dosageForm;
-            document.getElementById('edit_strength').value = strength;
-            document.getElementById('edit_manufacturer').value = manufacturer;
-            document.getElementById('edit_quantity').value = quantity;
-            document.getElementById('edit_unit_price').value = unitPrice;
-            document.getElementById('edit_expiry_date').value = expiryDate;
-            document.getElementById('edit_description').value = description;
-            $('#editMedicineModal').modal('show');
-        }
-    </script>
+                    <div class="data-card">
+                        <button class="btn btn-primary mb-3" onclick="showAddServiceModal()">
+                            <i class="fas fa-plus"></i> Thêm dịch vụ mới
+                        </button>
 
-    <!-- Add Service Modal -->
-    <div class="modal fade" id="addServiceModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Thêm dịch vụ mới</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <form method="POST" action="">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label>Tên dịch vụ (Tiếng Việt)</label>
-                            <input type="text" name="name_vi" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Tên dịch vụ (Tiếng Anh)</label>
-                            <input type="text" name="name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Mô tả</label>
-                            <textarea name="description" class="form-control" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Giá (VNĐ)</label>
-                            <input type="number" name="price" class="form-control" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Danh mục</label>
-                            <select name="category" class="form-control" required>
-                                <option value="laboratory">Xét nghiệm</option>
-                                <option value="radiology">Chẩn đoán hình ảnh</option>
-                                <option value="cardiology">Tim mạch</option>
-                                <option value="consultation">Tư vấn</option>
-                                <option value="vaccination">Tiêm chủng</option>
-                                <option value="therapy">Trị liệu</option>
-                            </select>
+                        <div class="data-table-container">
+                            <table class="table table-striped data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên dịch vụ</th>
+                                        <th>Mô tả</th>
+                                        <th>Giá (VNĐ)</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $stmt = $pdo->query("SELECT * FROM services ORDER BY service_name ASC");
+                                    if ($stmt->rowCount() > 0) {
+                                        while ($service = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            $status = $service['status'] == '1' ? '<span class="badge badge-success">Hoạt động</span>' : '<span class="badge badge-danger">Tạm dừng</span>';
+                                            echo "<tr>";
+                                            echo "<td><strong>" . htmlspecialchars($service['service_name']) . "</strong></td>";
+                                            echo "<td>" . htmlspecialchars(substr($service['description'] ?? '', 0, 50)) . "...</td>";
+                                            echo "<td>" . number_format($service['price'], 0, ',', '.') . " VNĐ</td>";
+                                            echo "<td>" . $status . "</td>";
+                                            echo "<td>
+                                                    <button class='btn btn-sm btn-info' onclick='editService(" . json_encode($service) . ")' title='Sửa'>
+                                                        <i class='fas fa-edit'></i>
+                                                    </button>
+                                                    <button class='btn btn-sm btn-danger' onclick='deleteService({$service['id']}, \"" . addslashes($service['service_name']) . "\")' title='Xóa'>
+                                                        <i class='fas fa-trash'></i>
+                                                    </button>
+                                                  </td>";
+                                            echo "</tr>";
+                                        }
+                                    } else {
+                                        echo "<tr><td colspan='5' class='text-center text-muted'>Chưa có dịch vụ nào</td></tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                        <button type="submit" name="add_service" class="btn btn-primary">Thêm dịch vụ</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                </section>
+            <?php } ?>
+        </main>
     </div>
 
-    <!-- Scripts -->
-
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
@@ -2039,40 +1684,246 @@ if (isset($_POST['update_stock'])) {
                     toggleSidebar();
                 });
             }
-
-            // Update switch labels dynamically
-            const switches = document.querySelectorAll('.custom-control-input');
-            switches.forEach(function(switchEl) {
-                switchEl.addEventListener('change', function() {
-                    const label = this.nextElementSibling;
-                    if (this.checked) {
-                        label.textContent = 'Hoạt động';
-                    } else {
-                        label.textContent = 'Tạm dừng';
-                    }
-                });
-            });
         });
+    </script>
 
-        // Event listener for edit medicine buttons
-        document.addEventListener('click', function(e) {
-            const button = e.target.closest('.edit-medicine-btn');
-            if (button) {
-                const id = button.getAttribute('data-id');
-                const name = button.getAttribute('data-name');
-                const genericName = button.getAttribute('data-generic-name');
-                const category = button.getAttribute('data-category');
-                const dosageForm = button.getAttribute('data-dosage-form');
-                const strength = button.getAttribute('data-strength');
-                const manufacturer = button.getAttribute('data-manufacturer');
-                const quantity = button.getAttribute('data-quantity');
-                const unitPrice = button.getAttribute('data-unit-price');
-                const expiryDate = button.getAttribute('data-expiry-date');
-                const description = button.getAttribute('data-description');
+    <!-- Add Medicine Modal -->
+    <div class="modal fade" id="addMedicineModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle"></i> Thêm thuốc mới</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Tên thuốc *</label>
+                                    <input type="text" name="name" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Tên chung</label>
+                                    <input type="text" name="generic_name" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Danh mục</label>
+                                    <input type="text" name="category" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Dạng thuốc</label>
+                                    <input type="text" name="dosage_form" class="form-control" placeholder="Viên, Siro, v.v.">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Hàm lượng</label>
+                                    <input type="text" name="strength" class="form-control" placeholder="500mg, v.v.">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Nhà sản xuất</label>
+                                    <input type="text" name="manufacturer" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Số lượng *</label>
+                                    <input type="number" name="quantity" class="form-control" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Đơn giá (VNĐ) *</label>
+                                    <input type="number" name="unit_price" class="form-control" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Hạn dùng *</label>
+                                    <input type="date" name="expiry_date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Mô tả</label>
+                                    <textarea name="description" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" name="add_medicine" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-                editMedicine(id, name, genericName, category, dosageForm, strength, manufacturer, quantity, unitPrice, expiryDate, description);
-            }
-        });
+    <!-- Edit Medicine Modal -->
+    <div class="modal fade" id="editMedicineModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-edit"></i> Chỉnh sửa thuốc</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form method="POST">
+                    <input type="hidden" name="medicine_id" id="edit_medicine_id">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Tên thuốc *</label>
+                                    <input type="text" name="name" id="edit_name" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Tên chung</label>
+                                    <input type="text" name="generic_name" id="edit_generic_name" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Danh mục</label>
+                                    <input type="text" name="category" id="edit_category" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Dạng thuốc</label>
+                                    <input type="text" name="dosage_form" id="edit_dosage_form" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Hàm lượng</label>
+                                    <input type="text" name="strength" id="edit_strength" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Nhà sản xuất</label>
+                                    <input type="text" name="manufacturer" id="edit_manufacturer" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Số lượng *</label>
+                                    <input type="number" name="quantity" id="edit_quantity" class="form-control" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Đơn giá (VNĐ) *</label>
+                                    <input type="number" name="unit_price" id="edit_unit_price" class="form-control" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Hạn dùng *</label>
+                                    <input type="date" name="expiry_date" id="edit_expiry_date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Mô tả</label>
+                                    <textarea name="description" id="edit_description" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" name="update_medicine" class="btn btn-info">
+                            <i class="fas fa-save"></i> Cập nhật
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Stock Modal -->
+    <div class="modal fade" id="updateStockModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="fas fa-box"></i> Cập nhật kho</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form method="POST">
+                    <input type="hidden" name="medicine_id" id="stock_medicine_id">
+                    <div class="modal-body">
+                        <p><strong>Thuốc:</strong> <span id="stock_medicine_name"></span></p>
+                        <div class="form-group">
+                            <label>Thay đổi số lượng *</label>
+                            <input type="number" name="quantity_change" class="form-control" 
+                                   placeholder="Nhập số dương để thêm, số âm để trừ" required>
+                            <small class="text-muted">Ví dụ: +50 để thêm 50 đơn vị, -20 để trừ 20 đơn vị</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Lý do *</label>
+                            <textarea name="reason" class="form-control" rows="2" 
+                                      placeholder="Nhập khẩu, Xuất kho, v.v." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" name="update_stock" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Cập nhật
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function editMedicine(medicine) {
+            document.getElementById('edit_medicine_id').value = medicine.id;
+            document.getElementById('edit_name').value = medicine.name;
+            document.getElementById('edit_generic_name').value = medicine.generic_name || '';
+            document.getElementById('edit_category').value = medicine.category || '';
+            document.getElementById('edit_dosage_form').value = medicine.dosage_form || '';
+            document.getElementById('edit_strength').value = medicine.strength || '';
+            document.getElementById('edit_manufacturer').value = medicine.manufacturer || '';
+            document.getElementById('edit_quantity').value = medicine.quantity;
+            document.getElementById('edit_unit_price').value = medicine.unit_price;
+            document.getElementById('edit_expiry_date').value = medicine.expiry_date;
+            document.getElementById('edit_description').value = medicine.description || '';
+            $('#editMedicineModal').modal('show');
+        }
 
         function updateStock(id, name) {
             document.getElementById('stock_medicine_id').value = id;
@@ -2081,28 +1932,87 @@ if (isset($_POST['update_stock'])) {
         }
 
         function deleteMedicine(id, name) {
-            if (confirm('Bạn có chắc muốn xóa thuốc "' + name + '"? Hành động này không thể hoàn tác.')) {
+            if (confirm('Bạn có chắc chắn muốn xóa thuốc "' + name + '"?')) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '?page=medicine_inventory';
-
-                const idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'medicine_id';
-                idInput.value = id;
-
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'delete_medicine';
-                actionInput.value = '1';
-
-                form.appendChild(idInput);
-                form.appendChild(actionInput);
+                form.innerHTML = '<input type="hidden" name="medicine_id" value="' + id + '">' +
+                                '<input type="hidden" name="delete_medicine" value="1">';
                 document.body.appendChild(form);
                 form.submit();
             }
         }
+
+        function showAddServiceModal() {
+            document.getElementById('serviceForm').reset();
+            document.getElementById('service_id').value = '';
+            document.getElementById('serviceModalTitle').textContent = 'Thêm dịch vụ mới';
+            document.getElementById('serviceModalButton').textContent = 'Thêm dịch vụ';
+            document.getElementById('serviceModalButton').name = 'add_service';
+            $('#serviceModal').modal('show');
+        }
+
+        function editService(service) {
+            document.getElementById('service_id').value = service.id;
+            document.getElementById('service_name').value = service.service_name;
+            document.getElementById('description').value = service.description || '';
+            document.getElementById('price').value = service.price;
+            document.getElementById('status').value = service.status;
+            document.getElementById('serviceModalTitle').textContent = 'Sửa dịch vụ';
+            document.getElementById('serviceModalButton').textContent = 'Cập nhật dịch vụ';
+            document.getElementById('serviceModalButton').name = 'edit_service';
+            $('#serviceModal').modal('show');
+        }
+
+        function deleteService(id, name) {
+            if (confirm('Bạn có chắc chắn muốn xóa dịch vụ "' + name + '"?')) {
+                window.location.href = '?page=service_pricing&delete_service=' + id;
+            }
+        }
     </script>
+
+    <!-- Service Modal -->
+    <div class="modal fade" id="serviceModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="serviceModalTitle"><i class="fas fa-plus"></i> Thêm dịch vụ mới</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form method="POST" id="serviceForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="service_id" name="service_id" value="">
+                        <div class="form-group">
+                            <label>Tên dịch vụ <span class="text-danger">*</span></label>
+                            <input type="text" id="service_name" name="service_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Mô tả</label>
+                            <textarea id="description" name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Giá (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" id="price" name="price" class="form-control" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Trạng thái</label>
+                            <select id="status" name="status" class="form-control">
+                                <option value="1">Hoạt động</option>
+                                <option value="0">Tạm dừng</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" id="serviceModalButton" name="add_service" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Thêm dịch vụ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
