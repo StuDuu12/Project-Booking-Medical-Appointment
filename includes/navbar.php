@@ -1,29 +1,17 @@
 <?php
-
-/**
- * Navbar Component - Reusable navigation bar for all pages
- * 
- * Usage: 
- * $base_path = '../../'; // Adjust based on file location
- * include($base_path . 'includes/navbar.php');
- */
-
-// Set default base path if not defined
 if (!isset($base_path)) {
     $base_path = '';
 }
 
-// Include database connection if not already included
 if (!isset($pdo)) {
     require_once __DIR__ . '/../config.php';
 }
 ?>
 
-<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container">
         <a class="navbar-brand" href="<?php echo $base_path; ?>index.php">
-            <i class="fas fa-hospital"></i> Bệnh viện Global
+            <i class="fas fa-hospital"></i> Bệnh viện DBD
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -31,8 +19,6 @@ if (!isset($pdo)) {
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto align-items-center">
                 <?php
-                // Check if user is logged in and show portal button
-                // Note: Session should be started in the parent page before including this navbar
                 if (isset($_SESSION['patientSession']) || isset($_SESSION['doctorSession']) || isset($_SESSION['adminSession'])):
                     $portal_url = '';
                     $portal_label = '';
@@ -71,7 +57,14 @@ if (!isset($pdo)) {
                     </a>
                 </li>
                 <?php
-                // Show login/register buttons if not logged in
+                if (isset($_SESSION['patientSession']) || isset($_SESSION['doctorSession']) || isset($_SESSION['adminSession'])): ?>
+                    <li class="nav-item">
+                        <a href="<?php echo $base_path; ?>pages/auth/logout.php" class="btn btn-nav btn-logout">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a>
+                    </li>
+                <?php endif; ?>
+                <?php
                 if (!isset($_SESSION['patientSession']) && !isset($_SESSION['doctorSession']) && !isset($_SESSION['adminSession'])): ?>
                     <li class="nav-item">
                         <a href="<?php echo $base_path; ?>pages/auth/login.php" class="btn btn-nav btn-login">
@@ -196,6 +189,20 @@ if (!isset($pdo)) {
         transform: translateY(-2px);
         box-shadow: 0 8px 16px rgba(255, 215, 0, 0.4);
         color: #8b0000 !important;
+    }
+
+    .navbar-custom .btn-logout {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white !important;
+        border: 2px solid transparent;
+        font-weight: 600;
+    }
+
+    .navbar-custom .btn-logout:hover {
+        background: linear-gradient(135deg, #b91c1c, #991b1b);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(220, 38, 38, 0.4);
+        color: white !important;
     }
 
     /* Welcome Message Dropdown */

@@ -30,6 +30,16 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 	<link rel="stylesheet" href="../../assets/css/custom/modern-auth.css?v=2.2">
 
 	<style>
+		body {
+			background-image:
+				linear-gradient(135deg, rgba(220, 38, 38, 0.85) 0%, rgba(239, 68, 68, 0.85) 25%, rgba(248, 113, 113, 0.85) 50%, rgba(252, 165, 165, 0.85) 75%, rgba(254, 202, 202, 0.85) 100%),
+				url('../../images/nendo.png') !important;
+			background-size: cover, contain !important;
+			background-position: center, center !important;
+			background-repeat: no-repeat, no-repeat !important;
+			background-attachment: fixed, fixed !important;
+		}
+
 		.form-error {
 			color: #dc3545;
 			font-size: 0.85rem;
@@ -63,7 +73,6 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 		.main-container {
 			min-height: 100vh;
 			padding: 100px 20px 40px;
-			background: linear-gradient(135deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
 			position: relative;
 			overflow: hidden;
 		}
@@ -77,6 +86,72 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 			height: 100%;
 			background: radial-gradient(circle, rgba(20, 184, 166, 0.2) 0%, transparent 70%);
 			animation: float 15s ease-in-out infinite;
+		}
+
+		/* Hiệu ứng hoa đào rơi */
+		.petals-container {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+			pointer-events: none;
+			z-index: 9999;
+		}
+
+		.petal {
+			position: absolute;
+			top: -10px;
+			width: 15px;
+			height: 15px;
+			background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+			border-radius: 50% 0 50% 0;
+			opacity: 0.8;
+			animation: fall linear infinite;
+		}
+
+		.petal::before {
+			content: '';
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+			border-radius: 50% 0 50% 0;
+			transform: rotate(90deg);
+		}
+
+		@keyframes fall {
+			0% {
+				transform: translateY(0) rotateZ(0deg) rotateY(0deg);
+				opacity: 0.8;
+			}
+
+			100% {
+				transform: translateY(100vh) rotateZ(360deg) rotateY(360deg);
+				opacity: 0;
+			}
+		}
+
+		.petal:nth-child(odd) {
+			animation-duration: 8s;
+		}
+
+		.petal:nth-child(even) {
+			animation-duration: 12s;
+		}
+
+		.petal:nth-child(3n) {
+			animation-duration: 10s;
+			width: 12px;
+			height: 12px;
+		}
+
+		.petal:nth-child(5n) {
+			animation-duration: 15s;
+			width: 18px;
+			height: 18px;
+			opacity: 0.6;
 		}
 
 		@keyframes float {
@@ -289,6 +364,23 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 </head>
 
 <body>
+	<!-- Container cho hoa đào rơi -->
+	<div class="petals-container" id="petals"></div>
+	<script>
+		function createPetals() {
+			const petalsContainer = document.getElementById('petals');
+			const numberOfPetals = 30;
+			for (let i = 0; i < numberOfPetals; i++) {
+				const petal = document.createElement('div');
+				petal.className = 'petal';
+				petal.style.left = Math.random() * 100 + '%';
+				petal.style.animationDelay = Math.random() * 10 + 's';
+				petal.style.animationDuration = (8 + Math.random() * 10) + 's';
+				petalsContainer.appendChild(petal);
+			}
+		}
+		window.addEventListener('load', createPetals);
+	</script>
 	<?php include($base_path . 'includes/navbar.php'); ?>
 
 	<!-- Main Container -->

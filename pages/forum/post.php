@@ -107,7 +107,13 @@ $author_avatar = !empty($author_email) ? 'https://www.gravatar.com/avatar/' . md
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 50%, #fff0f0 100%);
+            background-image:
+                linear-gradient(135deg, rgba(255, 245, 245, 0.85) 0%, rgba(255, 230, 230, 0.85) 50%, rgba(255, 240, 240, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
         }

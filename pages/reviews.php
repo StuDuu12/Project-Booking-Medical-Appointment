@@ -57,17 +57,24 @@ $specializations = getSpecializations($pdo);
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+            background-image:
+                linear-gradient(135deg, rgba(243, 244, 246, 0.9) 0%, rgba(229, 231, 235, 0.9) 100%),
+                url('../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
         }
 
         .hero-section {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: linear-gradient(135deg, rgba(210, 48, 44, 0.85) 0%, rgba(255, 77, 77, 0.85) 100%), url('../images/navbar.png') center/cover no-repeat;
             color: white;
             padding: 3rem 0;
             margin-top: 70px;
             /* Added to clear fixed navbar */
             margin-bottom: 1rem;
             text-align: center;
+            position: relative;
         }
 
         .nav-pills .nav-link {
@@ -620,6 +627,391 @@ $specializations = getSpecializations($pdo);
             animate();
         })();
     </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="footer-brand">
+                        <i class="fas fa-hospital"></i> Global Hospitals
+                    </div>
+                    <p>Hệ thống quản lý bệnh viện hiện đại, chuyên nghiệp và tiện lợi.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Liên kết nhanh</h5>
+                    <ul class="footer-links">
+                        <li><a href="../index.php">Trang chủ</a></li>
+                        <li><a href="reviews.php">Đánh giá</a></li>
+                        <li><a href="contact.php">Liên hệ</a></li>
+                        <li><a href="forum/index.php">Diễn đàn</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Liên hệ</h5>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-envelope"></i> stu735105020@hnue.edu.vn</li>
+                        <li><i class="fas fa-phone"></i> (84) 123-456-789</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 136 Xuân Thuỷ, Trường Đại học Sư phạm Hà Nội, Việt Nam</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; Nhóm 17 - Hệ thống đặt lịch khám. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lunar New Year Lanterns -->
+    <div class="medical-lantern-container left-side">
+        <div class="medical-string"></div>
+        <div class="medical-lantern">
+            <div class="medical-lantern-top"></div>
+            <div class="medical-lantern-body">
+                <span class="medical-lantern-text">Xuân</span>
+            </div>
+            <div class="medical-lantern-bottom"></div>
+            <div class="medical-tassels">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="medical-scroll">
+                <div class="medical-scroll-text">
+                    <span>Chúc</span>
+                    <span>Tết</span>
+                    <span>Đến</span>
+                    <span>Trăm</span>
+                    <span>Điều</span>
+                    <span>Như</span>
+                    <span>Ý</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="medical-lantern-container right-side">
+        <div class="medical-string"></div>
+        <div class="medical-lantern">
+            <div class="medical-lantern-top"></div>
+            <div class="medical-lantern-body">
+                <span class="medical-lantern-text">2026</span>
+            </div>
+            <div class="medical-lantern-bottom"></div>
+            <div class="medical-tassels">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="medical-scroll">
+                <div class="medical-scroll-text">
+                    <span>Mừng</span>
+                    <span>Xuân</span>
+                    <span>Sang</span>
+                    <span>Vạn</span>
+                    <span>Sự</span>
+                    <span>Thành</span>
+                    <span>Công</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&family=Mea+Culpa&display=swap');
+
+        .footer {
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 50%, #d2302c 100%);
+            color: #ffffff;
+            padding: 3rem 0 1rem;
+            position: relative;
+            overflow: hidden;
+            margin-top: 5rem;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ffd700 0%, #d4af37 50%, #ffd700 100%);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+        }
+
+        .footer-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: #ffe6e6;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            color: #ffd700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+            transform: translateX(5px);
+            display: inline-block;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 2px solid rgba(255, 215, 0, 0.3);
+            color: #ffe6e6;
+            font-weight: 500;
+        }
+
+        .medical-lantern-container {
+            position: fixed;
+            top: 0;
+            z-index: 9999;
+            pointer-events: none;
+            transform-origin: top center;
+            animation: medical-swing 4s ease-in-out infinite alternate;
+        }
+
+        .left-side {
+            left: 40px
+        }
+
+        .right-side {
+            right: 40px;
+            animation-delay: 1s
+        }
+
+        .medical-string {
+            width: 2px;
+            height: 70px;
+            margin: 0 auto;
+            background: linear-gradient(to bottom, #cfc09f, #b8860b);
+            position: relative;
+        }
+
+        .medical-string::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: -4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffd700, #b8860b);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .6);
+        }
+
+        .medical-lantern {
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .medical-lantern-body {
+            width: 120px;
+            height: 100px;
+            border-radius: 35px;
+            background: radial-gradient(circle at 30% 30%, #ff5a5a, #7a0000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                inset 0 0 12px rgba(255, 200, 120, .35),
+                0 0 10px rgba(255, 140, 60, .25),
+                0 0 20px rgba(255, 120, 40, .15);
+            animation: medical-glow 3s ease-in-out infinite;
+        }
+
+        .medical-lantern-text {
+            font-family: 'Mr Dafoe', cursive;
+            font-size: 36px;
+            color: #ffd700;
+            text-shadow: 0 0 4px rgba(255, 220, 150, .8), 0 0 8px rgba(255, 180, 100, .5);
+        }
+
+        .medical-lantern-top,
+        .medical-lantern-bottom {
+            width: 60px;
+            height: 12px;
+            margin: 0 auto;
+            background: linear-gradient(90deg, #b8860b, #ffd700, #b8860b);
+        }
+
+        .medical-lantern-top {
+            margin-bottom: -5px
+        }
+
+        .medical-lantern-bottom {
+            margin-top: -5px
+        }
+
+        .medical-tassels {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            transition: opacity .25s ease;
+        }
+
+        .medical-tassels span {
+            display: inline-block;
+            width: 4px;
+            height: 50px;
+            margin: 0 2px;
+            background: linear-gradient(to bottom, #d2302c, #ff4d4d);
+            border-radius: 0 0 5px 5px;
+            animation: medical-tassel-sway 2s ease-in-out infinite alternate;
+        }
+
+        .medical-tassels span:nth-child(2) {
+            height: 65px
+        }
+
+        .medical-scroll {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            opacity: 0;
+            background:
+                linear-gradient(to right, rgba(255, 255, 255, .06), rgba(0, 0, 0, .15), rgba(255, 255, 255, .06)),
+                #8b0000;
+            border: 2px solid #d4af37;
+            box-shadow:
+                0 0 0 3px #8b0000,
+                0 0 0 5px #d4af37,
+                0 6px 12px rgba(0, 0, 0, .4);
+            border-radius: 2px;
+            overflow: visible;
+            transition: width .45s ease, opacity .25s ease;
+        }
+
+        .medical-scroll::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 10px;
+            background: #ffd700;
+        }
+
+        .medical-scroll::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: -12px;
+            right: -12px;
+            height: 14px;
+            background: linear-gradient(to right, #8a6e2f, #ffd700, #8a6e2f);
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .45);
+        }
+
+        .medical-scroll-text {
+            font-family: 'Mea Culpa', cursive;
+            font-size: 26px;
+            color: #ffd700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 16px 8px 20px;
+            line-height: 1.15;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, .6), 0 0 6px rgba(255, 215, 0, .4);
+        }
+
+        .medical-lantern:hover .medical-tassels {
+            opacity: 0
+        }
+
+        .medical-lantern:hover .medical-scroll {
+            width: 82px;
+            opacity: 1
+        }
+
+        @keyframes medical-swing {
+            from {
+                transform: rotate(-3deg)
+            }
+
+            to {
+                transform: rotate(3deg)
+            }
+        }
+
+        @keyframes medical-tassel-sway {
+            from {
+                transform: rotate(2deg)
+            }
+
+            to {
+                transform: rotate(-2deg)
+            }
+        }
+
+        @keyframes medical-glow {
+            0% {
+                filter: brightness(1)
+            }
+
+            50% {
+                filter: brightness(1.08)
+            }
+
+            100% {
+                filter: brightness(1)
+            }
+        }
+
+        @media (min-width:821px) and (max-width:1024px) {
+            .medical-lantern-container {
+                transform: scale(.85)
+            }
+        }
+
+        @media (min-width:1025px) and (max-width:1280px) {
+            .medical-lantern-container {
+                transform: scale(.95)
+            }
+        }
+    </style>
+
+    <div class="tet_bottom"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwruFlhClo3FUKNBQtDvqWYiDVOoi-IT7Jy4R11OU5HaOFR2N7CcX5sH4FWQI_GRoVrx4Hd5pVQREJ_QsAjvSA41v25TW0LEGW2jb8s3J2QwCrXp4qsMqdvxUZz9lglGyxL4YQxIbbf17zyqd99Rr28rDzx-foaXJRQ13kQUAblMtlt4U1rKMYbHkn5w/s16000/bottom-1.png" alt="Trang trí Tết phía dưới" /></div>
+
+    <style type="text/css">
+        .tet_bottom {
+            position: fixed;
+            bottom: 0;
+            left: 80px;
+            z-index: 99;
+            width: 320px;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1331px) {
+
+            .tet_left,
+            .tet_right,
+            .tet_bottom {
+                display: none !important;
+            }
+        }
+    </style>
 
 </body>
 

@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_medicine'])) {
 
     if (empty($name) || empty($category) || $quantity < 0) {
         redirectWithMessage('medicine-inventory.php', 'error', 'Vui lòng điền đầy đủ thông tin bắt buộc!');
+        exit();
     }
 
     try {
@@ -222,94 +223,305 @@ function checkMedicineStatus($medicine)
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
     <style>
-        body {
-            background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 50%, #f0f9ff 100%);
-            min-height: 100vh;
-            padding-top: 80px;
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        .page-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px 20px;
+        body {
+            background-image:
+                linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
+            font-family: 'Inter', sans-serif;
         }
 
         .page-header {
-            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
-            padding: 30px;
-            border-radius: 16px;
+            background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
+            padding: 40px;
+            border-radius: 24px;
             color: white;
             margin-bottom: 30px;
-            box-shadow: 0 8px 24px rgba(210, 48, 44, 0.15);
+            box-shadow: 0 20px 60px rgba(6, 95, 70, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 32px;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .page-header p {
+            position: relative;
+            z-index: 1;
+            opacity: 0.95;
         }
 
         .form-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+            border-radius: 24px;
+            padding: 35px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.12);
-            border-left: 5px solid #ffd700;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            border-left: 6px solid #10b981;
         }
 
         .filter-card {
-            background: #f0fdf4;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 2px solid #a7f3d0;
         }
 
         .inventory-card {
             background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.12);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
         }
 
         .btn-medical {
-            background: linear-gradient(135deg, #d2302c, #ff4d4d);
+            background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
             color: white;
             border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
         }
 
         .btn-medical:hover {
-            background: linear-gradient(135deg, #8b0000, #6b0000);
+            background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(210, 48, 44, 0.3);
+            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.4);
         }
 
         .table-medicine {
-            font-size: 14px;
+            font-size: 13px;
+        }
+
+        .table-medicine thead {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
         }
 
         .table-medicine th {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #064e3b;
-            font-weight: 600;
+            color: #065f46;
+            font-weight: 700;
             border: none;
+            padding: 12px 10px;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
         }
 
         .table-medicine td {
             vertical-align: middle;
+            padding: 12px 10px;
+            font-size: 13px;
+        }
+
+        .table-medicine tbody tr {
+            transition: all 0.3s;
+            border-bottom: 1px solid #f0fdf4;
+        }
+
+        .table-medicine tbody tr:hover {
+            background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #065f46;
+            background: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-link:hover {
+            color: #065f46;
+            text-decoration: none;
+            transform: translateX(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            padding: 10px 16px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        }
+
+        label {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 4px;
+            border: 2px solid #a7f3d0;
+            color: #047857;
+            font-weight: 600;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #047857, #059669);
+            border-color: #047857;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .input-group-sm .form-control {
+            padding: 6px 10px;
+        }
+
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg) rotateY(0deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg) rotateY(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+            width: 12px;
+            height: 12px;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+            width: 18px;
+            height: 18px;
         }
     </style>
 </head>
 
 <body>
-    <?php include('../../includes/navbar.php'); ?>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const c = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (8 + Math.random() * 10) + 's';
+                c.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
+    <?php displayMessage(); ?>
 
-    <div class="page-container">
+    <div class="container-lg py-4">
         <a href="dashboard.php" class="back-link">
             <i class="fas fa-arrow-left"></i>
             Quay lại bảng điều khiển

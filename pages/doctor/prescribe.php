@@ -149,15 +149,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
 
     <style>
         body {
-            background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 50%, #f0f9ff 100%);
+            background-image:
+                linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
             font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            padding: 30px 15px;
-        }
 
-        .container-custom {
-            max-width: 1200px;
-            margin: 0 auto;
         }
 
         .back-link {
@@ -356,13 +356,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
                 margin-bottom: 15px;
             }
         }
+
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+        }
     </style>
 </head>
 
 <body>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const c = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (8 + Math.random() * 10) + 's';
+                c.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
     <?php displayMessage(); ?>
 
-    <div class="container-custom">
+    <div class="container-lg py-4">
         <a href="dashboard.php" class="back-link">
             <i class="fas fa-arrow-left"></i>
             Quay lại bảng điều khiển

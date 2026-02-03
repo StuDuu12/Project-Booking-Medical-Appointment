@@ -81,6 +81,24 @@ try {
     error_log("Get doctor ID error: " . $e->getMessage());
 }
 
+// Fetch patients for this doctor
+$doctor_patients = [];
+if ($doctor_id) {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT DISTINCT p.pid, p.fname, p.lname, p.contact, p.email
+            FROM patreg p
+            INNER JOIN appointmenttb a ON p.pid = a.pid
+            WHERE TRIM(a.doctor) = TRIM((SELECT fullname FROM doctb WHERE id = :doctor_id))
+            ORDER BY p.fname, p.lname
+        ");
+        $stmt->execute([':doctor_id' => $doctor_id]);
+        $doctor_patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Get doctor patients error: " . $e->getMessage());
+    }
+}
+
 // Fetch all medical records for this doctor
 $all_medical_records = [];
 $grouped_records = []; // Group by patient_id
@@ -164,7 +182,13 @@ if ($selected_patient_id) {
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
     <style>
         body {
-            background-color: #f8fafc;
+            background-image:
+                linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
             font-family: 'Inter', sans-serif;
         }
 
@@ -174,44 +198,64 @@ if ($selected_patient_id) {
             border-bottom: 3px solid transparent;
             font-weight: 600;
             padding: 12px 20px;
+            transition: all 0.3s;
         }
 
         .nav-tabs .nav-link.active {
-            color: #d2302c;
+            color: #0369a1;
             background-color: transparent;
-            border-bottom-color: #d2302c;
+            border-bottom-color: #0369a1;
         }
 
         .nav-tabs .nav-link:hover {
-            color: #d2302c;
+            color: #0369a1;
         }
 
         .tab-content {
             background: white;
-            border-radius: 8px;
+            border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
         }
 
         .patient-card {
-            background: white;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #bae6fd;
+            border-radius: 16px;
             padding: 15px;
             margin-bottom: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border-left: 4px solid #d1d5db;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .patient-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #0284c7, #0ea5e9);
+            transition: width 0.3s ease;
         }
 
         .patient-card:hover {
-            background-color: #fff5f5;
-            border-left-color: #d2302c;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 12px 48px rgba(2, 132, 199, 0.25);
+            transform: translateY(-4px) scale(1.01);
+            border-color: #7dd3fc;
+        }
+
+        .patient-card:hover::before {
+            width: 100%;
+            opacity: 0.03;
         }
 
         .patient-card.active {
-            background-color: #fff0f0;
-            border-left-color: #d2302c;
+            background: linear-gradient(135deg, #dbeafe 0%, #bae6fd 100%);
+            border-color: #0ea5e9;
+            box-shadow: 0 8px 32px rgba(2, 132, 199, 0.2);
         }
 
         .patient-name {
@@ -229,19 +273,33 @@ if ($selected_patient_id) {
         }
 
         .medical-record-card {
-            background: #fff5f5;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bae6fd 100%);
+            border: 2px solid #7dd3fc;
+            border-radius: 16px;
             padding: 20px;
             margin-bottom: 20px;
-            border-left: 4px solid #d2302c;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .medical-record-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #0284c7, #0ea5e9);
         }
 
         .form-section {
             background: white;
-            border-radius: 8px;
+            border-radius: 16px;
             padding: 25px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
             margin-bottom: 20px;
+            border-left: 6px solid #0ea5e9;
         }
 
         .form-group-row {
@@ -259,14 +317,14 @@ if ($selected_patient_id) {
         }
 
         .form-control {
-            border-radius: 6px;
-            border: 1px solid #d1d5db;
-            padding: 10px 12px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            padding: 10px 16px;
         }
 
         .form-control:focus {
-            border-color: #d2302c;
-            box-shadow: 0 0 0 3px rgba(210, 48, 44, 0.1);
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
         }
 
         .textarea-control {
@@ -275,49 +333,95 @@ if ($selected_patient_id) {
         }
 
         .btn-primary {
-            background-color: #d2302c;
-            border-color: #d2302c;
-            font-weight: 600;
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0ea5e9 100%);
+            border: none;
+            font-weight: 700;
+            padding: 10px 24px;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(3, 105, 161, 0.3);
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
         }
 
         .btn-primary:hover {
-            background-color: #8b0000;
-            border-color: #8b0000;
+            background: linear-gradient(135deg, #075985 0%, #0369a1 50%, #0284c7 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(3, 105, 161, 0.4);
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            color: #d2302c;
+            gap: 10px;
+            color: #0c4a6e;
+            background: white;
+            padding: 12px 24px;
+            border-radius: 12px;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 700;
             margin-bottom: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .back-link:hover {
-            color: #8b0000;
+            color: #0c4a6e;
+            text-decoration: none;
+            transform: translateX(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .page-header {
-            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0ea5e9 100%);
+            padding: 40px;
+            border-radius: 24px;
             color: white;
-            padding: 30px;
-            border-radius: 8px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 60px rgba(3, 105, 161, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 32px;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .page-header p {
-            margin: 5px 0 0 0;
-            opacity: 0.9;
-            font-size: 14px;
+            position: relative;
+            z-index: 1;
+            opacity: 0.95;
         }
 
         .vitals-grid {
@@ -327,15 +431,22 @@ if ($selected_patient_id) {
         }
 
         .vital-input-card {
-            background: #f0fdf4;
+            background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
             padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            border: 2px solid #a5f3fc;
+            transition: all 0.3s;
+        }
+
+        .vital-input-card:hover {
+            border-color: #67e8f9;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.15);
         }
 
         .vital-input-card .form-label {
-            color: #8b0000;
+            color: #0e7490;
             font-size: 12px;
+            font-weight: 600;
         }
 
         .patient-list-container {
@@ -356,10 +467,95 @@ if ($selected_patient_id) {
                 padding: 15px;
             }
         }
+
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg) rotateY(0deg);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: translateY(50vh) rotateZ(180deg) rotateY(180deg);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg) rotateY(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+            width: 12px;
+            height: 12px;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+            width: 18px;
+            height: 18px;
+            opacity: 0.6;
+        }
     </style>
 </head>
 
 <body>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const c = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (8 + Math.random() * 10) + 's';
+                c.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
     <?php displayMessage(); ?>
 
     <div class="container-lg py-4">
@@ -881,62 +1077,22 @@ if ($selected_patient_id) {
             }
         });
 
-        // Handle doctor selection and load patients
-        document.getElementById('doctor_select').addEventListener('change', function() {
-            const doctorId = this.value;
-            const patientSelect = document.getElementById('patient_select');
-            const appointmentSelect = document.getElementById('appointment_select');
-
-            if (!doctorId) {
-                patientSelect.innerHTML = '<option value="">-- Chọn bác sĩ trước --</option>';
-                patientSelect.disabled = true;
-                appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
-                appointmentSelect.disabled = true;
-                return;
-            }
-
-            patientSelect.disabled = true;
-            patientSelect.innerHTML = '<option value="">Đang tải...</option>';
-
-            // Send AJAX request to get patients for this doctor
-            fetch('ajax/get_patients_by_doctor.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'doctor_id=' + doctorId
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.patients.length > 0) {
-                        let optionsHtml = '<option value="">-- Chọn bệnh nhân --</option>';
-                        data.patients.forEach(patient => {
-                            optionsHtml += `<option value="${patient.pid}">
-                            ${patient.fname} ${patient.lname} - ${patient.contact}
-                        </option>`;
-                        });
-                        patientSelect.innerHTML = optionsHtml;
-                        patientSelect.disabled = false;
-                        // Auto-select first patient and load appointments
-                        if (data.patients.length > 0) {
-                            patientSelect.value = data.patients[0].pid;
-                            patientSelect.dispatchEvent(new Event('change'));
-                        }
-                    } else {
-                        patientSelect.innerHTML = '<option value="">Bác sĩ này chưa khám bệnh nhân nào</option>';
-                        patientSelect.disabled = true;
-                        appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
-                        appointmentSelect.disabled = true;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    patientSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+        // Patient dropdown already loaded from PHP, no AJAX needed
+        // Just handle doctor selection for consistency (though doctor should be fixed in this view)
+        if (document.getElementById('doctor_select')) {
+            document.getElementById('doctor_select').addEventListener('change', function() {
+                // In this view, doctor is fixed, but keep this for consistency
+                // If doctor changes, you'd need to reload the page
+                if (!this.value) {
+                    const patientSelect = document.getElementById('patient_select');
+                    const appointmentSelect = document.getElementById('appointment_select');
+                    patientSelect.innerHTML = '<option value="">-- Chọn bác sĩ trước --</option>';
                     patientSelect.disabled = true;
                     appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
                     appointmentSelect.disabled = true;
-                });
-        });
+                }
+            });
+        };
 
         // Handle patient selection and load appointments
         document.getElementById('patient_select').addEventListener('change', function() {
@@ -988,6 +1144,9 @@ if ($selected_patient_id) {
                     appointmentSelect.disabled = true;
                 });
         });
+
+
+        // Handle patient selection to load appointments
     </script>
 </body>
 

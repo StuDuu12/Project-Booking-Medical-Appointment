@@ -49,7 +49,7 @@ if (isset($_GET['status'])) $filters['status'] = $_GET['status'];
 if (isset($_GET['sort'])) $filters['sort'] = $_GET['sort'];
 
 // Get posts
-$posts = getForumPosts($pdo, $filters);
+$posts = getForumPosts($pdo, $filters, $user_id, $user_type);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -64,15 +64,21 @@ $posts = getForumPosts($pdo, $filters);
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 50%, #fff0f0 100%);
+            background-image:
+                linear-gradient(135deg, rgba(255, 245, 245, 0.85) 0%, rgba(255, 230, 230, 0.85) 50%, rgba(255, 240, 240, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
         }
 
         .forum-header {
-            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
+            background: linear-gradient(135deg, rgba(210, 48, 44, 0.85) 0%, rgba(255, 77, 77, 0.85) 100%), url('../../images/navbar.png') center/cover no-repeat;
             color: white;
-            padding: 3.5rem 0;
+            padding: 2.5rem 0 3rem 0;
             margin-top: 70px;
             margin-bottom: 2.5rem;
             box-shadow: 0 4px 12px rgba(210, 48, 44, 0.15);
@@ -80,47 +86,37 @@ $posts = getForumPosts($pdo, $filters);
             overflow: hidden;
         }
 
-        .forum-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            transform: translate(30%, -30%);
-        }
-
         .forum-header h1 {
-            font-size: 2.75rem;
+            font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             position: relative;
             z-index: 1;
         }
 
         .forum-header .lead {
-            font-size: 1.125rem;
+            font-size: 1rem;
             opacity: 0.95;
             font-weight: 400;
             position: relative;
             z-index: 1;
+            margin-bottom: 1rem;
         }
 
         .forum-stats {
             display: flex;
-            gap: 2rem;
-            margin-top: 1.5rem;
+            gap: 1.5rem;
+            margin-top: 1rem;
             position: relative;
             z-index: 1;
+            flex-wrap: wrap;
         }
 
         .forum-stat-item {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             opacity: 0.9;
         }
 
@@ -347,15 +343,15 @@ $posts = getForumPosts($pdo, $filters);
             <div class="forum-stats">
                 <div class="forum-stat-item">
                     <i class="fas fa-file-alt"></i>
-                    <span><?= number_format($total_posts) ?> bài viết</span>
+                    <span><?php echo number_format($total_posts); ?> bài viết</span>
                 </div>
                 <div class="forum-stat-item">
                     <i class="fas fa-comments"></i>
-                    <span><?= number_format($total_comments) ?> bình luận</span>
+                    <span><?php echo number_format($total_comments); ?> bình luận</span>
                 </div>
                 <div class="forum-stat-item">
                     <i class="fas fa-users"></i>
-                    <span><?= number_format($total_members) ?> thành viên</span>
+                    <span><?php echo number_format($total_members); ?> thành viên</span>
                 </div>
             </div>
         </div>
@@ -367,23 +363,23 @@ $posts = getForumPosts($pdo, $filters);
             <form method="GET" class="row align-items-end">
                 <div class="col-md-4 mb-3 mb-md-0">
                     <label class="font-weight-600 mb-2"><i class="fas fa-search mr-1"></i>Tìm kiếm</label>
-                    <input type="text" name="search" class="form-control" placeholder="Tìm bài viết..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                    <input type="text" name="search" class="form-control" placeholder="Tìm bài viết..." value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
                 </div>
                 <div class="col-md-3 mb-3 mb-md-0">
                     <label class="font-weight-600 mb-2"><i class="fas fa-folder mr-1"></i>Danh mục</label>
                     <select name="category" class="custom-select">
                         <option value="">Tất cả</option>
-                        <option value="general" <?= (($_GET['category'] ?? '') === 'general') ? 'selected' : '' ?>>Tổng quát</option>
-                        <option value="health_tips" <?= (($_GET['category'] ?? '') === 'health_tips') ? 'selected' : '' ?>>Mẹo sức khỏe</option>
-                        <option value="qa" <?= (($_GET['category'] ?? '') === 'qa') ? 'selected' : '' ?>>Hỏi đáp</option>
+                        <option value="general" <?php echo (($_GET['category'] ?? '') === 'general') ? 'selected' : ''; ?>>Tổng quát</option>
+                        <option value="health_tips" <?php echo (($_GET['category'] ?? '') === 'health_tips') ? 'selected' : ''; ?>>Mẹo sức khỏe</option>
+                        <option value="qa" <?php echo (($_GET['category'] ?? '') === 'qa') ? 'selected' : ''; ?>>Hỏi đáp</option>
                     </select>
                 </div>
                 <div class="col-md-3 mb-3 mb-md-0">
                     <label class="font-weight-600 mb-2"><i class="fas fa-sort mr-1"></i>Sắp xếp</label>
                     <select name="sort" class="custom-select">
-                        <option value="newest" <?= (($_GET['sort'] ?? '') === 'newest') ? 'selected' : '' ?>>Mới nhất</option>
-                        <option value="popular" <?= (($_GET['sort'] ?? '') === 'popular') ? 'selected' : '' ?>>Phổ biến</option>
-                        <option value="most_viewed" <?= (($_GET['sort'] ?? '') === 'most_viewed') ? 'selected' : '' ?>>Xem nhiều</option>
+                        <option value="newest" <?php echo (($_GET['sort'] ?? '') === 'newest') ? 'selected' : ''; ?>>Mới nhất</option>
+                        <option value="popular" <?php echo (($_GET['sort'] ?? '') === 'popular') ? 'selected' : ''; ?>>Phổ biến</option>
+                        <option value="most_viewed" <?php echo (($_GET['sort'] ?? '') === 'most_viewed') ? 'selected' : ''; ?>>Xem nhiều</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -408,11 +404,11 @@ $posts = getForumPosts($pdo, $filters);
                             <div class="post-header">
                                 <div class="author-info">
                                     <div class="author-avatar">
-                                        <?= strtoupper(substr($post['author_name'], 0, 1)) ?>
+                                        <?php echo strtoupper(substr($post['author_name'], 0, 1)); ?>
                                     </div>
                                     <div>
-                                        <div class="font-weight-600"><?= htmlspecialchars($post['author_name']) ?></div>
-                                        <div class="text-muted small"><?= date('d/m/Y H:i', strtotime($post['created_at'])) ?></div>
+                                        <div class="font-weight-600"><?php echo htmlspecialchars($post['author_name']); ?></div>
+                                        <div class="text-muted small"><?php echo date('d/m/Y H:i', strtotime($post['created_at'])); ?></div>
                                     </div>
                                 </div>
                                 <?php if ($post['user_type'] === 'doctor'): ?>
@@ -424,12 +420,12 @@ $posts = getForumPosts($pdo, $filters);
                                 <?php endif; ?>
                             </div>
 
-                            <a href="post.php?id=<?= $post['id'] ?>" style="text-decoration: none;">
-                                <h3 class="post-title"><?= htmlspecialchars($post['title']) ?></h3>
+                            <a href="post.php?id=<?php echo $post['id']; ?>" style="text-decoration: none;">
+                                <h3 class="post-title"><?php echo htmlspecialchars($post['title']); ?></h3>
                             </a>
 
                             <div class="post-excerpt">
-                                <?= nl2br(htmlspecialchars(substr($post['content'], 0, 200))) ?><?= strlen($post['content']) > 200 ? '...' : '' ?>
+                                <?php echo nl2br(htmlspecialchars(substr($post['content'], 0, 200))); ?><?php echo strlen($post['content']) > 200 ? '...' : ''; ?>
                             </div>
 
                             <?php if (!empty($post['tags'])): ?>
@@ -438,36 +434,37 @@ $posts = getForumPosts($pdo, $filters);
                                         $tag = trim($tag);
                                         $tag = ltrim($tag, '#'); // Remove leading # if exists
                                     ?>
-                                        <span class="tag">#<?= htmlspecialchars($tag) ?></span>
+                                        <span class="tag">#<?php echo htmlspecialchars($tag); ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
 
                             <div class="post-footer">
                                 <?php if ($isLoggedIn): ?>
+                                    <?php $userLiked = !empty($post['user_liked']); ?>
                                     <form method="POST" style="display: inline;">
                                         <input type="hidden" name="action" value="toggle_like">
-                                        <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                                        <button type="submit" class="btn-action <?= $post['user_liked'] ? 'liked' : '' ?>">
-                                            <i class="<?= $post['user_liked'] ? 'fas' : 'far' ?> fa-heart"></i>
-                                            <span><?= $post['like_count'] ?></span>
+                                        <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
+                                        <button type="submit" class="btn-action <?php echo $userLiked ? 'liked' : ''; ?>">
+                                            <i class="<?php echo $userLiked ? 'fas' : 'far'; ?> fa-heart"></i>
+                                            <span><?php echo $post['like_count']; ?></span>
                                         </button>
                                     </form>
                                 <?php else: ?>
                                     <span class="btn-action">
                                         <i class="far fa-heart"></i>
-                                        <span><?= $post['like_count'] ?></span>
+                                        <span><?php echo $post['like_count']; ?></span>
                                     </span>
                                 <?php endif; ?>
 
-                                <a href="post.php?id=<?= $post['id'] ?>#comments" class="btn-action">
+                                <a href="post.php?id=<?php echo $post['id']; ?>#comments" class="btn-action">
                                     <i class="far fa-comment"></i>
-                                    <span><?= $post['comment_count'] ?></span>
+                                    <span><?php echo $post['comment_count']; ?></span>
                                 </a>
 
                                 <span class="btn-action">
                                     <i class="far fa-eye"></i>
-                                    <span><?= $post['views'] ?></span>
+                                    <span><?php echo $post['views']; ?></span>
                                 </span>
                             </div>
                         </div>
@@ -575,6 +572,392 @@ $posts = getForumPosts($pdo, $filters);
             animate();
         })();
     </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="footer-brand">
+                        <i class="fas fa-hospital"></i> Global Hospitals
+                    </div>
+                    <p>Hệ thống quản lý bệnh viện hiện đại, chuyên nghiệp và tiện lợi.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Liên kết nhanh</h5>
+                    <ul class="footer-links">
+                        <li><a href="../../index.php">Trang chủ</a></li>
+                        <li><a href="../reviews.php">Đánh giá</a></li>
+                        <li><a href="../contact.php">Liên hệ</a></li>
+                        <li><a href="index.php">Diễn đàn</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Liên hệ</h5>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-envelope"></i> stu735105020@hnue.edu.vn</li>
+                        <li><i class="fas fa-phone"></i> (84) 123-456-789</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 136 Xuân Thuỷ, Trường Đại học Sư phạm Hà Nội, Việt Nam</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; Nhóm 17 - Hệ thống đặt lịch khám. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lunar New Year Lanterns -->
+    <div class="medical-lantern-container left-side">
+        <div class="medical-string"></div>
+        <div class="medical-lantern">
+            <div class="medical-lantern-top"></div>
+            <div class="medical-lantern-body">
+                <span class="medical-lantern-text">Xuân</span>
+            </div>
+            <div class="medical-lantern-bottom"></div>
+            <div class="medical-tassels">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="medical-scroll">
+                <div class="medical-scroll-text">
+                    <span>Chúc</span>
+                    <span>Tết</span>
+                    <span>Đến</span>
+                    <span>Trăm</span>
+                    <span>Điều</span>
+                    <span>Như</span>
+                    <span>Ý</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="medical-lantern-container right-side">
+        <div class="medical-string"></div>
+        <div class="medical-lantern">
+            <div class="medical-lantern-top"></div>
+            <div class="medical-lantern-body">
+                <span class="medical-lantern-text">2026</span>
+            </div>
+            <div class="medical-lantern-bottom"></div>
+            <div class="medical-tassels">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="medical-scroll">
+                <div class="medical-scroll-text">
+                    <span>Mừng</span>
+                    <span>Xuân</span>
+                    <span>Sang</span>
+                    <span>Vạn</span>
+                    <span>Sự</span>
+                    <span>Thành</span>
+                    <span>Công</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&family=Mea+Culpa&display=swap');
+
+        .footer {
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 50%, #d2302c 100%);
+            color: #ffffff;
+            padding: 3rem 0 1rem;
+            position: relative;
+            overflow: hidden;
+            margin-top: 5rem;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ffd700 0%, #d4af37 50%, #ffd700 100%);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+        }
+
+        .footer-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: #ffe6e6;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            color: #ffd700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+            transform: translateX(5px);
+            display: inline-block;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 2px solid rgba(255, 215, 0, 0.3);
+            color: #ffe6e6;
+            font-weight: 500;
+        }
+
+        .medical-lantern-container {
+            position: fixed;
+            top: 0;
+            z-index: 9999;
+            pointer-events: none;
+            transform-origin: top center;
+            animation: medical-swing 4s ease-in-out infinite alternate;
+        }
+
+        .left-side {
+            left: 40px
+        }
+
+        .right-side {
+            right: 40px;
+            animation-delay: 1s
+        }
+
+        .medical-string {
+            width: 2px;
+            height: 70px;
+            margin: 0 auto;
+            background: linear-gradient(to bottom, #cfc09f, #b8860b);
+            position: relative;
+        }
+
+        .medical-string::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: -4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffd700, #b8860b);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .6);
+        }
+
+        .medical-lantern {
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .medical-lantern-body {
+            width: 120px;
+            height: 100px;
+            border-radius: 35px;
+            background: radial-gradient(circle at 30% 30%, #ff5a5a, #7a0000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                inset 0 0 12px rgba(255, 200, 120, .35),
+                0 0 10px rgba(255, 140, 60, .25),
+                0 0 20px rgba(255, 120, 40, .15);
+            animation: medical-glow 3s ease-in-out infinite;
+        }
+
+        .medical-lantern-text {
+            font-family: 'Mr Dafoe', cursive;
+            font-size: 36px;
+            color: #ffd700;
+            text-shadow: 0 0 4px rgba(255, 220, 150, .8), 0 0 8px rgba(255, 180, 100, .5);
+        }
+
+        .medical-lantern-top,
+        .medical-lantern-bottom {
+            width: 60px;
+            height: 12px;
+            margin: 0 auto;
+            background: linear-gradient(90deg, #b8860b, #ffd700, #b8860b);
+        }
+
+        .medical-lantern-top {
+            margin-bottom: -5px
+        }
+
+        .medical-lantern-bottom {
+            margin-top: -5px
+        }
+
+        .medical-tassels {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            transition: opacity .25s ease;
+        }
+
+        .medical-tassels span {
+            display: inline-block;
+            width: 4px;
+            height: 50px;
+            margin: 0 2px;
+            background: linear-gradient(to bottom, #d2302c, #ff4d4d);
+            border-radius: 0 0 5px 5px;
+            animation: medical-tassel-sway 2s ease-in-out infinite alternate;
+        }
+
+        .medical-tassels span:nth-child(2) {
+            height: 65px
+        }
+
+        .medical-scroll {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            opacity: 0;
+            background:
+                linear-gradient(to right, rgba(255, 255, 255, .06), rgba(0, 0, 0, .15), rgba(255, 255, 255, .06)),
+                #8b0000;
+            border: 2px solid #d4af37;
+            box-shadow:
+                0 0 0 3px #8b0000,
+                0 0 0 5px #d4af37,
+                0 6px 12px rgba(0, 0, 0, .4);
+            border-radius: 2px;
+            overflow: visible;
+            transition: width .45s ease, opacity .25s ease;
+        }
+
+        .medical-scroll::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 10px;
+            background: #ffd700;
+        }
+
+        .medical-scroll::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: -12px;
+            right: -12px;
+            height: 14px;
+            background: linear-gradient(to right, #8a6e2f, #ffd700, #8a6e2f);
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .45);
+        }
+
+        .medical-scroll-text {
+            font-family: 'Mea Culpa', cursive;
+            font-size: 26px;
+            color: #ffd700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 16px 8px 20px;
+            line-height: 1.15;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, .6), 0 0 6px rgba(255, 215, 0, .4);
+        }
+
+        .medical-lantern:hover .medical-tassels {
+            opacity: 0
+        }
+
+        .medical-lantern:hover .medical-scroll {
+            width: 82px;
+            opacity: 1
+        }
+
+        @keyframes medical-swing {
+            from {
+                transform: rotate(-3deg)
+            }
+
+            to {
+                transform: rotate(3deg)
+            }
+        }
+
+        @keyframes medical-tassel-sway {
+            from {
+                transform: rotate(2deg)
+            }
+
+            to {
+                transform: rotate(-2deg)
+            }
+        }
+
+        @keyframes medical-glow {
+            0% {
+                filter: brightness(1)
+            }
+
+            50% {
+                filter: brightness(1.08)
+            }
+
+            100% {
+                filter: brightness(1)
+            }
+        }
+
+        @media (min-width:821px) and (max-width:1024px) {
+            .medical-lantern-container {
+                transform: scale(.85)
+            }
+        }
+
+        @media (min-width:1025px) and (max-width:1280px) {
+            .medical-lantern-container {
+                transform: scale(.95)
+            }
+        }
+    </style>
+
+    <div class="tet_bottom"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwruFlhClo3FUKNBQtDvqWYiDVOoi-IT7Jy4R11OU5HaOFR2N7CcX5sH4FWQI_GRoVrx4Hd5pVQREJ_QsAjvSA41v25TW0LEGW2jb8s3J2QwCrXp4qsMqdvxUZz9lglGyxL4YQxIbbf17zyqd99Rr28rDzx-foaXJRQ13kQUAblMtlt4U1rKMYbHkn5w/s16000/bottom-1.png" alt="Trang trí Tết phía dưới" /></div>
+
+    <style type="text/css">
+        .tet_bottom {
+            position: fixed;
+            bottom: 0;
+            left: 80px;
+            z-index: 99;
+            width: 320px;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1331px) {
+
+            .tet_left,
+            .tet_right,
+            .tet_bottom {
+                display: none !important;
+            }
+        }
+    </style>
+
 </body>
 
 </html>

@@ -100,82 +100,149 @@ function calculateAge($dob)
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
     <style>
-        body {
-            background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 50%, #f0f9ff 100%);
-            min-height: 100vh;
-            padding-top: 80px;
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        .page-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px 20px;
+        body {
+            background-image:
+                linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
+            font-family: 'Inter', sans-serif;
         }
 
         .page-header {
-            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
-            padding: 30px;
-            border-radius: 16px;
+            background: linear-gradient(135deg, #581c87 0%, #6b21a8 50%, #7c3aed 100%);
+            padding: 40px;
+            border-radius: 24px;
             color: white;
             margin-bottom: 30px;
-            box-shadow: 0 8px 24px rgba(210, 48, 44, 0.15);
+            box-shadow: 0 20px 60px rgba(88, 28, 135, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 32px;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .page-header p {
+            position: relative;
+            z-index: 1;
+            opacity: 0.95;
         }
 
         .records-card {
             background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.12);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
         }
 
         .record-item {
-            border: 1px solid #e9d5ff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-            background: #fafafa;
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            border: 2px solid #e9d5ff;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .record-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #7c3aed, #a78bfa);
+            transition: width 0.3s ease;
         }
 
         .record-item:hover {
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 12px 48px rgba(124, 58, 237, 0.25);
+            transform: translateY(-4px) scale(1.01);
+            border-color: #d8b4fe;
+        }
+
+        .record-item:hover::before {
+            width: 100%;
+            opacity: 0.03;
         }
 
         .vital-signs {
-            background: #f0f9ff;
-            padding: 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 12px;
+            border-radius: 12px;
             margin: 10px 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .vital-item {
             display: inline-block;
-            margin-right: 20px;
-            margin-bottom: 5px;
+            margin-right: 16px;
+            margin-bottom: 6px;
+            padding: 6px 12px;
+            background: white;
+            border-radius: 8px;
+            font-size: 12px;
         }
 
         .btn-medical {
-            background: linear-gradient(135deg, #d2302c, #ff4d4d);
+            background: linear-gradient(135deg, #6b21a8 0%, #7c3aed 50%, #8b5cf6 100%);
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
         }
 
         .btn-medical:hover {
-            background: linear-gradient(135deg, #8b0000, #d2302c);
+            background: linear-gradient(135deg, #581c87 0%, #6b21a8 50%, #7c3aed 100%);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(210, 48, 44, 0.3);
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
         }
 
         .modal-overlay {
@@ -184,13 +251,25 @@ function calculateAge($dob)
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 1000;
             display: none;
+            backdrop-filter: blur(4px);
         }
 
         .modal-overlay.active {
             display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .modal-content-detail {
@@ -199,29 +278,173 @@ function calculateAge($dob)
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            border-radius: 16px;
-            padding: 30px;
+            border-radius: 24px;
+            padding: 40px;
             max-width: 900px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
             z-index: 1001;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -40%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
         }
 
         .patient-info-box {
-            background: linear-gradient(135deg, #e0e7ff 0%, #ddd6fe 100%);
-            padding: 20px;
+            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #581c87;
+            background: white;
+            padding: 12px 24px;
             border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
             margin-bottom: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-link:hover {
+            color: #581c87;
+            text-decoration: none;
+            transform: translateX(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 4px;
+            border: 2px solid #e9d5ff;
+            color: #6b21a8;
+            font-weight: 600;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #6b21a8, #7c3aed);
+            border-color: #6b21a8;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #f3e8ff;
+            border-color: #8b5cf6;
+        }
+
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg) rotateY(0deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg) rotateY(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+            width: 12px;
+            height: 12px;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+            width: 18px;
+            height: 18px;
         }
     </style>
 </head>
 
 <body>
-    <?php include('../../includes/navbar.php'); ?>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const c = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (8 + Math.random() * 10) + 's';
+                c.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
+    <?php displayMessage(); ?>
 
-    <div class="page-container">
+    <div class="container-lg py-4">
         <a href="dashboard.php" class="back-link">
             <i class="fas fa-arrow-left"></i>
             Quay lại bảng điều khiển

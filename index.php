@@ -9,10 +9,10 @@ if (session_status() === PHP_SESSION_NONE) {
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Bệnh viện Global - Hệ thống Quản lý Bệnh viện</title>
+	<title>Bệnh viện DBD - Hệ thống Quản lý Bệnh viện</title>
 	<link rel="shortcut icon" type="image/x-icon" href="images/favicon.png" />
 
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
@@ -131,16 +131,16 @@ if (session_status() === PHP_SESSION_NONE) {
 		/* Hero Section */
 		.hero-section {
 			min-height: 100vh;
-		background: linear-gradient(135deg, rgba(210, 48, 44, 0.75) 0%, rgba(139, 0, 0, 0.75) 100%), url('images/clinic/tet.png') center/cover no-repeat;
-		display: flex;
-		align-items: center;
-		padding-top: 80px;
-		position: relative;
-		overflow: hidden;
-	}
+			background: linear-gradient(135deg, rgba(210, 48, 44, 0.75) 0%, rgba(139, 0, 0, 0.75) 100%), url('images/clinic/tet.png') center/cover no-repeat;
+			display: flex;
+			align-items: center;
+			padding-top: 80px;
+			position: relative;
+			overflow: hidden;
+		}
 
-	.hero-section::before {
-		content: '';
+		.hero-section::before {
+			content: '';
 			background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
 			border-radius: 50%;
 			top: -250px;
@@ -179,16 +179,25 @@ if (session_status() === PHP_SESSION_NONE) {
 		}
 
 		.hero-content h1 {
-			font-size: 3.5rem;
-			font-weight: 800;
+			font-family: 'Playfair Display', serif;
+			font-size: 3.8rem;
+			font-weight: 700;
 			margin-bottom: 1.5rem;
-			line-height: 1.2;
+			line-height: 1.3;
+			text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.4);
+			letter-spacing: 2px;
+			font-style: italic;
+			color: #ffffff;
 		}
 
 		.hero-content p {
-			font-size: 1.25rem;
+			font-size: 1.15rem;
 			margin-bottom: 2rem;
 			opacity: 0.95;
+			line-height: 1.8;
+			font-weight: 500;
+			letter-spacing: 0.3px;
+			text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
 		}
 
 		.hero-buttons .btn {
@@ -225,109 +234,114 @@ if (session_status() === PHP_SESSION_NONE) {
 		.hero-image {
 			position: relative;
 			z-index: 2;
+			padding: 2rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
 
 		.hero-image img {
-			max-width: 100%;
+			max-width: 90%;
+			height: auto;
 			filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2));
 		}
 
 		/* Features Section */
 		.features-section {
 			padding: 5rem 0;
-		background: linear-gradient(135deg, #fff5f5 0%, #ffffff 50%, #fff5f5 100%);
-	}
+			background: linear-gradient(135deg, #fff5f5 0%, #ffffff 50%, #fff5f5 100%);
+		}
 
-	.section-title {
-		text-align: center;
-		margin-bottom: 4rem;
-	}
+		.section-title {
+			text-align: center;
+			margin-bottom: 4rem;
+		}
 
-	.section-title h2 {
-		font-size: 2.5rem;
-		font-weight: 700;
-		margin-bottom: 1rem;
-		color: #8b0000;
-		text-shadow: 1px 1px 2px rgba(139, 0, 0, 0.1);
-	}
+		.section-title h2 {
+			font-size: 2.5rem;
+			font-weight: 700;
+			margin-bottom: 1rem;
+			color: #8b0000;
+			text-shadow: 1px 1px 2px rgba(139, 0, 0, 0.1);
+		}
 
-	.section-title p {
-		font-size: 1.1rem;
-		color: #d2302c;
-		font-weight: 500;
-	}
+		.section-title p {
+			font-size: 1.1rem;
+			color: #d2302c;
+			font-weight: 500;
+		}
 
-	.feature-card {
-		background: linear-gradient(135deg, #ffffff 0%, #fffbfb 100%);
-		padding: 2.5rem;
-		border-radius: 16px;
-		text-align: center;
-		transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-		border: 2px solid rgba(255, 215, 0, 0.2);
-		height: 100%;
-		position: relative;
-		overflow: hidden;
-		box-shadow: 0 4px 12px rgba(210, 48, 44, 0.08);
-	}
+		.feature-card {
+			background: linear-gradient(135deg, #ffffff 0%, #fffbfb 100%);
+			padding: 2.5rem;
+			border-radius: 16px;
+			text-align: center;
+			transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+			border: 2px solid rgba(255, 215, 0, 0.2);
+			height: 100%;
+			position: relative;
+			overflow: hidden;
+			box-shadow: 0 4px 12px rgba(210, 48, 44, 0.08);
+		}
 
-	.feature-card::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 4px;
-		background: linear-gradient(90deg, #d2302c 0%, #ff6b6b 50%, #d2302c 100%);
-		transform: scaleX(0);
-		transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-	}
+		.feature-card::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 4px;
+			background: linear-gradient(90deg, #d2302c 0%, #ff6b6b 50%, #d2302c 100%);
+			transform: scaleX(0);
+			transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+		}
 
-	.feature-card:hover::before {
-		transform: scaleX(1);
-	}
+		.feature-card:hover::before {
+			transform: scaleX(1);
+		}
 
-	.feature-card:hover {
-		transform: translateY(-10px);
-		box-shadow: 0 20px 40px rgba(210, 48, 44, 0.2);
-		border-color: #ffd700;
-		background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
-	}
+		.feature-card:hover {
+			transform: translateY(-10px);
+			box-shadow: 0 20px 40px rgba(210, 48, 44, 0.2);
+			border-color: #ffd700;
+			background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+		}
 
-	.feature-icon {
-		width: 80px;
-		height: 80px;
-		background: linear-gradient(135deg, #ff6b6b 0%, #d2302c 100%);
-		border-radius: 16px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin: 0 auto 1.5rem;
-		box-shadow: 0 8px 16px rgba(210, 48, 44, 0.25);
-		transition: all 0.35s ease;
-	}
+		.feature-icon {
+			width: 80px;
+			height: 80px;
+			background: linear-gradient(135deg, #ff6b6b 0%, #d2302c 100%);
+			border-radius: 16px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin: 0 auto 1.5rem;
+			box-shadow: 0 8px 16px rgba(210, 48, 44, 0.25);
+			transition: all 0.35s ease;
+		}
 
-	.feature-card:hover .feature-icon {
-		transform: scale(1.1) rotate(5deg);
-		box-shadow: 0 12px 24px rgba(210, 48, 44, 0.35);
-		background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
-	}
+		.feature-card:hover .feature-icon {
+			transform: scale(1.1) rotate(5deg);
+			box-shadow: 0 12px 24px rgba(210, 48, 44, 0.35);
+			background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
+		}
 
-	.feature-icon i {
-		font-size: 2rem;
-		color: white;
-	}
+		.feature-icon i {
+			font-size: 2rem;
+			color: white;
+		}
 
-	.feature-card h3 {
-		font-size: 1.5rem;
-		font-weight: 600;
-		margin-bottom: 1rem;
-		color: #8b0000;
-	}
+		.feature-card h3 {
+			font-size: 1.5rem;
+			font-weight: 600;
+			margin-bottom: 1rem;
+			color: #8b0000;
+		}
 
-	.feature-card p {
-		color: #666;
-		line-height: 1.6;
-	}
+		.feature-card p {
+			color: #666;
+			line-height: 1.6;
+		}
 
 		/* Stats Section */
 		.stats-section {
@@ -394,69 +408,69 @@ if (session_status() === PHP_SESSION_NONE) {
 			margin-bottom: 2rem;
 		}
 
-/* Footer - Tet Theme */
-	.footer {
-		background: linear-gradient(135deg, #d2302c 0%, #8b0000 50%, #d2302c 100%);
-		color: #ffffff;
-		padding: 3rem 0 1rem;
-		position: relative;
-		overflow: hidden;
-	}
-	
-	.footer::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 4px;
-		background: linear-gradient(90deg, #ffd700 0%, #d4af37 50%, #ffd700 100%);
-		box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
-	}
+		/* Footer - Tet Theme */
+		.footer {
+			background: linear-gradient(135deg, #d2302c 0%, #8b0000 50%, #d2302c 100%);
+			color: #ffffff;
+			padding: 3rem 0 1rem;
+			position: relative;
+			overflow: hidden;
+		}
 
-	.footer-content {
-		display: flex;
-		justify-content: space-between;
-		margin-bottom: 2rem;
-	}
+		.footer::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 4px;
+			background: linear-gradient(90deg, #ffd700 0%, #d4af37 50%, #ffd700 100%);
+			box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+		}
 
-	.footer-brand {
-		font-size: 1.5rem;
-		font-weight: 700;
-		margin-bottom: 1rem;
-		color: #ffd700;
-		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-	}
+		.footer-content {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 2rem;
+		}
 
-	.footer-links {
-		list-style: none;
-		padding: 0;
-	}
+		.footer-brand {
+			font-size: 1.5rem;
+			font-weight: 700;
+			margin-bottom: 1rem;
+			color: #ffd700;
+			text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+		}
 
-	.footer-links li {
-		margin-bottom: 0.5rem;
-	}
+		.footer-links {
+			list-style: none;
+			padding: 0;
+		}
 
-	.footer-links a {
-		color: #ffe6e6;
-		text-decoration: none;
-		transition: all 0.3s;
-		font-weight: 500;
-	}
+		.footer-links li {
+			margin-bottom: 0.5rem;
+		}
 
-	.footer-links a:hover {
-		color: #ffd700;
-		text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
-		transform: translateX(5px);
-		display: inline-block;
-	}
+		.footer-links a {
+			color: #ffe6e6;
+			text-decoration: none;
+			transition: all 0.3s;
+			font-weight: 500;
+		}
 
-	.footer-bottom {
-		text-align: center;
-		padding-top: 2rem;
-		border-top: 2px solid rgba(255, 215, 0, 0.3);
-		color: #ffe6e6;
-		font-weight: 500;
+		.footer-links a:hover {
+			color: #ffd700;
+			text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+			transform: translateX(5px);
+			display: inline-block;
+		}
+
+		.footer-bottom {
+			text-align: center;
+			padding-top: 2rem;
+			border-top: 2px solid rgba(255, 215, 0, 0.3);
+			color: #ffe6e6;
+			font-weight: 500;
 		}
 
 		@media (max-width: 768px) {
@@ -510,11 +524,11 @@ if (session_status() === PHP_SESSION_NONE) {
 						} catch (Exception $e) {
 							$welcomeName = '';
 						}
-					} elseif (isset($_SESSION['doctorSession'])) {
+					} elseif (isset($_SESSION['doctorSession']) && isset($_SESSION['doctor_id'])) {
 						$isUserLoggedIn = true;
 						try {
 							$stmt = $pdo->prepare("SELECT fullname FROM doctb WHERE id = ?");
-							$stmt->execute([$_SESSION['doctorSession']]);
+							$stmt->execute([$_SESSION['doctor_id']]);
 							$user = $stmt->fetch(PDO::FETCH_ASSOC);
 							if ($user && !empty($user['fullname'])) {
 								$welcomeName = trim($user['fullname']);
@@ -528,29 +542,29 @@ if (session_status() === PHP_SESSION_NONE) {
 					}
 
 					if ($isUserLoggedIn && !empty($welcomeName)): ?>
-						<h1>Chào mừng <?php echo htmlspecialchars($welcomeName); ?> đến với Global Hospitals</h1>
+						<h1>Chào mừng</h1>
+						<h1 style="color: #ffd700; margin: 0.5rem 0;"><?php echo htmlspecialchars($welcomeName); ?></h1>
+						<h1 style="margin-top: 0.5rem;">đến với Bệnh viện DBD</h1>
 					<?php else: ?>
-						<h1>Chào mừng đến với Global Hospitals</h1>
+						<h1>Chào mừng đến với Bệnh viện DBD</h1>
 					<?php endif; ?>
 
-					<p>Hệ thống quản lý bệnh viện hiện đại, đặt lịch khám nhanh chóng và tiện lợi. Chăm sóc sức khỏe của bạn là ưu tiên hàng đầu của chúng tôi.</p>
+					<p style="background: rgba(255, 255, 255, 0.08); padding: 1.5rem; border-left: 4px solid #ffd700; border-radius: 8px; backdrop-filter: blur(10px);">
+						<strong>Hệ thống quản lý bệnh viện hiện đại</strong> — Đặt lịch khám nhanh chóng, tiện lợi, an toàn. Chăm sóc sức khỏe của bạn là ưu tiên hàng đầu của chúng tôi.
 
-					<?php if (!$isUserLoggedIn): ?>
-						<div class="hero-buttons">
-							<a href="pages/auth/register.php" class="btn btn-hero-primary">
-								<i class="fas fa-user-plus"></i> Đăng ký ngay
-							</a>
-							<a href="pages/auth/login.php" class="btn btn-hero-secondary">
-								<i class="fas fa-sign-in-alt"></i> Đăng nhập
-							</a>
-						</div>
-					<?php endif; ?>
+						<?php if (!$isUserLoggedIn): ?>
+					<div class="hero-buttons">
+						<a href="pages/auth/register.php" class="btn btn-hero-primary">
+							<i class="fas fa-user-plus"></i> Đăng ký ngay
+						</a>
+						<a href="pages/auth/login.php" class="btn btn-hero-secondary">
+							<i class="fas fa-sign-in-alt"></i> Đăng nhập
+						</a>
+					</div>
+				<?php endif; ?>
 				</div>
 				<div class="col-lg-6 hero-image">
-					<i class="fas fa-hospital-user" style="font-size: 20rem; color: rgba(255,255,255,0.2);"></i>
-				</div>
-			</div>
-		</div>
+					<img src="images/ngo.png" alt="Global Hospitals" style="max-width: 100%; height: auto; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));">
 	</section>
 
 	<!-- Features Section -->
@@ -693,7 +707,7 @@ if (session_status() === PHP_SESSION_NONE) {
 					echo '<div class="col-12"><p class="text-danger">Lỗi tải chuyên khoa</p></div>';
 				}
 				?>
-				
+
 				<!-- Card +31 Chuyên khoa -->
 				<div class="col-md-4 col-lg-3 mb-4">
 					<div class="spec-card" style="
@@ -877,174 +891,224 @@ if (session_status() === PHP_SESSION_NONE) {
 	</div>
 
 	<style>
-	@import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&family=Mea+Culpa&display=swap');
+		@import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&family=Mea+Culpa&display=swap');
 
-	.medical-lantern-container{
-		position:fixed;
-		top:0;
-		z-index:9999;
-		pointer-events:none;
-		transform-origin:top center;
-		animation:medical-swing 4s ease-in-out infinite alternate;
-	}
-	.left-side{left:40px}
-	.right-side{right:40px;animation-delay:1s}
+		.medical-lantern-container {
+			position: fixed;
+			top: 0;
+			z-index: 9999;
+			pointer-events: none;
+			transform-origin: top center;
+			animation: medical-swing 4s ease-in-out infinite alternate;
+		}
 
-	.medical-string{
-		width:2px;
-		height:70px;
-		margin:0 auto;
-		background:linear-gradient(to bottom,#cfc09f,#b8860b);
-		position:relative;
-	}
-	.medical-string::before{
-		content:'';
-		position:absolute;
-		top:-6px;
-		left:-4px;
-		width:10px;
-		height:10px;
-		border-radius:50%;
-		background:radial-gradient(circle,#ffd700,#b8860b);
-		box-shadow:0 1px 2px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.6);
-	}
+		.left-side {
+			left: 40px
+		}
 
-	.medical-lantern{
-		position:relative;
-		pointer-events:auto;
-	}
+		.right-side {
+			right: 40px;
+			animation-delay: 1s
+		}
 
-	.medical-lantern-body{
-		width:120px;
-		height:100px;
-		border-radius:35px;
-		background:radial-gradient(circle at 30% 30%,#ff5a5a,#7a0000);
-		display:flex;
-		align-items:center;
-		justify-content:center;
-		box-shadow:
-			inset 0 0 12px rgba(255,200,120,.35),
-			0 0 10px rgba(255,140,60,.25),
-			0 0 20px rgba(255,120,40,.15);
-		animation:medical-glow 3s ease-in-out infinite;
-	}
+		.medical-string {
+			width: 2px;
+			height: 70px;
+			margin: 0 auto;
+			background: linear-gradient(to bottom, #cfc09f, #b8860b);
+			position: relative;
+		}
 
-	.medical-lantern-text{
-		font-family:'Mr Dafoe',cursive;
-		font-size:36px;
-		color:#ffd700;
-		text-shadow:0 0 4px rgba(255,220,150,.8),0 0 8px rgba(255,180,100,.5);
-	}
+		.medical-string::before {
+			content: '';
+			position: absolute;
+			top: -6px;
+			left: -4px;
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background: radial-gradient(circle, #ffd700, #b8860b);
+			box-shadow: 0 1px 2px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .6);
+		}
 
-	.medical-lantern-top,
-	.medical-lantern-bottom{
-		width:60px;
-		height:12px;
-		margin:0 auto;
-		background:linear-gradient(90deg,#b8860b,#ffd700,#b8860b);
-	}
-	.medical-lantern-top{margin-bottom:-5px}
-	.medical-lantern-bottom{margin-top:-5px}
+		.medical-lantern {
+			position: relative;
+			pointer-events: auto;
+		}
 
-	.medical-tassels{
-		position:absolute;
-		top:100%;
-		left:50%;
-		transform:translateX(-50%);
-		text-align:center;
-		transition:opacity .25s ease;
-	}
-	.medical-tassels span{
-		display:inline-block;
-		width:4px;
-		height:50px;
-		margin:0 2px;
-		background:linear-gradient(to bottom,#d2302c,#ff4d4d);
-		border-radius:0 0 5px 5px;
-		animation:medical-tassel-sway 2s ease-in-out infinite alternate;
-	}
-	.medical-tassels span:nth-child(2){height:65px}
+		.medical-lantern-body {
+			width: 120px;
+			height: 100px;
+			border-radius: 35px;
+			background: radial-gradient(circle at 30% 30%, #ff5a5a, #7a0000);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			box-shadow:
+				inset 0 0 12px rgba(255, 200, 120, .35),
+				0 0 10px rgba(255, 140, 60, .25),
+				0 0 20px rgba(255, 120, 40, .15);
+			animation: medical-glow 3s ease-in-out infinite;
+		}
 
-	.medical-scroll{
-		position:absolute;
-		top:100%;
-		left:50%;
-		transform:translateX(-50%);
-		width:0;
-		opacity:0;
-		background:
-			linear-gradient(to right,rgba(255,255,255,.06),rgba(0,0,0,.15),rgba(255,255,255,.06)),
-			#8b0000;
-		border:2px solid #d4af37;
-		box-shadow:
-			0 0 0 3px #8b0000,
-			0 0 0 5px #d4af37,
-			0 6px 12px rgba(0,0,0,.4);
-		border-radius:2px;
-		overflow:visible;
-		transition:width .45s ease, opacity .25s ease;
-	}
+		.medical-lantern-text {
+			font-family: 'Mr Dafoe', cursive;
+			font-size: 36px;
+			color: #ffd700;
+			text-shadow: 0 0 4px rgba(255, 220, 150, .8), 0 0 8px rgba(255, 180, 100, .5);
+		}
 
-	.medical-scroll::before{
-		content:'';
-		position:absolute;
-		top:-10px;
-		left:50%;
-		transform:translateX(-50%);
-		width:2px;
-		height:10px;
-		background:#ffd700;
-	}
+		.medical-lantern-top,
+		.medical-lantern-bottom {
+			width: 60px;
+			height: 12px;
+			margin: 0 auto;
+			background: linear-gradient(90deg, #b8860b, #ffd700, #b8860b);
+		}
 
-	.medical-scroll::after{
-		content:'';
-		position:absolute;
-		bottom:-12px;
-		left:-12px;
-		right:-12px;
-		height:14px;
-		background:linear-gradient(to right,#8a6e2f,#ffd700,#8a6e2f);
-		border-radius:12px;
-		box-shadow:0 2px 4px rgba(0,0,0,.45);
-	}
+		.medical-lantern-top {
+			margin-bottom: -5px
+		}
 
-	.medical-scroll-text{
-		font-family:'Mea Culpa',cursive;
-		font-size:26px;
-		color:#ffd700;
-		display:flex;
-		flex-direction:column;
-		align-items:center;
-		gap:4px;
-		padding:16px 8px 20px;
-		line-height:1.15;
-		text-shadow:0 1px 1px rgba(0,0,0,.6),0 0 6px rgba(255,215,0,.4);
-	}
+		.medical-lantern-bottom {
+			margin-top: -5px
+		}
 
-	.medical-lantern:hover .medical-tassels{opacity:0}
-	.medical-lantern:hover .medical-scroll{width:82px;opacity:1}
+		.medical-tassels {
+			position: absolute;
+			top: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			text-align: center;
+			transition: opacity .25s ease;
+		}
 
-	@keyframes medical-swing{
-		from{transform:rotate(-3deg)}
-		to{transform:rotate(3deg)}
-	}
-	@keyframes medical-tassel-sway{
-		from{transform:rotate(2deg)}
-		to{transform:rotate(-2deg)}
-	}
-	@keyframes medical-glow{
-		0%{filter:brightness(1)}
-		50%{filter:brightness(1.08)}
-		100%{filter:brightness(1)}
-	}
-	@media (min-width:821px) and (max-width:1024px){
-		.medical-lantern-container{transform:scale(.85)}
-	}
-	@media (min-width:1025px) and (max-width:1280px){
-		.medical-lantern-container{transform:scale(.95)}
-	}
-	</style> 
-	<div class="tet_bottom"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwruFlhClo3FUKNBQtDvqWYiDVOoi-IT7Jy4R11OU5HaOFR2N7CcX5sH4FWQI_GRoVrx4Hd5pVQREJ_QsAjvSA41v25TW0LEGW2jb8s3J2QwCrXp4qsMqdvxUZz9lglGyxL4YQxIbbf17zyqd99Rr28rDzx-foaXJRQ13kQUAblMtlt4U1rKMYbHkn5w/s16000/bottom-1.png" alt="Trang trí Tết phía dưới"/></div>
+		.medical-tassels span {
+			display: inline-block;
+			width: 4px;
+			height: 50px;
+			margin: 0 2px;
+			background: linear-gradient(to bottom, #d2302c, #ff4d4d);
+			border-radius: 0 0 5px 5px;
+			animation: medical-tassel-sway 2s ease-in-out infinite alternate;
+		}
+
+		.medical-tassels span:nth-child(2) {
+			height: 65px
+		}
+
+		.medical-scroll {
+			position: absolute;
+			top: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 0;
+			opacity: 0;
+			background:
+				linear-gradient(to right, rgba(255, 255, 255, .06), rgba(0, 0, 0, .15), rgba(255, 255, 255, .06)),
+				#8b0000;
+			border: 2px solid #d4af37;
+			box-shadow:
+				0 0 0 3px #8b0000,
+				0 0 0 5px #d4af37,
+				0 6px 12px rgba(0, 0, 0, .4);
+			border-radius: 2px;
+			overflow: visible;
+			transition: width .45s ease, opacity .25s ease;
+		}
+
+		.medical-scroll::before {
+			content: '';
+			position: absolute;
+			top: -10px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 2px;
+			height: 10px;
+			background: #ffd700;
+		}
+
+		.medical-scroll::after {
+			content: '';
+			position: absolute;
+			bottom: -12px;
+			left: -12px;
+			right: -12px;
+			height: 14px;
+			background: linear-gradient(to right, #8a6e2f, #ffd700, #8a6e2f);
+			border-radius: 12px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, .45);
+		}
+
+		.medical-scroll-text {
+			font-family: 'Mea Culpa', cursive;
+			font-size: 26px;
+			color: #ffd700;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 4px;
+			padding: 16px 8px 20px;
+			line-height: 1.15;
+			text-shadow: 0 1px 1px rgba(0, 0, 0, .6), 0 0 6px rgba(255, 215, 0, .4);
+		}
+
+		.medical-lantern:hover .medical-tassels {
+			opacity: 0
+		}
+
+		.medical-lantern:hover .medical-scroll {
+			width: 82px;
+			opacity: 1
+		}
+
+		@keyframes medical-swing {
+			from {
+				transform: rotate(-3deg)
+			}
+
+			to {
+				transform: rotate(3deg)
+			}
+		}
+
+		@keyframes medical-tassel-sway {
+			from {
+				transform: rotate(2deg)
+			}
+
+			to {
+				transform: rotate(-2deg)
+			}
+		}
+
+		@keyframes medical-glow {
+			0% {
+				filter: brightness(1)
+			}
+
+			50% {
+				filter: brightness(1.08)
+			}
+
+			100% {
+				filter: brightness(1)
+			}
+		}
+
+		@media (min-width:821px) and (max-width:1024px) {
+			.medical-lantern-container {
+				transform: scale(.85)
+			}
+		}
+
+		@media (min-width:1025px) and (max-width:1280px) {
+			.medical-lantern-container {
+				transform: scale(.95)
+			}
+		}
+	</style>
+	<div class="tet_bottom"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwruFlhClo3FUKNBQtDvqWYiDVOoi-IT7Jy4R11OU5HaOFR2N7CcX5sH4FWQI_GRoVrx4Hd5pVQREJ_QsAjvSA41v25TW0LEGW2jb8s3J2QwCrXp4qsMqdvxUZz9lglGyxL4YQxIbbf17zyqd99Rr28rDzx-foaXJRQ13kQUAblMtlt4U1rKMYbHkn5w/s16000/bottom-1.png" alt="Trang trí Tết phía dưới" /></div>
 
 	<style type="text/css">
 		.tet_bottom {
@@ -1055,8 +1119,12 @@ if (session_status() === PHP_SESSION_NONE) {
 			width: 320px;
 			pointer-events: none;
 		}
-		@media (max-width: 1331px){
-			.tet_left, .tet_right, .tet_bottom{
+
+		@media (max-width: 1331px) {
+
+			.tet_left,
+			.tet_right,
+			.tet_bottom {
 				display: none !important;
 			}
 		}
@@ -1068,7 +1136,7 @@ if (session_status() === PHP_SESSION_NONE) {
 			const isMobile = window.matchMedia('(max-width: 767px)').matches;
 			const petalCount = isMobile ? 10 : 20;
 			const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
-			
+
 			const petals = [];
 			let docWidth = window.innerWidth - 10;
 			let docHeight = window.innerHeight;

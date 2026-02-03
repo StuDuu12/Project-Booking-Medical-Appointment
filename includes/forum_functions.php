@@ -8,7 +8,7 @@
 /**
  * Get forum posts with optional filters
  */
-function getForumPosts($pdo, $filters = [])
+function getForumPosts($pdo, $filters = [], $current_user_id = null, $current_user_type = null)
 {
     $where = ["1=1"];
     $params = [];
@@ -60,6 +60,12 @@ function getForumPosts($pdo, $filters = [])
         }
     }
 
+    // Build user_liked subquery
+    $userLikedSubquery = "0";
+    if ($current_user_id && $current_user_type) {
+        $userLikedSubquery = "(SELECT COUNT(*) FROM forum_likes WHERE target_id = fp.id AND target_type = 'post' AND user_id = " . intval($current_user_id) . " AND user_type = '" . addslashes($current_user_type) . "')";
+    }
+
     $sql = "
         SELECT fp.*,
             CASE 
@@ -73,7 +79,8 @@ function getForumPosts($pdo, $filters = [])
                 WHEN fp.user_type = 'admin' THEN 'admin@hospital.vn'
             END as author_email,
             (SELECT COUNT(*) FROM forum_likes WHERE target_id = fp.id AND target_type = 'post') as like_count,
-            (SELECT COUNT(*) FROM forum_comments WHERE post_id = fp.id) as comment_count
+            (SELECT COUNT(*) FROM forum_comments WHERE post_id = fp.id) as comment_count,
+            $userLikedSubquery as user_liked
         FROM forum_posts fp
         LEFT JOIN patreg p ON (fp.user_id = p.pid AND fp.user_type = 'patient')
         LEFT JOIN doctb d ON (fp.user_id = d.id AND fp.user_type = 'doctor')

@@ -56,9 +56,14 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         body {
-            background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 50%, #f0f9ff 100%);
-            min-height: 100vh;
-            padding: 2rem 0;
+            background-image:
+                linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
+            font-family: 'Inter', sans-serif;
         }
 
         .back-link {
@@ -68,9 +73,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
             color: #d2302c;
             text-decoration: none;
             font-weight: 600;
-            margin: 0 auto 20px;
-            max-width: 900px;
-            display: block;
+            margin-bottom: 20px;
             transition: all 0.3s;
         }
 
@@ -81,8 +84,6 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .prescription-view {
-            max-width: 900px;
-            margin: 0 auto;
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -212,137 +213,214 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
                 display: none;
             }
         }
+
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+        }
     </style>
 </head>
 
 <body>
-    <a href="dashboard.php" class="back-link">
-        <i class="fas fa-arrow-left"></i>
-        Quay lại bảng điều khiển
-    </a>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const c = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (8 + Math.random() * 10) + 's';
+                c.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
+    <div class="container-lg py-4">
+        <a href="dashboard.php" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại bảng điều khiển
+        </a>
 
-    <div class="prescription-view">
-        <div class="prescription-header">
-            <h1><i class="fas fa-file-medical"></i> Đơn Thuốc</h1>
-            <p class="mb-0">Bệnh viện Global - Chăm sóc sức khỏe toàn diện</p>
-        </div>
-
-        <div class="prescription-body">
-            <!-- Action Buttons -->
-            <div class="text-right mb-4">
-                <a href="export_prescription_pdf.php?id=<?php echo $prescription_id; ?>" class="btn-action btn-pdf" target="_blank">
-                    <i class="fas fa-file-pdf mr-2"></i>Tải PDF
-                </a>
-                <a href="prescriptions.php" class="btn-action btn-back ml-2">
-                    <i class="fas fa-list mr-2"></i>Danh sách đơn
-                </a>
+        <div class="prescription-view">
+            <div class="prescription-header">
+                <h1><i class="fas fa-file-medical"></i> Đơn Thuốc</h1>
+                <p class="mb-0">Bệnh viện Global - Chăm sóc sức khỏe toàn diện</p>
             </div>
 
-            <!-- Doctor Information -->
-            <div class="info-section">
-                <h3><i class="fas fa-user-md mr-2"></i>Thông tin bác sĩ</h3>
-                <div class="info-row">
-                    <div class="info-label">Bác sĩ:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['doctor_name']); ?></div>
+            <div class="prescription-body">
+                <!-- Action Buttons -->
+                <div class="text-right mb-4">
+                    <a href="export_prescription_pdf.php?id=<?php echo $prescription_id; ?>" class="btn-action btn-pdf" target="_blank">
+                        <i class="fas fa-file-pdf mr-2"></i>Tải PDF
+                    </a>
+                    <a href="prescriptions.php" class="btn-action btn-back ml-2">
+                        <i class="fas fa-list mr-2"></i>Danh sách đơn
+                    </a>
                 </div>
-                <div class="info-row">
-                    <div class="info-label">Chuyên khoa:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['doctor_spec']); ?></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Ngày kê:</div>
-                    <div class="info-value"><?php echo date('d/m/Y', strtotime($prescription['created_at'])); ?></div>
-                </div>
-            </div>
 
-            <!-- Patient Information -->
-            <div class="info-section">
-                <h3><i class="fas fa-user-injured mr-2"></i>Thông tin bệnh nhân</h3>
-                <div class="info-row">
-                    <div class="info-label">Họ tên:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['fname'] . ' ' . $prescription['lname']); ?></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Giới tính:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['gender']); ?></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Số điện thoại:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['contact']); ?></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Email:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['email']); ?></div>
-                </div>
-            </div>
-
-            <!-- Diagnosis -->
-            <div class="info-section">
-                <h3><i class="fas fa-stethoscope mr-2"></i>Chẩn đoán</h3>
-                <div class="info-row">
-                    <div class="info-label">Bệnh:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['disease']); ?></div>
-                </div>
-                <?php if (!empty($prescription['allergy'])): ?>
+                <!-- Doctor Information -->
+                <div class="info-section">
+                    <h3><i class="fas fa-user-md mr-2"></i>Thông tin bác sĩ</h3>
                     <div class="info-row">
-                        <div class="info-label">Dị ứng:</div>
-                        <div class="info-value text-danger font-weight-bold"><?php echo htmlspecialchars($prescription['allergy']); ?></div>
+                        <div class="info-label">Bác sĩ:</div>
+                        <div class="info-value"><?php echo htmlspecialchars($prescription['doctor_name']); ?></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Chuyên khoa:</div>
+                        <div class="info-value"><?php echo htmlspecialchars($prescription['doctor_spec']); ?></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Ngày kê:</div>
+                        <div class="info-value"><?php echo date('d/m/Y', strtotime($prescription['created_at'])); ?></div>
+                    </div>
+                </div>
+
+                <!-- Patient Information -->
+                <div class="info-section">
+                    <h3><i class="fas fa-user-injured mr-2"></i>Thông tin bệnh nhân</h3>
+                    <div class="info-row">
+                        <div class="info-label">Họ tên:</div>
+                        <div class="info-value"><?php echo htmlspecialchars($prescription['fname'] . ' ' . $prescription['lname']); ?></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Giới tính:</div>
+                        <div class="info-value"><?php echo htmlspecialchars($prescription['gender']); ?></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Số điện thoại:</div>
+                        <div class="info-value"><?php echo htmlspecialchars($prescription['contact']); ?></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Email:</div>
+                        <div class="info-value"><?php echo htmlspecialchars($prescription['email']); ?></div>
+                    </div>
+                </div>
+
+                <!-- Diagnosis -->
+                <div class="info-section">
+                    <h3><i class="fas fa-stethoscope mr-2"></i>Chẩn đoán</h3>
+                    <div class="info-row">
+                        <div class="info-label">Bệnh:</div>
+                        <div class="info-value"><?php echo htmlspecialchars($prescription['disease']); ?></div>
+                    </div>
+                    <?php if (!empty($prescription['allergy'])): ?>
+                        <div class="info-row">
+                            <div class="info-label">Dị ứng:</div>
+                            <div class="info-value text-danger font-weight-bold"><?php echo htmlspecialchars($prescription['allergy']); ?></div>
+                        </div>
+                    <?php endif; ?>
+                    <div class="info-row">
+                        <div class="info-label">Thời gian điều trị:</div>
+                        <div class="info-value"><?php echo htmlspecialchars($prescription['treatment_duration'] ?? ''); ?></div>
+                    </div>
+                </div>
+
+                <!-- Medications -->
+                <div class="info-section">
+                    <h3><i class="fas fa-pills mr-2"></i>Danh sách thuốc</h3>
+                    <?php if (count($medications) > 0): ?>
+                        <table class="medications-table">
+                            <thead>
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th>Tên thuốc</th>
+                                    <th>Liều lượng</th>
+                                    <th>Tần suất</th>
+                                    <th>Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($medications as $index => $med): ?>
+                                    <tr>
+                                        <td><span class="medication-number"><?php echo $index + 1; ?></span></td>
+                                        <td>
+                                            <strong><?php echo htmlspecialchars($med['medication_name']); ?></strong>
+                                            <?php if (!empty($med['special_notes'])): ?>
+                                                <br><small class="text-muted"><i class="fas fa-info-circle mr-1"></i><?php echo htmlspecialchars($med['special_notes']); ?></small>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($med['dosage']); ?></td>
+                                        <td><?php echo htmlspecialchars($med['frequency']); ?></td>
+                                        <td><?php echo htmlspecialchars($med['duration']); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <p class="text-muted">Chưa có thuốc nào được kê.</p>
+                    <?php endif; ?>
+                </div>
+
+                <!-- General Instructions -->
+                <?php if (!empty($prescription['general_notes'])): ?>
+                    <div class="info-section">
+                        <h3><i class="fas fa-notes-medical mr-2"></i>Lời dặn dò</h3>
+                        <p class="mb-0"><?php echo nl2br(htmlspecialchars($prescription['general_notes'])); ?></p>
                     </div>
                 <?php endif; ?>
-                <div class="info-row">
-                    <div class="info-label">Thời gian điều trị:</div>
-                    <div class="info-value"><?php echo htmlspecialchars($prescription['treatment_duration'] ?? ''); ?></div>
+
+                <!-- Footer -->
+                <div class="text-center mt-4 pt-4 border-top">
+                    <p class="text-muted mb-1"><small>Đơn thuốc được tạo tự động bởi hệ thống</small></p>
+                    <p class="text-muted mb-0"><small>Bệnh viện Global | Hotline: (84) 123-456-789 | Email: info@globalhospitals.com</small></p>
                 </div>
-            </div>
-
-            <!-- Medications -->
-            <div class="info-section">
-                <h3><i class="fas fa-pills mr-2"></i>Danh sách thuốc</h3>
-                <?php if (count($medications) > 0): ?>
-                    <table class="medications-table">
-                        <thead>
-                            <tr>
-                                <th width="50">#</th>
-                                <th>Tên thuốc</th>
-                                <th>Liều lượng</th>
-                                <th>Tần suất</th>
-                                <th>Thời gian</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($medications as $index => $med): ?>
-                                <tr>
-                                    <td><span class="medication-number"><?php echo $index + 1; ?></span></td>
-                                    <td>
-                                        <strong><?php echo htmlspecialchars($med['medication_name']); ?></strong>
-                                        <?php if (!empty($med['special_notes'])): ?>
-                                            <br><small class="text-muted"><i class="fas fa-info-circle mr-1"></i><?php echo htmlspecialchars($med['special_notes']); ?></small>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($med['dosage']); ?></td>
-                                    <td><?php echo htmlspecialchars($med['frequency']); ?></td>
-                                    <td><?php echo htmlspecialchars($med['duration']); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p class="text-muted">Chưa có thuốc nào được kê.</p>
-                <?php endif; ?>
-            </div>
-
-            <!-- General Instructions -->
-            <?php if (!empty($prescription['general_notes'])): ?>
-                <div class="info-section">
-                    <h3><i class="fas fa-notes-medical mr-2"></i>Lời dặn dò</h3>
-                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($prescription['general_notes'])); ?></p>
-                </div>
-            <?php endif; ?>
-
-            <!-- Footer -->
-            <div class="text-center mt-4 pt-4 border-top">
-                <p class="text-muted mb-1"><small>Đơn thuốc được tạo tự động bởi hệ thống</small></p>
-                <p class="text-muted mb-0"><small>Bệnh viện Global | Hotline: (84) 123-456-789 | Email: info@globalhospitals.com</small></p>
             </div>
         </div>
     </div>

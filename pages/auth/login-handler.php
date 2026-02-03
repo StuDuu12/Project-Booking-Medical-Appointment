@@ -60,7 +60,8 @@ if (isset($_POST['login_submit'])) {
             if ($row = $stmt->fetch()) {
                 if (password_verify($password, $row['password']) || $row['password'] === $password) {
                     unset($_SESSION['login_data'], $_SESSION['login_errors']);
-                    $_SESSION['dname'] = $row['fullname'];
+                    $_SESSION['dname'] = $row['username'];
+                    $_SESSION['doctor_id'] = $row['id'];
                     $_SESSION['demail'] = $row['email'] ?? '';
                     $_SESSION['user_type'] = 'doctor';
                     $_SESSION['doctorSession'] = true;

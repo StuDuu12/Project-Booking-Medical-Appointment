@@ -42,6 +42,7 @@ $pending_posts = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,8 +50,108 @@ $pending_posts = $stmt->fetchAll();
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
+    <style>
+        body {
+            background-image:
+                linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Hiệu ứng hoa đào rơi */
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+            transform-origin: center;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg) rotateY(0deg);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: translateY(50vh) rotateZ(180deg) rotateY(180deg);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg) rotateY(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+            width: 12px;
+            height: 12px;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+            width: 18px;
+            height: 18px;
+            opacity: 0.6;
+        }
+    </style>
 </head>
+
 <body>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const petalsContainer = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.style.left = Math.random() * 100 + '%';
+                petal.style.animationDelay = Math.random() * 10 + 's';
+                petal.style.animationDuration = (8 + Math.random() * 10) + 's';
+                petalsContainer.appendChild(petal);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
@@ -174,4 +275,5 @@ $pending_posts = $stmt->fetchAll();
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>

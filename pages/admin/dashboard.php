@@ -17,6 +17,62 @@ if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
 
+// Thống kê cho dashboard
+if ($page === 'dashboard') {
+    // Lấy dữ liệu bệnh nhân mới 12 tháng gần nhất (đếm từ lịch hẹn đầu tiên của mỗi bệnh nhân)
+    $patientsMonthlyQuery = "SELECT 
+        DATE_FORMAT(first_appointment, '%Y-%m') as month,
+        COUNT(*) as count
+        FROM (
+            SELECT pid, MIN(created_at) as first_appointment
+            FROM appointmenttb
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+            GROUP BY pid
+        ) as new_patients
+        GROUP BY DATE_FORMAT(first_appointment, '%Y-%m')
+        ORDER BY month ASC";
+    $patientsMonthlyStmt = $pdo->query($patientsMonthlyQuery);
+    $patientsMonthlyData = $patientsMonthlyStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Lấy dữ liệu doanh thu 12 tháng gần nhất
+    $revenueMonthlyQuery = "SELECT 
+        DATE_FORMAT(a.appdate, '%Y-%m') as month,
+        SUM(CAST(d.docFees AS DECIMAL(10,2))) as revenue
+        FROM appointmenttb a
+        INNER JOIN doctb d ON a.doctor = d.id
+        WHERE a.appdate >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+        AND a.userStatus = 1 AND a.doctorStatus = 1
+        GROUP BY DATE_FORMAT(a.appdate, '%Y-%m')
+        ORDER BY month ASC";
+    $revenueMonthlyStmt = $pdo->query($revenueMonthlyQuery);
+    $revenueMonthlyData = $revenueMonthlyStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Tỷ lệ lịch khám thành công/hủy
+    $appointmentStatsQuery = "SELECT 
+        SUM(CASE WHEN userStatus = 1 AND doctorStatus = 1 THEN 1 ELSE 0 END) as success,
+        SUM(CASE WHEN userStatus = 0 OR doctorStatus = 0 THEN 1 ELSE 0 END) as cancelled,
+        COUNT(*) as total
+        FROM appointmenttb";
+    $appointmentStatsStmt = $pdo->query($appointmentStatsQuery);
+    $appointmentStats = $appointmentStatsStmt->fetch(PDO::FETCH_ASSOC);
+
+    // Top 5 bác sĩ có nhiều lịch khám nhất
+    $topDoctorsQuery = "SELECT 
+        d.fullname,
+        COALESCE(s.name_vi, d.spec) as spec,
+        COUNT(a.ID) as appointment_count,
+        SUM(CASE WHEN a.userStatus = 1 AND a.doctorStatus = 1 THEN 1 ELSE 0 END) as success_count
+        FROM doctb d
+        LEFT JOIN appointmenttb a ON d.id = a.doctor
+        LEFT JOIN specializations s ON d.spec_id = s.id
+        GROUP BY d.id, d.fullname, d.spec, s.name_vi
+        HAVING appointment_count > 0
+        ORDER BY appointment_count DESC
+        LIMIT 5";
+    $topDoctorsStmt = $pdo->query($topDoctorsQuery);
+    $topDoctors = $topDoctorsStmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 // --- LOGIC CŨ: THÊM BÁC SĨ ---
 if (isset($_POST['docsub'])) {
     try {
@@ -33,7 +89,6 @@ if (isset($_POST['docsub'])) {
         $spec_row = $stmt_spec->fetch();
         $spec_name = $spec_row ? $spec_row['name'] : '';
 
-        // Check if username or email exists
         $check = $pdo->prepare("SELECT * FROM doctb WHERE username = ? OR email = ?");
         $check->execute([$username, $demail]);
         if ($check->rowCount() > 0) {
@@ -102,7 +157,6 @@ if (isset($_POST['assign_schedule'])) {
     }
 }
 
-// Logic Reset Lịch (Xóa toàn bộ lịch của 1 bác sĩ)
 if (isset($_GET['reset_schedule'])) {
     $doc_id = $_GET['reset_schedule'];
     $stmt = $pdo->prepare("DELETE FROM doctor_schedules WHERE doctor_id = ?");
@@ -124,7 +178,17 @@ if (isset($_GET['reset_schedule'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
     <style>
-        /* Dropdown Menu Styling */
+        body {
+            background-image:
+                linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
+            font-family: 'Inter', sans-serif;
+        }
+
         .navbar-user.dropdown .dropdown-toggle::after {
             display: none;
         }
@@ -372,10 +436,99 @@ if (isset($_GET['reset_schedule'])) {
         .page-medical-records .modal-backdrop+.modal-backdrop {
             display: none !important;
         }
+
+        /* Hiệu ứng hoa đào rơi */
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+            transform-origin: center;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg) rotateY(0deg);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: translateY(50vh) rotateZ(180deg) rotateY(180deg);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg) rotateY(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+            width: 12px;
+            height: 12px;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+            width: 18px;
+            height: 18px;
+            opacity: 0.6;
+        }
     </style>
 </head>
 
 <body class="page-medical-records">
+    <!-- Container cho hoa đào rơi -->
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const petalsContainer = document.getElementById('petals');
+            const numberOfPetals = 25;
+            for (let i = 0; i < numberOfPetals; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.style.left = Math.random() * 100 + '%';
+                petal.style.animationDelay = Math.random() * 10 + 's';
+                petal.style.animationDuration = (8 + Math.random() * 10) + 's';
+                petalsContainer.appendChild(petal);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
     <?php displayMessage(); ?>
     <div class="dashboard-container">
         <aside class="sidebar">
@@ -419,6 +572,12 @@ if (isset($_GET['reset_schedule'])) {
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
+                    <a href="?page=medical-records" class="sidebar-menu-link <?php echo ($page === 'medical-records') ? 'active' : ''; ?>">
+                        <i class="fas fa-file-medical sidebar-menu-icon"></i>
+                        <span>Hồ sơ bệnh án</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
                     <a href="?page=prescriptions" class="sidebar-menu-link <?php echo ($page === 'prescriptions') ? 'active' : ''; ?>">
                         <i class="fas fa-file-prescription sidebar-menu-icon"></i>
                         <span>Đơn thuốc</span>
@@ -428,12 +587,6 @@ if (isset($_GET['reset_schedule'])) {
                     <a href="?page=queries" class="sidebar-menu-link <?php echo ($page === 'queries') ? 'active' : ''; ?>">
                         <i class="fas fa-comments sidebar-menu-icon"></i>
                         <span>Liên hệ</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
-                    <a href="?page=medical-records" class="sidebar-menu-link <?php echo ($page === 'medical-records') ? 'active' : ''; ?>">
-                        <i class="fas fa-file-medical sidebar-menu-icon"></i>
-                        <span>Hồ sơ bệnh án</span>
                     </a>
                 </li>
             </ul>
@@ -455,8 +608,6 @@ if (isset($_GET['reset_schedule'])) {
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
                             <a class="dropdown-item" href="../../index.php"><i class="fas fa-home mr-2"></i> Quay về trang chủ</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="../auth/logout.php"><i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất</a>
                         </div>
                     </div>
                 </div>
@@ -502,20 +653,119 @@ if (isset($_GET['reset_schedule'])) {
                             </div>
                         </div>
                     </div>
-                    <div class="row mt-5">
-                        <div class="col-md-12">
-                            <div class="data-table-container mb-4">
+
+                    <!-- Biểu đồ thống kê -->
+                    <div class="row mt-4">
+                        <!-- Biểu đồ bệnh nhân mới theo tháng -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="data-table-container">
                                 <div class="data-table-header">
-                                    <h3 class="data-table-title"><i class="fas fa-chart-line"></i> Thống kê</h3>
+                                    <h3 class="data-table-title"><i class="fas fa-user-plus"></i> Bệnh nhân mới theo tháng</h3>
                                 </div>
                                 <div class="p-4">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-4">
-                                            <h5><i class="fas fa-user-plus"></i> Bệnh nhân mới</h5><canvas id="patientsChart" style="max-height: 300px;"></canvas>
+                                    <canvas id="patientsChart" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biểu đồ doanh thu -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="data-table-container">
+                                <div class="data-table-header">
+                                    <h3 class="data-table-title"><i class="fas fa-money-bill-wave"></i> Doanh thu theo tháng</h3>
+                                </div>
+                                <div class="p-4">
+                                    <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Tỷ lệ lịch khám -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="data-table-container">
+                                <div class="data-table-header">
+                                    <h3 class="data-table-title"><i class="fas fa-chart-pie"></i> Tỷ lệ lịch khám</h3>
+                                </div>
+                                <div class="p-4">
+                                    <div class="row text-center mb-3">
+                                        <div class="col-md-4">
+                                            <div class="stat-mini success">
+                                                <div class="stat-mini-icon"><i class="fas fa-check-circle"></i></div>
+                                                <div class="stat-mini-value"><?php echo number_format($appointmentStats['success']); ?></div>
+                                                <div class="stat-mini-label">Thành công</div>
+                                            </div>
                                         </div>
-                                        <div class="col-md-6 mb-4">
-                                            <h5><i class="fas fa-money-bill-wave"></i> Doanh thu</h5><canvas id="revenueChart" style="max-height: 300px;"></canvas>
+                                        <div class="col-md-4">
+                                            <div class="stat-mini danger">
+                                                <div class="stat-mini-icon"><i class="fas fa-times-circle"></i></div>
+                                                <div class="stat-mini-value"><?php echo number_format($appointmentStats['cancelled']); ?></div>
+                                                <div class="stat-mini-label">Đã hủy</div>
+                                            </div>
                                         </div>
+                                        <div class="col-md-4">
+                                            <div class="stat-mini info">
+                                                <div class="stat-mini-icon"><i class="fas fa-calendar-check"></i></div>
+                                                <div class="stat-mini-value"><?php echo number_format($appointmentStats['total']); ?></div>
+                                                <div class="stat-mini-label">Tổng số</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <canvas id="appointmentChart" style="max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top bác sĩ -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="data-table-container">
+                                <div class="data-table-header">
+                                    <h3 class="data-table-title"><i class="fas fa-trophy"></i> Top bác sĩ có nhiều lịch khám nhất</h3>
+                                </div>
+                                <div class="p-4">
+                                    <div class="top-doctors-list">
+                                        <?php
+                                        if (empty($topDoctors) || count($topDoctors) == 0):
+                                        ?>
+                                            <div class="text-center py-4">
+                                                <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted">Chưa có dữ liệu lịch khám để xếp hạng bác sĩ</p>
+                                            </div>
+                                            <?php
+                                        else:
+                                            $rank = 1;
+                                            foreach ($topDoctors as $doctor):
+                                                $successRate = $doctor['appointment_count'] > 0 ?
+                                                    round(($doctor['success_count'] / $doctor['appointment_count']) * 100, 1) : 0;
+                                            ?>
+                                                <div class="top-doctor-item rank-<?php echo $rank; ?>">
+                                                    <div class="doctor-rank">
+                                                        <span class="rank-number"><?php echo $rank; ?></span>
+                                                        <?php if ($rank === 1): ?>
+                                                            <i class="fas fa-crown rank-icon"></i>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="doctor-info">
+                                                        <div class="doctor-name"><?php echo htmlspecialchars($doctor['fullname']); ?></div>
+                                                        <div class="doctor-spec"><?php echo htmlspecialchars($doctor['spec']); ?></div>
+                                                    </div>
+                                                    <div class="doctor-stats">
+                                                        <div class="stat-item">
+                                                            <i class="fas fa-calendar-check"></i>
+                                                            <span><?php echo number_format($doctor['appointment_count']); ?> lịch</span>
+                                                        </div>
+                                                        <div class="stat-item success-rate">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            <span><?php echo $successRate; ?>%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                        <?php
+                                                $rank++;
+                                            endforeach;
+                                        endif;
+                                        ?>
                                     </div>
                                 </div>
                             </div>
@@ -1351,44 +1601,271 @@ if (isset($_GET['reset_schedule'])) {
 
         <?php if ($page === 'dashboard'): ?>
             document.addEventListener('DOMContentLoaded', function() {
+                // Biểu đồ bệnh nhân mới theo tháng
+                <?php
+                $monthLabels = [];
+                $patientCounts = [];
 
-                fetch('../../includes/charts_api.php?action=patients_by_month').then(r => r.json()).then(d => {
-                    if (document.getElementById('patientsChart')) {
-                        new Chart(document.getElementById('patientsChart'), {
-                            type: 'line',
-                            data: {
-                                labels: d.labels,
-                                datasets: [{
-                                    label: 'Bệnh nhân mới',
-                                    data: d.data,
-                                    borderColor: '#d2302c',
-                                    fill: true
-                                }]
-                            },
-                            options: {
-                                responsive: true
-                            }
-                        });
+                // Tạo mảng 12 tháng với giá trị 0
+                for ($i = 11; $i >= 0; $i--) {
+                    $date = date('Y-m', strtotime("-$i months"));
+                    $monthLabels[$date] = date('m/Y', strtotime("-$i months"));
+                    $patientCounts[$date] = 0;
+                }
+
+                // Điền dữ liệu thực tế
+                foreach ($patientsMonthlyData as $row) {
+                    if (isset($monthLabels[$row['month']])) {
+                        $patientCounts[$row['month']] = (int)$row['count'];
                     }
-                });
-                fetch('../../includes/charts_api.php?action=revenue_stats').then(r => r.json()).then(d => {
-                    if (document.getElementById('revenueChart')) {
-                        new Chart(document.getElementById('revenueChart'), {
-                            type: 'bar',
-                            data: {
-                                labels: d.labels,
-                                datasets: [{
-                                    label: 'Doanh thu',
-                                    data: d.data,
-                                    backgroundColor: '#ffd700'
-                                }]
+                }
+                ?>
+
+                const patientsCtx = document.getElementById('patientsChart');
+                if (patientsCtx) {
+                    new Chart(patientsCtx, {
+                        type: 'line',
+                        data: {
+                            labels: <?php echo json_encode(array_values($monthLabels)); ?>,
+                            datasets: [{
+                                label: 'Bệnh nhân mới',
+                                data: <?php echo json_encode(array_values($patientCounts)); ?>,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointBackgroundColor: '#3b82f6',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: {
+                                        font: {
+                                            size: 14,
+                                            weight: 'bold'
+                                        },
+                                        padding: 15
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    padding: 12,
+                                    titleFont: {
+                                        size: 14
+                                    },
+                                    bodyFont: {
+                                        size: 13
+                                    },
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.parsed.y + ' bệnh nhân';
+                                        }
+                                    }
+                                }
                             },
-                            options: {
-                                responsive: true
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1,
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
                             }
-                        });
+                        }
+                    });
+                }
+
+                // Biểu đồ doanh thu theo tháng
+                <?php
+                $revenueLabels = [];
+                $revenueCounts = [];
+
+                // Tạo mảng 12 tháng với giá trị 0
+                for ($i = 11; $i >= 0; $i--) {
+                    $date = date('Y-m', strtotime("-$i months"));
+                    $revenueLabels[$date] = date('m/Y', strtotime("-$i months"));
+                    $revenueCounts[$date] = 0;
+                }
+
+                // Điền dữ liệu thực tế
+                foreach ($revenueMonthlyData as $row) {
+                    if (isset($revenueLabels[$row['month']])) {
+                        $revenueCounts[$row['month']] = (float)$row['revenue'];
                     }
-                });
+                }
+                ?>
+
+                const revenueCtx = document.getElementById('revenueChart');
+                if (revenueCtx) {
+                    new Chart(revenueCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: <?php echo json_encode(array_values($revenueLabels)); ?>,
+                            datasets: [{
+                                label: 'Doanh thu (VNĐ)',
+                                data: <?php echo json_encode(array_values($revenueCounts)); ?>,
+                                backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                                borderColor: '#22c55e',
+                                borderWidth: 2,
+                                borderRadius: 8,
+                                hoverBackgroundColor: 'rgba(34, 197, 94, 0.9)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: {
+                                        font: {
+                                            size: 14,
+                                            weight: 'bold'
+                                        },
+                                        padding: 15
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    padding: 12,
+                                    titleFont: {
+                                        size: 14
+                                    },
+                                    bodyFont: {
+                                        size: 13
+                                    },
+                                    callbacks: {
+                                        label: function(context) {
+                                            return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN', {
+                                                style: 'currency',
+                                                currency: 'VND'
+                                            }).format(context.parsed.y);
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        font: {
+                                            size: 12
+                                        },
+                                        callback: function(value) {
+                                            return new Intl.NumberFormat('vi-VN', {
+                                                notation: 'compact',
+                                                compactDisplay: 'short'
+                                            }).format(value);
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Biểu đồ tỷ lệ lịch khám
+                const appointmentCtx = document.getElementById('appointmentChart');
+                if (appointmentCtx) {
+                    new Chart(appointmentCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Thành công', 'Đã hủy'],
+                            datasets: [{
+                                data: [
+                                    <?php echo (int)$appointmentStats['success']; ?>,
+                                    <?php echo (int)$appointmentStats['cancelled']; ?>
+                                ],
+                                backgroundColor: [
+                                    'rgba(34, 197, 94, 0.8)',
+                                    'rgba(239, 68, 68, 0.8)'
+                                ],
+                                borderColor: [
+                                    '#22c55e',
+                                    '#ef4444'
+                                ],
+                                borderWidth: 2,
+                                hoverOffset: 15
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            size: 13,
+                                            weight: 'bold'
+                                        },
+                                        padding: 15,
+                                        usePointStyle: true,
+                                        pointStyle: 'circle'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    padding: 12,
+                                    titleFont: {
+                                        size: 14
+                                    },
+                                    bodyFont: {
+                                        size: 13
+                                    },
+                                    callbacks: {
+                                        label: function(context) {
+                                            const total = <?php echo (int)$appointmentStats['total']; ?>;
+                                            const value = context.parsed;
+                                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                            return context.label + ': ' + value + ' (' + percentage + '%)';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
             });
 
         <?php endif; ?>
