@@ -38,15 +38,16 @@ if (isset($_POST['login_submit'])) {
             if (password_verify($password, $row['password']) || $row['password'] === $password) {
                 unset($_SESSION['login_data'], $_SESSION['login_errors']);
                 $_SESSION['pid'] = $row['pid'];
-                $_SESSION['username'] = $row['fname'] . " " . $row['lname'];
+                $_SESSION['username'] = $row['lname'] . " " . $row['fname'];
                 $_SESSION['fname'] = $row['fname'];
                 $_SESSION['lname'] = $row['lname'];
                 $_SESSION['gender'] = $row['gender'];
                 $_SESSION['contact'] = $row['contact'];
                 $_SESSION['email'] = $row['email'];
                 $_SESSION['user_type'] = 'patient';
+                $_SESSION['patientSession'] = true;
                 $login_success = true;
-                header("Location: ../patient/dashboard.php");
+                header("Location: ../../index.php");
                 exit();
             }
         }
@@ -59,11 +60,13 @@ if (isset($_POST['login_submit'])) {
             if ($row = $stmt->fetch()) {
                 if (password_verify($password, $row['password']) || $row['password'] === $password) {
                     unset($_SESSION['login_data'], $_SESSION['login_errors']);
-                    $_SESSION['dname'] = $row['fullname'];
+                    $_SESSION['dname'] = $row['username'];
+                    $_SESSION['doctor_id'] = $row['id'];
                     $_SESSION['demail'] = $row['email'] ?? '';
                     $_SESSION['user_type'] = 'doctor';
+                    $_SESSION['doctorSession'] = true;
                     $login_success = true;
-                    header("Location: ../doctor/dashboard.php");
+                    header("Location: ../../index.php");
                     exit();
                 }
             }
@@ -79,8 +82,9 @@ if (isset($_POST['login_submit'])) {
                     unset($_SESSION['login_data'], $_SESSION['login_errors']);
                     $_SESSION['username'] = $row['username'];
                     $_SESSION['user_type'] = 'admin';
+                    $_SESSION['adminSession'] = true;
                     $login_success = true;
-                    header("Location: ../admin/dashboard.php");
+                    header("Location: ../../index.php");
                     exit();
                 }
             }

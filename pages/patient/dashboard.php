@@ -20,7 +20,7 @@ if (!$pid) {
 
 // Handle page parameter
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-$allowed_pages = array('dashboard', 'book-appointment', 'appointment-history', 'prescriptions');
+$allowed_pages = array('dashboard', 'book-appointment', 'appointment-history', 'prescriptions', 'profile');
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
@@ -63,12 +63,12 @@ if ($page === 'book-appointment') {
 $doctors = [];
 if ($page === 'book-appointment' && $selected_spec && $booking_step >= 2) {
     $doc_stmt = $pdo->prepare("
-        SELECT d.id, d.username, d.email, d.docFees, d.experience_years, d.bio,
+        SELECT d.id, d.username, d.fullname, d.email, d.docFees, d.experience_years, d.bio,
                s.name_vi as spec_name
         FROM doctb d
         LEFT JOIN specializations s ON d.spec_id = s.id
         WHERE d.spec_id = :spec_id AND d.status = 1
-        ORDER BY d.username
+        ORDER BY d.fullname
     ");
     $doc_stmt->execute([':spec_id' => $selected_spec]);
     $doctors = $doc_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -193,14 +193,14 @@ if (isset($_POST['app-submit'])) {
     $apptime = $_POST['apptime'];
 
     // Get doctor info
-    $stmt = $pdo->prepare("SELECT username, docFees FROM doctb WHERE id = :id");
+    $stmt = $pdo->prepare("SELECT fullname, docFees FROM doctb WHERE id = :id");
     $stmt->execute([':id' => $doctor_id]);
     $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($doctor) {
         // Remove currency symbols and convert to integer
         $docFees = intval($doctor['docFees']);
-        $doctorName = $doctor['username'];
+        $doctorName = $doctor['fullname'];
 
         // Check if slot is still available
         $check_stmt = $pdo->prepare("SELECT status FROM time_slots WHERE id = :slot_id AND status = 'available'");
@@ -272,7 +272,7 @@ function generate_bill()
         $output .= '
     <label> Mã bệnh nhân : </label>' . $row["pid"] . '<br/><br/>
     <label> Mã lịch hẹn : </label>' . $row["ID"] . '<br/><br/>
-    <label> Tên bệnh nhân : </label>' . $row["fname"] . ' ' . $row["lname"] . '<br/><br/>
+    <label> Tên bệnh nhân : </label>' . $row["lname"] . ' ' . $row["fname"] . '<br/><br/>
     <label> Bác sĩ khám : </label>' . $row["doctor"] . '<br/><br/>
     <label> Ngày khám : </label>' . date('d/m/Y', strtotime($row["appdate"])) . '<br/><br/>
     <label> Giờ khám : </label>' . date('H:i', strtotime($row["apptime"])) . '<br/><br/>
@@ -327,49 +327,108 @@ if (isset($_GET["generate_bill"])) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
+    <style>
+        body {
+            background-image:
+                linear-gradient(135deg, rgba(254, 226, 226, 0.85) 0%, rgba(252, 165, 165, 0.85) 25%, rgba(248, 113, 113, 0.85) 50%, rgba(239, 68, 68, 0.85) 75%, rgba(220, 38, 38, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Dropdown Menu Styling */
+        .navbar-user.dropdown .dropdown-toggle::after {
+            display: none;
+        }
+
+        .navbar-user .dropdown-menu {
+            min-width: 220px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: none;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .navbar-user .dropdown-item {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-user .dropdown-item i {
+            width: 18px;
+            font-size: 0.8rem;
+        }
+
+        .navbar-user .dropdown-item:hover {
+            background: #fff5f5;
+            color: #d2302c;
+            padding-left: 1.5rem;
+        }
+
+        .navbar-user .dropdown-item.text-danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .navbar-user .dropdown-divider {
+            margin: 0.5rem 0;
+        }
+
+        /* Improved spacing for user info */
+        .navbar-user-info {
+            margin-left: 1rem;
+        }
+    </style>
 
     <style>
         /* Time Slots Grid - Cinema Style */
         .specializations-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.2rem;
         }
 
         .spec-card {
             background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 14px;
+            padding: 1.2rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 3px solid transparent;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.1);
+            border: 2px solid transparent;
+            box-shadow: 0 3px 10px rgba(210, 48, 44, 0.1);
         }
 
         .spec-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(8, 145, 178, 0.2);
+            box-shadow: 0 8px 24px rgba(210, 48, 44, 0.2);
             border-color: var(--medical-blue);
         }
 
         .spec-card.active {
-            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
             color: white;
             border-color: var(--medical-blue-dark);
         }
 
         .spec-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1rem;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 0.8rem;
             background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.2));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.75rem;
             color: var(--medical-blue);
         }
 
@@ -379,31 +438,31 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .spec-name {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
 
         .spec-count {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             opacity: 0.8;
         }
 
         .doctors-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.2rem;
         }
 
         .doctor-card {
             background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 14px;
+            padding: 1.2rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 3px solid transparent;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.1);
+            border: 2px solid transparent;
+            box-shadow: 0 3px 10px rgba(8, 145, 178, 0.1);
         }
 
         .doctor-card:hover {
@@ -418,57 +477,57 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .doctor-avatar {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1rem;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 0.8rem;
             background: linear-gradient(135deg, var(--medical-blue), var(--medical-teal));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.75rem;
             color: white;
             font-weight: 700;
         }
 
         .doctor-name {
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             font-weight: 700;
             text-align: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             color: var(--medical-dark);
         }
 
         .doctor-spec {
             text-align: center;
             color: var(--medical-blue);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
         }
 
         .doctor-fee {
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--health-green);
         }
 
         .time-slots-container {
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         .slots-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 0.8rem;
+            margin-top: 1.2rem;
         }
 
         .time-slot {
             background: white;
             border: 2px solid var(--steel-gray);
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 10px;
+            padding: 0.8rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -514,35 +573,35 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .slot-time {
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: block;
         }
 
         .slot-status {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             display: block;
-            margin-top: 0.5rem;
+            margin-top: 0.4rem;
             opacity: 0.8;
         }
 
         .booking-summary {
             background: linear-gradient(135deg, rgba(8, 145, 178, 0.05), rgba(6, 182, 212, 0.1));
-            border-radius: 16px;
-            padding: 2rem;
-            margin-top: 2rem;
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
             border: 2px solid var(--medical-blue-light);
         }
 
         .summary-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.75rem 0;
+            padding: 0.6rem 0;
             border-bottom: 1px solid rgba(8, 145, 178, 0.1);
         }
 
         .summary-item:last-child {
             border-bottom: none;
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: var(--medical-blue);
         }
@@ -550,7 +609,7 @@ if (isset($_GET["generate_bill"])) {
         .step-indicator {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             position: relative;
         }
 
@@ -561,62 +620,60 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .step-number {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 0.5rem;
+            width: 45px;
+            height: 45px;
+            margin: 0 auto 0.4rem;
             background: white;
-            border: 3px solid var(--steel-gray);
+            border: 2px solid var(--steel-gray);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             color: var(--steel-gray);
             position: relative;
             z-index: 2;
         }
 
         .step.active .step-number {
-            background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
-            border-color: #0891b2;
+            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
+            border-color: #d2302c;
             color: white;
-            box-shadow: 0 4px 15px rgba(8, 145, 178, 0.3);
+            box-shadow: 0 4px 15px rgba(210, 48, 44, 0.3);
         }
 
         .step.completed .step-number {
-            background: #14b8a6;
-            border-color: #14b8a6;
-            color: white;
+            background: #ffd700;
+            border-color: #ffd700;
+            color: #8b0000;
         }
 
         .step-label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--charcoal);
         }
 
         .step-line {
             position: absolute;
-            top: 25px;
+            top: 22px;
             left: 50%;
             right: -50%;
-            height: 3px;
+            height: 2px;
             background: var(--steel-gray);
             z-index: 1;
         }
 
         .step.completed .step-line {
-            background: #14b8a6;
+            background: #d2302c;
         }
 
         .step:last-child .step-line {
             display: none;
         }
 
-        .modal-backdrop {
-            z-index: 1040;
-        }
+        .modal-backdrop {}
 
         .modal {
             z-index: 1050;
@@ -624,14 +681,14 @@ if (isset($_GET["generate_bill"])) {
 
         .empty-state {
             text-align: center;
-            padding: 3rem;
+            padding: 2.5rem;
             color: var(--charcoal);
         }
 
         .empty-state i {
-            font-size: 4rem;
+            font-size: 3.5rem;
             color: var(--steel-gray);
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
         }
 
         @media (max-width: 768px) {
@@ -646,9 +703,90 @@ if (isset($_GET["generate_bill"])) {
             }
         }
     </style>
+
+    <!-- jQuery and Bootstrap JS for dropdown functionality -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const c = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (8 + Math.random() * 10) + 's';
+                c.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
     <?php displayMessage(); ?>
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -671,6 +809,12 @@ if (isset($_GET["generate_bill"])) {
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
+                    <a href="?page=profile" class="sidebar-menu-link <?php echo ($page === 'profile') ? 'active' : ''; ?>">
+                        <i class="fas fa-user sidebar-menu-icon"></i>
+                        <span>Hồ sơ cá nhân</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
                     <a href="?page=book-appointment" class="sidebar-menu-link <?php echo ($page === 'book-appointment') ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-plus sidebar-menu-icon"></i>
                         <span>Đặt lịch khám</span>
@@ -689,12 +833,6 @@ if (isset($_GET["generate_bill"])) {
                     </a>
                 </li>
             </ul>
-
-            <div class="sidebar-footer">
-                <a href="../auth/logout.php" class="btn btn-danger btn-block">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
-            </div>
         </aside>
 
         <!-- Main Content -->
@@ -705,13 +843,20 @@ if (isset($_GET["generate_bill"])) {
                     <h1 class="navbar-title">Bảng điều khiển bệnh nhân</h1>
                 </div>
                 <div class="navbar-right">
-                    <div class="navbar-user">
-                        <div class="navbar-user-avatar">
-                            <?php echo strtoupper(substr($fname, 0, 1)); ?>
-                        </div>
-                        <div class="navbar-user-info">
-                            <div class="navbar-user-name"><?php echo $fname . ' ' . $lname; ?></div>
-                            <div class="navbar-user-role">Bệnh nhân</div>
+                    <div class="navbar-user dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="navbarUserDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
+                            <div class="navbar-user-avatar">
+                                <?php echo strtoupper(substr($fname, 0, 1)); ?>
+                            </div>
+                            <div class="navbar-user-info">
+                                <div class="navbar-user-name"><?php echo $lname . ' ' . $fname; ?></div>
+                                <div class="navbar-user-role">Bệnh nhân</div>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserDropdown">
+                            <a class="dropdown-item" href="../../index.php">
+                                <i class="fas fa-home mr-2"></i> Quay về trang chủ
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -820,7 +965,6 @@ if (isset($_GET["generate_bill"])) {
                 </section>
             <?php } ?>
 
-            <!-- Book Appointment Section - NEW SYSTEM -->
             <?php if ($page === 'book-appointment') { ?>
                 <section class="content-section">
                     <div class="section-header">
@@ -851,7 +995,6 @@ if (isset($_GET["generate_bill"])) {
                         </div>
                     </div>
 
-                    <!-- Step 1: Choose Specialization -->
                     <?php if ($booking_step == 1) { ?>
                         <div class="data-table-container">
                             <div class="data-table-header">
@@ -880,7 +1023,6 @@ if (isset($_GET["generate_bill"])) {
                         </div>
                     <?php } ?>
 
-                    <!-- Step 2: Choose Doctor -->
                     <?php if ($booking_step == 2 && $selected_spec) { ?>
                         <div class="data-table-container">
                             <div class="data-table-header">
@@ -895,9 +1037,9 @@ if (isset($_GET["generate_bill"])) {
                                         <?php foreach ($doctors as $doctor) { ?>
                                             <a href="?page=book-appointment&step=3&spec_id=<?php echo $selected_spec; ?>&doctor_id=<?php echo $doctor['id']; ?>" class="doctor-card" style="text-decoration: none; color: inherit;">
                                                 <div class="doctor-avatar">
-                                                    <?php echo strtoupper(substr($doctor['username'], 0, 1)); ?>
+                                                    <?php echo strtoupper(substr($doctor['fullname'], 0, 1)); ?>
                                                 </div>
-                                                <div class="doctor-name">BS. <?php echo htmlspecialchars($doctor['username']); ?></div>
+                                                <div class="doctor-name">BS. <?php echo htmlspecialchars($doctor['fullname']); ?></div>
                                                 <div class="doctor-spec"><?php echo htmlspecialchars($doctor['spec_name']); ?></div>
                                                 <?php if ($doctor['experience_years']) { ?>
                                                     <div class="doctor-spec">
@@ -920,8 +1062,6 @@ if (isset($_GET["generate_bill"])) {
                             </div>
                         </div>
                     <?php } ?>
-
-                    <!-- Step 3: Choose Date -->
                     <?php if ($booking_step == 3 && $selected_doctor) { ?>
                         <div class="data-table-container">
                             <div class="data-table-header">
@@ -1022,10 +1162,8 @@ if (isset($_GET["generate_bill"])) {
                         </div>
                     <?php } ?>
 
-                    <!-- Step 4: Choose Time Slot -->
                     <?php if ($booking_step == 4 && $selected_doctor && $selected_date) {
-                        // Get doctor info for display
-                        $doc_info_stmt = $pdo->prepare("SELECT username, docFees FROM doctb WHERE id = :id");
+                        $doc_info_stmt = $pdo->prepare("SELECT username, fullname, docFees FROM doctb WHERE id = :id");
                         $doc_info_stmt->execute([':id' => $selected_doctor]);
                         $doc_info = $doc_info_stmt->fetch(PDO::FETCH_ASSOC);
                     ?>
@@ -1046,7 +1184,7 @@ if (isset($_GET["generate_bill"])) {
                                         echo $days[date('w', strtotime($selected_date))];
                                         ?>)
                                     <br>
-                                    <strong><i class="fas fa-user-md"></i> Bác sĩ:</strong> BS. <?php echo htmlspecialchars($doc_info['username']); ?>
+                                    <strong><i class="fas fa-user-md"></i> Bác sĩ:</strong> BS. <?php echo htmlspecialchars($doc_info['fullname']); ?>
                                 </div>
 
                                 <?php if ($schedule_info && count($time_slots) > 0) { ?>
@@ -1096,7 +1234,7 @@ if (isset($_GET["generate_bill"])) {
 
                                         <div class="summary-item">
                                             <span><i class="fas fa-user-md"></i> Bác sĩ:</span>
-                                            <strong>BS. <?php echo htmlspecialchars($doc_info['username']); ?></strong>
+                                            <strong>BS. <?php echo htmlspecialchars($doc_info['fullname']); ?></strong>
                                         </div>
 
                                         <div class="summary-item">
@@ -1174,7 +1312,13 @@ if (isset($_GET["generate_bill"])) {
                             </thead>
                             <tbody>
                                 <?php
-                                $stmt = $pdo->prepare("SELECT ID,doctor,docFees,appdate,apptime,userStatus,doctorStatus FROM appointmenttb WHERE fname = :fname AND lname = :lname ORDER BY appdate DESC, apptime DESC");
+                                $stmt = $pdo->prepare("
+                                    SELECT a.ID, COALESCE(d.fullname, a.doctor) as doctor_fullname, a.docFees, a.appdate, a.apptime, a.userStatus, a.doctorStatus
+                                    FROM appointmenttb a
+                                    LEFT JOIN doctb d ON a.doctor = d.fullname OR a.doctor = d.username
+                                    WHERE a.fname = :fname AND a.lname = :lname 
+                                    ORDER BY a.appdate DESC, a.apptime DESC
+                                ");
                                 $stmt->execute([':fname' => $fname, ':lname' => $lname]);
 
                                 if ($stmt->rowCount() == 0) {
@@ -1190,7 +1334,7 @@ if (isset($_GET["generate_bill"])) {
                                 while ($row = $stmt->fetch(PDO::FETCH_BOTH)) {
                                 ?>
                                     <tr>
-                                        <td>Bác sĩ <?php echo $row['doctor']; ?></td>
+                                        <td>Bác sĩ <?php echo $row['doctor_fullname']; ?></td>
                                         <td><?php echo number_format($row['docFees']); ?> VNĐ</td>
                                         <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
                                         <td><?php echo date('H:i', strtotime($row['apptime'])); ?></td>
@@ -1288,40 +1432,230 @@ if (isset($_GET["generate_bill"])) {
                     </div>
                 </section>
             <?php } ?>
-        </main>
-    </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+            <?php if ($page === 'profile') {
+                $patient_stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
+                $patient_stmt->execute([':pid' => $pid]);
+                $patient = $patient_stmt->fetch(PDO::FETCH_ASSOC);
+            ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Hồ sơ cá nhân</h2>
+                        <p class="section-subtitle">Quản lý thông tin cá nhân và tài khoản của bạn</p>
+                    </div>
 
-    <script>
-        // Simple function to select time slot - PHP handles all other logic
-        function selectSlot(slotId, slotTime, slotTimeFull) {
-            // Remove selected class from all slots
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                slot.classList.remove('selected');
-            });
+                    <div class="profile-container">
+                        <div class="profile-card" style="background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%); color: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                            <div style="display: flex; align-items: center; gap: 2rem;">
+                                <div style="width: 120px; height: 120px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #d2302c;">
+                                    <?php echo strtoupper(substr($fname, 0, 1) . substr($lname, 0, 1)); ?>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.5rem; margin: 0; font-weight: 700;"><?php echo htmlspecialchars($lname . ' ' . $fname); ?></h3>
+                                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($email); ?></p>
+                                    <p style="margin: 0.25rem 0 0 0; opacity: 0.9;"><i class="fas fa-phone"></i> <?php echo htmlspecialchars($contact); ?></p>
+                                </div>
+                            </div>
+                        </div>
 
-            // Add selected class to clicked slot
-            document.getElementById('slot-' + slotId).classList.add('selected');
+                        <div class="data-table-container">
+                            <div class="data-table-header">
+                                <h3 class="data-table-title">Thông tin chi tiết</h3>
+                            </div>
+                            <div style="padding: 2rem;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                                    <div>
+                                        <h5 style="font-weight: 600; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; text-transform: uppercase;">Thông tin cá nhân</h5>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Họ:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($fname); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Tên:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($lname); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Giới tính:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;">
+                                                <?php
+                                                $gender_display = ['Male' => 'Nam', 'Female' => 'Nữ', 'Other' => 'Khác'];
+                                                echo $gender_display[$patient['gender'] ?? ''] ?? 'Chưa cập nhật';
+                                                ?>
+                                            </p>
+                                        </div>
+                                    </div>
 
-            // Update form values
-            document.getElementById('selected-slot-id').value = slotId;
-            document.getElementById('selected-time-value').value = slotTimeFull;
-            document.getElementById('selected-time-display').textContent = slotTime;
+                                    <div>
+                                        <h5 style="font-weight: 600; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; text-transform: uppercase;">Thông tin liên hệ</h5>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Email:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($patient['email'] ?? $email); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Số điện thoại:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($patient['contact'] ?? $contact); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Địa chỉ:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($patient['address'] ?? 'Chưa cập nhật'); ?></p>
+                                        </div>
+                                    </div>
 
-            // Show booking form
-            document.getElementById('booking-form').style.display = 'block';
+                                    <div>
+                                        <h5 style="font-weight: 600; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; text-transform: uppercase;">Thông tin y tế</h5>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Ngày sinh:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;">
+                                                <?php
+                                                if (isset($patient['date_of_birth']) && $patient['date_of_birth']) {
+                                                    echo date('d/m/Y', strtotime($patient['date_of_birth']));
+                                                } else {
+                                                    echo 'Chưa cập nhật';
+                                                }
+                                                ?>
+                                            </p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Nhóm máu:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;"><?php echo htmlspecialchars($patient['blood_group'] ?? 'Chưa cập nhật'); ?></p>
+                                        </div>
+                                        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                                            <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-size: 0.875rem;">Liên hệ khẩn cấp:</p>
+                                            <p style="margin: 0; font-weight: 600; color: #111827;">
+                                                <?php
+                                                if (isset($patient['emergency_contact_name']) && $patient['emergency_contact_name']) {
+                                                    echo htmlspecialchars($patient['emergency_contact_name']);
+                                                    if (isset($patient['emergency_contact']) && $patient['emergency_contact']) {
+                                                        echo ' - ' . htmlspecialchars($patient['emergency_contact']);
+                                                    }
+                                                } else {
+                                                    echo 'Chưa cập nhật';
+                                                }
+                                                ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-            // Scroll to form
-            document.getElementById('booking-form').scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest'
-            });
-        }
-    </script>
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <a href="profile.php" class="btn" style="background: linear-gradient(135deg, #d2302c, #ff4d4d); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                                <i class="fas fa-edit"></i> Chỉnh sửa hồ sơ
+                            </a>
+                            <a href="profile.php" class="btn" style="background: #f3f4f6; color: #111827; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; border: 1px solid #e5e7eb;">
+                                <i class="fas fa-password"></i> Đổi mật khẩu
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            <?php } ?>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+            <script>
+                function selectSlot(slotId, slotTime, slotTimeFull) {
+                    document.querySelectorAll('.time-slot').forEach(slot => {
+                        slot.classList.remove('selected');
+                    });
+
+                    document.getElementById('slot-' + slotId).classList.add('selected');
+
+                    document.getElementById('selected-slot-id').value = slotId;
+                    document.getElementById('selected-time-value').value = slotTimeFull;
+                    document.getElementById('selected-time-display').textContent = slotTime;
+
+                    document.getElementById('booking-form').style.display = 'block';
+
+                    document.getElementById('booking-form').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }
+            </script>
+
+            <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+            <script type="text/javascript">
+                (function() {
+                    const isMobile = window.matchMedia('(max-width: 576px)').matches;
+                    const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+                    const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+                    const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+                    const petals = [];
+                    let docWidth = window.innerWidth;
+                    let docHeight = window.innerHeight;
+
+                    for (let i = 0; i < petalCount; i++) {
+                        const size = 10 + Math.random() * 14;
+                        const opacity = 0.5 + Math.random() * 0.4;
+                        const rotation = Math.random() * 360;
+                        const blur = Math.random() * 0.5;
+
+                        const petal = {
+                            x: Math.random() * docWidth,
+                            y: Math.random() * docHeight - docHeight,
+                            dx: 0,
+                            rotation: rotation,
+                            rotationSpeed: (Math.random() - 0.5) * 1.5,
+                            amplitude: 20 + Math.random() * 35,
+                            speedX: 0.01 + Math.random() / 15,
+                            speedY: 0.3 + Math.random() * 0.6,
+                            size: size,
+                            opacity: opacity,
+                            blur: blur,
+                            element: null
+                        };
+
+                        const div = document.createElement('div');
+                        div.id = 'cherry-petal-' + i;
+                        div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                        div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                        document.body.appendChild(div);
+                        petal.element = div;
+                        petals.push(petal);
+                    }
+
+                    function animate() {
+                        docWidth = window.innerWidth;
+                        docHeight = window.innerHeight;
+
+                        petals.forEach(petal => {
+                            petal.y += petal.speedY;
+                            petal.rotation += petal.rotationSpeed;
+
+                            if (petal.y > docHeight + 80) {
+                                petal.x = Math.random() * docWidth;
+                                petal.y = -80;
+                                petal.speedX = 0.01 + Math.random() / 15;
+                                petal.speedY = 0.3 + Math.random() * 0.6;
+                                petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                            }
+
+                            petal.dx += petal.speedX;
+                            const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                            const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                            petal.element.style.top = petal.y + 'px';
+                            petal.element.style.left = swayX + 'px';
+                            petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                        });
+
+                        requestAnimationFrame(animate);
+                    }
+
+                    animate();
+
+                    let resizeTimer;
+                    window.addEventListener('resize', () => {
+                        clearTimeout(resizeTimer);
+                        resizeTimer = setTimeout(() => {
+                            docWidth = window.innerWidth;
+                            docHeight = window.innerHeight;
+                        }, 250);
+                    });
+                })();
+            </script>
 </body>
 
 </html>

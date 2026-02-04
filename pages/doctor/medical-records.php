@@ -23,16 +23,16 @@ if (!in_array($page, $allowed_pages)) {
 if (isset($_POST['add_medical_record'])) {
     try {
         $patient_id = $_POST['patient_id'];
-        $appointment_id = isset($_POST['appointment_id']) ? $_POST['appointment_id'] : null;
+        $appointment_id = isset($_POST['appointment_id']) && $_POST['appointment_id'] !== '' ? $_POST['appointment_id'] : null;
         $symptoms = $_POST['symptoms'];
         $diagnosis = $_POST['diagnosis'];
         $treatment = $_POST['treatment'];
-        $notes = isset($_POST['notes']) ? $_POST['notes'] : '';
-        $height = isset($_POST['height']) ? $_POST['height'] : null;
-        $weight = isset($_POST['weight']) ? $_POST['weight'] : null;
-        $blood_pressure = isset($_POST['blood_pressure']) ? $_POST['blood_pressure'] : null;
-        $heart_rate = isset($_POST['heart_rate']) ? $_POST['heart_rate'] : null;
-        $temperature = isset($_POST['temperature']) ? $_POST['temperature'] : null;
+        $notes = isset($_POST['notes']) && $_POST['notes'] !== '' ? $_POST['notes'] : null;
+        $height = isset($_POST['height']) && $_POST['height'] !== '' ? floatval($_POST['height']) : null;
+        $weight = isset($_POST['weight']) && $_POST['weight'] !== '' ? floatval($_POST['weight']) : null;
+        $blood_pressure = isset($_POST['blood_pressure']) && $_POST['blood_pressure'] !== '' ? $_POST['blood_pressure'] : null;
+        $heart_rate = isset($_POST['heart_rate']) && $_POST['heart_rate'] !== '' ? intval($_POST['heart_rate']) : null;
+        $temperature = isset($_POST['temperature']) && $_POST['temperature'] !== '' ? floatval($_POST['temperature']) : null;
 
         // Get doctor ID
         $stmt = $pdo->prepare("SELECT id FROM doctb WHERE fullname = :fullname");
@@ -42,11 +42,11 @@ if (isset($_POST['add_medical_record'])) {
 
         $stmt = $pdo->prepare("
             INSERT INTO medical_records (
-                patient_id, doctor_id, appointment_id, symptoms, diagnosis, treatment, 
-                notes, height, weight, blood_pressure, heart_rate, temperature, status, created_at, updated_at
+                patient_id, doctor_id, appointment_id, record_date, symptoms, diagnosis, treatment_plan,
+                notes, height, weight, blood_pressure, heart_rate, temperature, status, created_by, created_at, updated_at
             ) VALUES (
-                :patient_id, :doctor_id, :appointment_id, :symptoms, :diagnosis, :treatment, 
-                :notes, :height, :weight, :blood_pressure, :heart_rate, :temperature, 'completed', NOW(), NOW()
+                :patient_id, :doctor_id, :appointment_id, CURDATE(), :symptoms, :diagnosis, :treatment,
+                :notes, :height, :weight, :blood_pressure, :heart_rate, :temperature, 'completed', " . intval($doctor_id) . ", NOW(), NOW()
             )
         ");
         $stmt->execute([
@@ -66,29 +66,77 @@ if (isset($_POST['add_medical_record'])) {
         redirectWithMessage($_SERVER['PHP_SELF'], 'success', 'Hồ sơ bệnh án đã được thêm thành công!');
     } catch (PDOException $e) {
         error_log("Add medical record error: " . $e->getMessage());
-        redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Lỗi khi thêm hồ sơ bệnh án!');
+        redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Lỗi khi thêm hồ sơ bệnh án: ' . $e->getMessage());
     }
 }
 
-// Fetch doctor's patients
+// Get doctor ID for queries
+$doctor_id = null;
+try {
+    $stmt = $pdo->prepare("SELECT id FROM doctb WHERE fullname = :fullname");
+    $stmt->execute([':fullname' => $doctor]);
+    $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $doctor_id = $doctor_result['id'] ?? null;
+} catch (PDOException $e) {
+    error_log("Get doctor ID error: " . $e->getMessage());
+}
+
+// Fetch patients for this doctor
 $doctor_patients = [];
+if ($doctor_id) {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT DISTINCT p.pid, p.fname, p.lname, p.contact, p.email
+            FROM patreg p
+            INNER JOIN appointmenttb a ON p.pid = a.pid
+            WHERE TRIM(a.doctor) = TRIM((SELECT fullname FROM doctb WHERE id = :doctor_id))
+            ORDER BY p.fname, p.lname
+        ");
+        $stmt->execute([':doctor_id' => $doctor_id]);
+        $doctor_patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Get doctor patients error: " . $e->getMessage());
+    }
+}
+
+// Fetch all medical records for this doctor
+$all_medical_records = [];
+$grouped_records = []; // Group by patient_id
 try {
     $stmt = $pdo->prepare("
-        SELECT DISTINCT p.pid, p.fname, p.lname, p.contact, p.email, p.blood_group,
-               COUNT(a.ID) as total_appointments,
-               MAX(a.appointmentDate) as last_visit
-        FROM patreg p
-        LEFT JOIN appointmenttb a ON p.pid = a.pid AND a.doctor = :doctor
-        WHERE a.doctor = :doctor OR p.pid IN (
-            SELECT DISTINCT pid FROM appointmenttb WHERE doctor = :doctor
-        )
-        GROUP BY p.pid
-        ORDER BY MAX(a.appointmentDate) DESC
+        SELECT mr.id, mr.patient_id, mr.doctor_id, mr.created_at, mr.symptoms, mr.diagnosis, mr.treatment_plan, mr.notes,
+               mr.height, mr.weight, mr.blood_pressure, mr.heart_rate, mr.temperature, mr.record_date,
+               p.fname, p.lname, p.contact, p.email, p.blood_group, p.pid,
+               d.fullname as doctor_name
+        FROM medical_records mr
+        JOIN patreg p ON mr.patient_id = p.pid
+        LEFT JOIN doctb d ON mr.doctor_id = d.id
+        WHERE mr.doctor_id = :doctor_id
+        ORDER BY p.fname, p.lname, mr.created_at DESC
     ");
-    $stmt->execute([':doctor' => $doctor]);
-    $doctor_patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt->execute([':doctor_id' => $doctor_id]);
+    $all_medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Group records by patient
+    foreach ($all_medical_records as $record) {
+        $patient_id = $record['patient_id'];
+        if (!isset($grouped_records[$patient_id])) {
+            $grouped_records[$patient_id] = [
+                'patient_info' => [
+                    'pid' => $record['pid'],
+                    'fname' => $record['fname'],
+                    'lname' => $record['lname'],
+                    'contact' => $record['contact'],
+                    'email' => $record['email'],
+                    'blood_group' => $record['blood_group']
+                ],
+                'records' => []
+            ];
+        }
+        $grouped_records[$patient_id]['records'][] = $record;
+    }
 } catch (PDOException $e) {
-    error_log("Fetch doctor patients error: " . $e->getMessage());
+    error_log("Fetch all medical records error: " . $e->getMessage());
 }
 
 // Fetch patient's medical records if selected
@@ -103,16 +151,16 @@ if ($selected_patient_id) {
         $selected_patient_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $stmt = $pdo->prepare("
-            SELECT mr.*, 
+            SELECT mr.*,
                    d.fullname as doctor_name,
                    apt.appointmentDate, apt.appointmentTime
             FROM medical_records mr
             LEFT JOIN doctb d ON mr.doctor_id = d.id
             LEFT JOIN appointmenttb apt ON mr.appointment_id = apt.ID
-            WHERE mr.patient_id = :patient_id
+            WHERE mr.patient_id = :patient_id AND mr.doctor_id = :doctor_id
             ORDER BY mr.created_at DESC
         ");
-        $stmt->execute([':patient_id' => $selected_patient_id]);
+        $stmt->execute([':patient_id' => $selected_patient_id, ':doctor_id' => $doctor_id]);
         $patient_medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Fetch patient records error: " . $e->getMessage());
@@ -134,7 +182,13 @@ if ($selected_patient_id) {
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
     <style>
         body {
-            background-color: #f8fafc;
+            background-image:
+                linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
             font-family: 'Inter', sans-serif;
         }
 
@@ -144,44 +198,64 @@ if ($selected_patient_id) {
             border-bottom: 3px solid transparent;
             font-weight: 600;
             padding: 12px 20px;
+            transition: all 0.3s;
         }
 
         .nav-tabs .nav-link.active {
-            color: #10b981;
+            color: #0369a1;
             background-color: transparent;
-            border-bottom-color: #10b981;
+            border-bottom-color: #0369a1;
         }
 
         .nav-tabs .nav-link:hover {
-            color: #10b981;
+            color: #0369a1;
         }
 
         .tab-content {
             background: white;
-            border-radius: 8px;
+            border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
         }
 
         .patient-card {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #bae6fd;
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border-left: 4px solid #d1d5db;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .patient-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #0284c7, #0ea5e9);
+            transition: width 0.3s ease;
         }
 
         .patient-card:hover {
-            background-color: #f9fafb;
-            border-left-color: #10b981;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 12px 48px rgba(2, 132, 199, 0.25);
+            transform: translateY(-4px) scale(1.01);
+            border-color: #7dd3fc;
+        }
+
+        .patient-card:hover::before {
+            width: 100%;
+            opacity: 0.03;
         }
 
         .patient-card.active {
-            background-color: #f0fdf4;
-            border-left-color: #10b981;
+            background: linear-gradient(135deg, #dbeafe 0%, #bae6fd 100%);
+            border-color: #0ea5e9;
+            box-shadow: 0 8px 32px rgba(2, 132, 199, 0.2);
         }
 
         .patient-name {
@@ -191,7 +265,7 @@ if ($selected_patient_id) {
         }
 
         .patient-meta {
-            font-size: 12px;
+            font-size: 11px;
             color: #6b7280;
             display: flex;
             gap: 15px;
@@ -199,19 +273,33 @@ if ($selected_patient_id) {
         }
 
         .medical-record-card {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, #dbeafe 0%, #bae6fd 100%);
+            border: 2px solid #7dd3fc;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .medical-record-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #0284c7, #0ea5e9);
         }
 
         .form-section {
             background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
             margin-bottom: 20px;
+            border-left: 6px solid #0ea5e9;
         }
 
         .form-group-row {
@@ -224,19 +312,19 @@ if ($selected_patient_id) {
         .form-label {
             font-weight: 600;
             color: #1f2937;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
         }
 
         .form-control {
-            border-radius: 6px;
-            border: 1px solid #d1d5db;
-            padding: 10px 12px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            padding: 8px 14px;
         }
 
         .form-control:focus {
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
         }
 
         .textarea-control {
@@ -245,49 +333,95 @@ if ($selected_patient_id) {
         }
 
         .btn-primary {
-            background-color: #10b981;
-            border-color: #10b981;
-            font-weight: 600;
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0ea5e9 100%);
+            border: none;
+            font-weight: 700;
+            padding: 8px 20px;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(3, 105, 161, 0.3);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
         }
 
         .btn-primary:hover {
-            background-color: #059669;
-            border-color: #059669;
+            background: linear-gradient(135deg, #075985 0%, #0369a1 50%, #0284c7 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(3, 105, 161, 0.4);
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #10b981;
+            color: #0c4a6e;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 700;
             margin-bottom: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .back-link:hover {
-            color: #059669;
+            color: #0c4a6e;
+            text-decoration: none;
+            transform: translateX(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .page-header {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0ea5e9 100%);
+            padding: 32px;
+            border-radius: 20px;
             color: white;
-            padding: 30px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(3, 105, 161, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 26px;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .page-header p {
-            margin: 5px 0 0 0;
-            opacity: 0.9;
-            font-size: 14px;
+            position: relative;
+            z-index: 1;
+            opacity: 0.95;
         }
 
         .vitals-grid {
@@ -297,15 +431,22 @@ if ($selected_patient_id) {
         }
 
         .vital-input-card {
-            background: #f0fdf4;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #bbf7d0;
+            background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #a5f3fc;
+            transition: all 0.3s;
+        }
+
+        .vital-input-card:hover {
+            border-color: #67e8f9;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.15);
         }
 
         .vital-input-card .form-label {
-            color: #047857;
-            font-size: 12px;
+            color: #0e7490;
+            font-size: 11px;
+            font-weight: 600;
         }
 
         .patient-list-container {
@@ -326,10 +467,95 @@ if ($selected_patient_id) {
                 padding: 15px;
             }
         }
+
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg) rotateY(0deg);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: translateY(50vh) rotateZ(180deg) rotateY(180deg);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg) rotateY(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+            width: 12px;
+            height: 12px;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+            width: 18px;
+            height: 18px;
+            opacity: 0.6;
+        }
     </style>
 </head>
 
 <body>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const c = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (8 + Math.random() * 10) + 's';
+                c.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
     <?php displayMessage(); ?>
 
     <div class="container-lg py-4">
@@ -348,12 +574,12 @@ if ($selected_patient_id) {
         <ul class="nav nav-tabs" id="medicalTabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="view-tab" data-toggle="tab" href="#view-content" role="tab">
-                    <i class="fas fa-list"></i> Xem hồ sơ
+                    <i class="fas fa-list"></i> Xem bệnh án
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="add-tab" data-toggle="tab" href="#add-content" role="tab">
-                    <i class="fas fa-plus"></i> Thêm hồ sơ
+                    <i class="fas fa-plus"></i> Thêm bệnh án
                 </a>
             </li>
         </ul>
@@ -362,160 +588,86 @@ if ($selected_patient_id) {
         <div class="tab-content" id="medicalTabsContent">
             <!-- View Tab -->
             <div class="tab-pane fade show active" id="view-content" role="tabpanel">
-                <div class="row">
-                    <!-- Patient List -->
-                    <div class="col-lg-3">
-                        <h5 class="mb-3" style="color: #1f2937; font-weight: 700;">
-                            <i class="fas fa-users"></i> Danh sách bệnh nhân
-                        </h5>
-                        <div class="patient-list-container">
-                            <?php if (empty($doctor_patients)) { ?>
-                                <div style="text-align: center; color: #6b7280; padding: 20px;">
-                                    <i class="fas fa-inbox" style="font-size: 32px; margin-bottom: 10px;"></i>
-                                    <p>Không có bệnh nhân</p>
-                                </div>
-                            <?php } else { ?>
-                                <?php foreach ($doctor_patients as $patient) { ?>
-                                    <a href="?page=view&patient_id=<?php echo $patient['pid']; ?>" style="text-decoration: none; color: inherit;">
-                                        <div class="patient-card <?php echo ($selected_patient_id === intval($patient['pid'])) ? 'active' : ''; ?>">
-                                            <div class="patient-name">
-                                                <?php echo $patient['fname'] . ' ' . $patient['lname']; ?>
-                                            </div>
-                                            <div class="patient-meta">
-                                                <span><i class="fas fa-phone"></i> <?php echo $patient['contact']; ?></span>
-                                                <span><i class="fas fa-calendar"></i> <?php echo $patient['total_appointments']; ?> lần khám</span>
+                <div>
+                    <h5 class="mb-4" style="color: #1f2937; font-weight: 700;">
+                        <i class="fas fa-list"></i> Danh sách bệnh án
+                    </h5>
+
+                    <?php if (empty($grouped_records)) { ?>
+                        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 8px;">
+                            <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 15px;"></i>
+                            <h5 style="color: #6b7280;">Không có bệnh án</h5>
+                            <p style="color: #9ca3af;">Bạn chưa thêm bệnh án nào. Hãy vào tab "Thêm bệnh án" để tạo mới.</p>
+                        </div>
+                    <?php } else { ?>
+                        <div style="display: grid; gap: 12px;">
+                            <?php foreach ($grouped_records as $patient_id => $group) { ?>
+                                <div class="patient-group" data-patient-id="<?php echo $patient_id; ?>" style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                    <!-- Patient Header (Always Visible) -->
+                                    <div class="patient-header" style="padding: 18px 20px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                                        <div style="flex: 1;">
+                                            <h6 style="margin: 0 0 8px 0; font-weight: 700; font-size: 16px;">
+                                                <i class="fas fa-user-circle" style="margin-right: 8px;"></i><?php echo $group['patient_info']['fname'] . ' ' . $group['patient_info']['lname']; ?>
+                                            </h6>
+                                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; font-size: 12px; opacity: 0.9;">
+                                                <div><i class="fas fa-phone" style="margin-right: 4px;"></i><?php echo $group['patient_info']['contact']; ?></div>
+                                                <div><i class="fas fa-envelope" style="margin-right: 4px;"></i><?php echo $group['patient_info']['email']; ?></div>
+                                                <div><i class="fas fa-file-medical" style="margin-right: 4px;"></i><?php echo count($group['records']); ?> bệnh án</div>
                                             </div>
                                         </div>
-                                    </a>
-                                <?php } ?>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 24px; transition: transform 0.3s ease;" class="expand-icon">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Patient Records (Expandable) -->
+                                    <div class="patient-records" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #f8fafc;">
+                                        <div style="padding: 0;">
+                                            <?php foreach ($group['records'] as $index => $record) { ?>
+                                                <div style="padding: 15px 20px; border-top: 1px solid #e5e7eb; background: white; margin: 0;">
+                                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                                                        <div>
+                                                            <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">Bệnh án #<?php echo count($group['records']) - $index; ?></div>
+                                                            <div style="font-size: 12px; color: #6b7280;">
+                                                                <i class="fas fa-calendar"></i> <?php echo date('d/m/Y H:i', strtotime($record['created_at'])); ?>
+                                                            </div>
+                                                        </div>
+                                                        <div style="display: flex; gap: 6px;">
+                                                            <button type="button" class="btn btn-sm btn-info view-record" data-record-id="<?php echo $record['id']; ?>" style="padding: 4px 10px; font-size: 11px;">
+                                                                <i class="fas fa-eye"></i> Xem
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-warning edit-record" data-record-id="<?php echo $record['id']; ?>" style="padding: 4px 10px; font-size: 11px;">
+                                                                <i class="fas fa-edit"></i> Sửa
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-danger delete-record" data-record-id="<?php echo $record['id']; ?>" style="padding: 4px 10px; font-size: 11px;">
+                                                                <i class="fas fa-trash"></i> Xóa
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <?php if ($record['symptoms']) { ?>
+                                                        <div style="margin-bottom: 8px;">
+                                                            <span style="font-weight: 600; color: #6b7280; font-size: 12px;">Triệu chứng:</span>
+                                                            <div style="color: #374151; font-size: 13px; margin-top: 2px;"><?php echo substr($record['symptoms'], 0, 120); ?><?php echo strlen($record['symptoms']) > 120 ? '...' : ''; ?></div>
+                                                        </div>
+                                                    <?php } ?>
+
+                                                    <?php if ($record['diagnosis']) { ?>
+                                                        <div style="margin-bottom: 8px;">
+                                                            <span style="font-weight: 600; color: #6b7280; font-size: 12px;">Chẩn đoán:</span>
+                                                            <div style="color: #374151; font-size: 13px; margin-top: 2px;"><?php echo substr($record['diagnosis'], 0, 120); ?><?php echo strlen($record['diagnosis']) > 120 ? '...' : ''; ?></div>
+                                                        </div>
+                                                    <?php } ?>
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                </div>
                             <?php } ?>
                         </div>
-                    </div>
-
-                    <!-- Patient Records -->
-                    <div class="col-lg-9">
-                        <?php if ($selected_patient_info) { ?>
-                            <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #10b981;">
-                                <h5 style="color: #1f2937; font-weight: 700; margin-bottom: 15px;">
-                                    <i class="fas fa-user-circle"></i> <?php echo $selected_patient_info['fname'] . ' ' . $selected_patient_info['lname']; ?>
-                                </h5>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                                    <div>
-                                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600;">Email</div>
-                                        <div style="color: #1f2937; font-weight: 500;"><?php echo $selected_patient_info['email']; ?></div>
-                                    </div>
-                                    <div>
-                                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600;">Số điện thoại</div>
-                                        <div style="color: #1f2937; font-weight: 500;"><?php echo $selected_patient_info['contact']; ?></div>
-                                    </div>
-                                    <div>
-                                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600;">Nhóm máu</div>
-                                        <div style="color: #1f2937; font-weight: 500;"><?php echo $selected_patient_info['blood_group'] ?? 'Chưa xác định'; ?></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Medical Records List -->
-                            <?php if (empty($patient_medical_records)) { ?>
-                                <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 8px;">
-                                    <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 15px;"></i>
-                                    <h5 style="color: #6b7280;">Không có hồ sơ bệnh án</h5>
-                                    <p style="color: #9ca3af;">Bệnh nhân chưa có hồ sơ bệnh án nào. Hãy thêm một hồ sơ mới.</p>
-                                </div>
-                            <?php } else { ?>
-                                <?php foreach ($patient_medical_records as $record) { ?>
-                                    <div class="medical-record-card">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px;">
-                                            <div>
-                                                <div style="font-size: 14px; color: #6b7280;">
-                                                    <i class="fas fa-calendar"></i> <?php echo date('d/m/Y H:i', strtotime($record['created_at'])); ?>
-                                                </div>
-                                            </div>
-                                            <span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: #d1fae5; color: #065f46;">
-                                                Hoàn thành
-                                            </span>
-                                        </div>
-
-                                        <?php if ($record['symptoms']) { ?>
-                                            <div style="margin-bottom: 15px;">
-                                                <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">Triệu chứng</div>
-                                                <div style="color: #374151;"><?php echo $record['symptoms']; ?></div>
-                                            </div>
-                                        <?php } ?>
-
-                                        <?php if ($record['diagnosis']) { ?>
-                                            <div style="margin-bottom: 15px;">
-                                                <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">Chẩn đoán</div>
-                                                <div style="color: #374151;"><?php echo $record['diagnosis']; ?></div>
-                                            </div>
-                                        <?php } ?>
-
-                                        <?php if ($record['treatment']) { ?>
-                                            <div style="margin-bottom: 15px;">
-                                                <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">Điều trị</div>
-                                                <div style="color: #374151;"><?php echo $record['treatment']; ?></div>
-                                            </div>
-                                        <?php } ?>
-
-                                        <!-- Vitals Display -->
-                                        <?php if ($record['height'] || $record['weight'] || $record['blood_pressure'] || $record['heart_rate'] || $record['temperature']) { ?>
-                                            <div style="background: white; padding: 12px; border-radius: 6px; margin-top: 15px; border: 1px solid #e5e7eb;">
-                                                <div style="font-size: 12px; color: #047857; text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">
-                                                    <i class="fas fa-heartbeat"></i> Chỉ số sức khỏe
-                                                </div>
-                                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">
-                                                    <?php if ($record['height']) { ?>
-                                                        <div style="background: #f0fdf4; padding: 8px; border-radius: 4px;">
-                                                            <div style="font-size: 10px; color: #047857; font-weight: 600;">Chiều cao</div>
-                                                            <div style="font-size: 14px; font-weight: 700; color: #065f46;"><?php echo $record['height']; ?> cm</div>
-                                                        </div>
-                                                    <?php } ?>
-                                                    <?php if ($record['weight']) { ?>
-                                                        <div style="background: #f0fdf4; padding: 8px; border-radius: 4px;">
-                                                            <div style="font-size: 10px; color: #047857; font-weight: 600;">Cân nặng</div>
-                                                            <div style="font-size: 14px; font-weight: 700; color: #065f46;"><?php echo $record['weight']; ?> kg</div>
-                                                        </div>
-                                                    <?php } ?>
-                                                    <?php if ($record['blood_pressure']) { ?>
-                                                        <div style="background: #f0fdf4; padding: 8px; border-radius: 4px;">
-                                                            <div style="font-size: 10px; color: #047857; font-weight: 600;">Huyết áp</div>
-                                                            <div style="font-size: 14px; font-weight: 700; color: #065f46;"><?php echo $record['blood_pressure']; ?></div>
-                                                        </div>
-                                                    <?php } ?>
-                                                    <?php if ($record['heart_rate']) { ?>
-                                                        <div style="background: #f0fdf4; padding: 8px; border-radius: 4px;">
-                                                            <div style="font-size: 10px; color: #047857; font-weight: 600;">Nhịp tim</div>
-                                                            <div style="font-size: 14px; font-weight: 700; color: #065f46;"><?php echo $record['heart_rate']; ?> bpm</div>
-                                                        </div>
-                                                    <?php } ?>
-                                                    <?php if ($record['temperature']) { ?>
-                                                        <div style="background: #f0fdf4; padding: 8px; border-radius: 4px;">
-                                                            <div style="font-size: 10px; color: #047857; font-weight: 600;">Nhiệt độ</div>
-                                                            <div style="font-size: 14px; font-weight: 700; color: #065f46;"><?php echo $record['temperature']; ?>°C</div>
-                                                        </div>
-                                                    <?php } ?>
-                                                </div>
-                                            </div>
-                                        <?php } ?>
-
-                                        <?php if ($record['notes']) { ?>
-                                            <div style="margin-top: 15px; padding: 12px; background: #fef3c7; border-radius: 6px; border-left: 3px solid #f59e0b;">
-                                                <div style="font-size: 12px; color: #92400e; font-weight: 600; margin-bottom: 5px;">
-                                                    <i class="fas fa-sticky-note"></i> Ghi chú
-                                                </div>
-                                                <div style="color: #78350f; font-size: 14px;"><?php echo nl2br($record['notes']); ?></div>
-                                            </div>
-                                        <?php } ?>
-                                    </div>
-                                <?php } ?>
-                            <?php } ?>
-                        <?php } else { ?>
-                            <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 8px; color: #6b7280;">
-                                <i class="fas fa-hand-point-left" style="font-size: 48px; color: #d1d5db; margin-bottom: 15px;"></i>
-                                <p>Chọn một bệnh nhân từ danh sách bên trái để xem hồ sơ bệnh án</p>
-                            </div>
-                        <?php } ?>
-                    </div>
+                    <?php } ?>
                 </div>
             </div>
 
@@ -532,8 +684,26 @@ if ($selected_patient_id) {
                         </h6>
 
                         <div class="form-group">
+                            <label class="form-label">Bác sĩ <span style="color: #ef4444;">*</span></label>
+                            <select id="doctor_select" class="form-control" required>
+                                <option value="">-- Chọn bác sĩ --</option>
+                                <?php
+                                try {
+                                    $doctors = $pdo->query("SELECT id, fullname FROM doctb ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
+                                    foreach ($doctors as $doc) {
+                                        $selected = ($doc['fullname'] === $doctor) ? 'selected' : '';
+                                        echo "<option value='" . $doc['id'] . "' " . $selected . ">" . $doc['fullname'] . "</option>";
+                                    }
+                                } catch (PDOException $e) {
+                                    error_log("Get doctors error: " . $e->getMessage());
+                                }
+                                ?>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label">Bệnh nhân <span style="color: #ef4444;">*</span></label>
-                            <select name="patient_id" class="form-control" required>
+                            <select name="patient_id" id="patient_select" class="form-control" required>
                                 <option value="">-- Chọn bệnh nhân --</option>
                                 <?php foreach ($doctor_patients as $patient) { ?>
                                     <option value="<?php echo $patient['pid']; ?>">
@@ -545,8 +715,8 @@ if ($selected_patient_id) {
 
                         <div class="form-group">
                             <label class="form-label">Lịch hẹn (tùy chọn)</label>
-                            <select name="appointment_id" class="form-control">
-                                <option value="">-- Không chọn --</option>
+                            <select name="appointment_id" id="appointment_select" class="form-control">
+                                <option value="">-- Chọn bệnh nhân trước --</option>
                             </select>
                         </div>
                     </div>
@@ -628,6 +798,439 @@ if ($selected_patient_id) {
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Modal Xem Chi Tiết -->
+    <div class="modal fade" id="viewDetailModal" tabindex="-1" role="dialog" aria-labelledby="viewDetailLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%); color: white;">
+                    <h5 class="modal-title" id="viewDetailLabel"><i class="fas fa-file-medical"></i> Chi tiết hồ sơ bệnh án</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="viewDetailContent">
+                    <p>Đang tải...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chỉnh Sửa -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+                    <h5 class="modal-title" id="editLabel"><i class="fas fa-edit"></i> Chỉnh sửa hồ sơ bệnh án</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="editForm">
+                    <input type="hidden" id="editRecordId" name="record_id">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Bác sĩ <span style="color: red;">*</span> (không thể chỉnh sửa)</label>
+                            <input type="text" class="form-control" id="editDoctorName" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Triệu chứng</label>
+                            <textarea class="form-control" name="symptoms" id="editSymptoms" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Chẩn đoán</label>
+                            <textarea class="form-control" name="diagnosis" id="editDiagnosis" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Điều trị</label>
+                            <textarea class="form-control" name="treatment_plan" id="editTreatment" rows="3"></textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>Chiều cao (cm)</label>
+                                <input type="number" class="form-control" name="height" id="editHeight" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Cân nặng (kg)</label>
+                                <input type="number" class="form-control" name="weight" id="editWeight" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Huyết áp</label>
+                                <input type="text" class="form-control" name="blood_pressure" id="editBloodPressure" placeholder="e.g., 120/80">
+                            </div>
+                            <div class="form-group">
+                                <label>Nhịp tim (bpm)</label>
+                                <input type="number" class="form-control" name="heart_rate" id="editHeartRate" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Nhiệt độ (°C)</label>
+                                <input type="number" class="form-control" name="temperature" id="editTemperature" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ghi chú</label>
+                            <textarea class="form-control" name="notes" id="editNotes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize doctor select on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const doctorSelect = document.getElementById('doctor_select');
+            if (doctorSelect && doctorSelect.value) {
+                // Trigger change event to load patients and appointments
+                doctorSelect.dispatchEvent(new Event('change'));
+            }
+
+            // Handle patient group expand/collapse
+            document.querySelectorAll('.patient-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const group = this.closest('.patient-group');
+                    const recordsDiv = group.querySelector('.patient-records');
+                    const icon = group.querySelector('.expand-icon i');
+
+                    const isExpanded = recordsDiv.style.maxHeight !== '0px' && recordsDiv.style.maxHeight !== '';
+
+                    if (isExpanded) {
+                        // Collapse
+                        recordsDiv.style.maxHeight = '0';
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        // Expand
+                        recordsDiv.style.maxHeight = recordsDiv.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+        });
+
+        // Xem chi tiết hồ sơ
+        $('.view-record').click(function() {
+            const recordId = $(this).data('record-id');
+            fetch('ajax/get_medical_record_detail.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'record_id=' + recordId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const record = data.record;
+                        let html = `
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <strong style="color: #6b7280;">Bệnh nhân:</strong>
+                                <div>${record.fname} ${record.lname}</div>
+                            </div>
+                            <div>
+                                <strong style="color: #6b7280;">Bác sĩ:</strong>
+                                <div>${record.doctor_name || 'N/A'}</div>
+                            </div>
+                            <div>
+                                <strong style="color: #6b7280;">Ngày khám:</strong>
+                                <div>${new Date(record.record_date).toLocaleDateString('vi-VN')}</div>
+                            </div>
+                            <div>
+                                <strong style="color: #6b7280;">Tạo lúc:</strong>
+                                <div>${new Date(record.created_at).toLocaleString('vi-VN')}</div>
+                            </div>
+                        </div>
+                        <hr>
+                    `;
+
+                        if (record.symptoms) {
+                            html += `<div style="margin-bottom: 15px;">
+                            <strong style="color: #6b7280;">Triệu chứng:</strong>
+                            <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.symptoms}</div>
+                        </div>`;
+                        }
+
+                        if (record.diagnosis) {
+                            html += `<div style="margin-bottom: 15px;">
+                            <strong style="color: #6b7280;">Chẩn đoán:</strong>
+                            <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.diagnosis}</div>
+                        </div>`;
+                        }
+
+                        if (record.treatment_plan) {
+                            html += `<div style="margin-bottom: 15px;">
+                            <strong style="color: #6b7280;">Điều trị:</strong>
+                            <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.treatment_plan}</div>
+                        </div>`;
+                        }
+
+                        if (record.height || record.weight || record.blood_pressure || record.heart_rate || record.temperature) {
+                            html += `<div style="margin-bottom: 15px;">
+                            <strong style="color: #6b7280;">Chỉ số sức khỏe:</strong>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px;">`;
+                            if (record.height) html += `<div>Chiều cao: <strong>${record.height} cm</strong></div>`;
+                            if (record.weight) html += `<div>Cân nặng: <strong>${record.weight} kg</strong></div>`;
+                            if (record.blood_pressure) html += `<div>Huyết áp: <strong>${record.blood_pressure}</strong></div>`;
+                            if (record.heart_rate) html += `<div>Nhịp tim: <strong>${record.heart_rate} bpm</strong></div>`;
+                            if (record.temperature) html += `<div>Nhiệt độ: <strong>${record.temperature}°C</strong></div>`;
+                            html += `</div></div>`;
+                        }
+
+                        if (record.notes) {
+                            html += `<div style="margin-bottom: 15px;">
+                            <strong style="color: #6b7280;">Ghi chú:</strong>
+                            <div style="padding: 8px; background: #fef3c7; border-radius: 4px; margin-top: 5px;">${record.notes.replace(/\n/g, '<br>')}</div>
+                        </div>`;
+                        }
+
+                        $('#viewDetailContent').html(html);
+                        $('#viewDetailModal').modal('show');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Chỉnh sửa hồ sơ
+        $('.edit-record').click(function() {
+            const recordId = $(this).data('record-id');
+            fetch('ajax/get_medical_record_detail.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'record_id=' + recordId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const record = data.record;
+                        $('#editRecordId').val(recordId);
+                        $('#editDoctorName').val(record.doctor_name || 'N/A');
+                        $('#editSymptoms').val(record.symptoms || '');
+                        $('#editDiagnosis').val(record.diagnosis || '');
+                        $('#editTreatment').val(record.treatment_plan || '');
+                        $('#editHeight').val(record.height || '');
+                        $('#editWeight').val(record.weight || '');
+                        $('#editBloodPressure').val(record.blood_pressure || '');
+                        $('#editHeartRate').val(record.heart_rate || '');
+                        $('#editTemperature').val(record.temperature || '');
+                        $('#editNotes').val(record.notes || '');
+                        $('#editModal').modal('show');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Submit form chỉnh sửa
+        $('#editForm').submit(function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('ajax/update_medical_record.php', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        $('#editModal').modal('hide');
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + (data.error || 'Không xác định'));
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Xóa hồ sơ
+        $('.delete-record').click(function() {
+            const recordId = $(this).data('record-id');
+            if (confirm('Bạn có chắc chắn muốn xóa hồ sơ bệnh án này? Hành động này không thể hoàn tác!')) {
+                fetch('ajax/delete_medical_record.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'record_id=' + recordId
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + (data.error || 'Không xác định'));
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
+
+        // Patient dropdown already loaded from PHP, no AJAX needed
+        // Just handle doctor selection for consistency (though doctor should be fixed in this view)
+        if (document.getElementById('doctor_select')) {
+            document.getElementById('doctor_select').addEventListener('change', function() {
+                // In this view, doctor is fixed, but keep this for consistency
+                // If doctor changes, you'd need to reload the page
+                if (!this.value) {
+                    const patientSelect = document.getElementById('patient_select');
+                    const appointmentSelect = document.getElementById('appointment_select');
+                    patientSelect.innerHTML = '<option value="">-- Chọn bác sĩ trước --</option>';
+                    patientSelect.disabled = true;
+                    appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
+                    appointmentSelect.disabled = true;
+                }
+            });
+        };
+
+        // Handle patient selection and load appointments
+        document.getElementById('patient_select').addEventListener('change', function() {
+            const patientId = this.value;
+            const doctorId = document.getElementById('doctor_select').value;
+            const appointmentSelect = document.getElementById('appointment_select');
+
+            if (!patientId || !doctorId) {
+                appointmentSelect.innerHTML = '<option value="">-- Chọn bác sĩ và bệnh nhân trước --</option>';
+                appointmentSelect.disabled = true;
+                return;
+            }
+
+            appointmentSelect.disabled = true;
+            appointmentSelect.innerHTML = '<option value="">Đang tải lịch hẹn...</option>';
+
+            // Send AJAX request to get appointments for this patient and doctor
+            fetch('ajax/get_appointments_by_patient.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'patient_id=' + patientId + '&doctor_id=' + doctorId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.appointments.length > 0) {
+                        let optionsHtml = '<option value="">-- Không chọn lịch hẹn --</option>';
+                        data.appointments.forEach(apt => {
+                            const appointDate = new Date(apt.appdate);
+                            const formattedDate = appointDate.toLocaleDateString('vi-VN');
+                            const formattedTime = apt.apptime;
+                            optionsHtml += `<option value="${apt.ID}">
+                            ${formattedDate} - ${formattedTime}
+                        </option>`;
+                        });
+                        appointmentSelect.innerHTML = optionsHtml;
+                        appointmentSelect.disabled = false;
+                        // Auto-select latest appointment (first one since sorted DESC)
+                        appointmentSelect.value = data.appointments[0].ID;
+                    } else {
+                        appointmentSelect.innerHTML = '<option value="">Bác sĩ này chưa khám bệnh nhân này</option>';
+                        appointmentSelect.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    appointmentSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                    appointmentSelect.disabled = true;
+                });
+        });
+
+
+        // Handle patient selection to load appointments
+    </script>
+
+    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    <script type="text/javascript">
+        (function() {
+            const isMobile = window.matchMedia('(max-width: 576px)').matches;
+            const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+            const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+            const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+            const petals = [];
+            let docWidth = window.innerWidth;
+            let docHeight = window.innerHeight;
+
+            for (let i = 0; i < petalCount; i++) {
+                const size = 10 + Math.random() * 14;
+                const opacity = 0.5 + Math.random() * 0.4;
+                const rotation = Math.random() * 360;
+                const blur = Math.random() * 0.5;
+
+                const petal = {
+                    x: Math.random() * docWidth,
+                    y: Math.random() * docHeight - docHeight,
+                    dx: 0,
+                    rotation: rotation,
+                    rotationSpeed: (Math.random() - 0.5) * 1.5,
+                    amplitude: 20 + Math.random() * 35,
+                    speedX: 0.01 + Math.random() / 15,
+                    speedY: 0.3 + Math.random() * 0.6,
+                    size: size,
+                    opacity: opacity,
+                    blur: blur,
+                    element: null
+                };
+
+                const div = document.createElement('div');
+                div.id = 'cherry-petal-' + i;
+                div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                document.body.appendChild(div);
+                petal.element = div;
+                petals.push(petal);
+            }
+
+            function animate() {
+                docWidth = window.innerWidth;
+                docHeight = window.innerHeight;
+
+                petals.forEach(petal => {
+                    petal.y += petal.speedY;
+                    petal.rotation += petal.rotationSpeed;
+
+                    if (petal.y > docHeight + 80) {
+                        petal.x = Math.random() * docWidth;
+                        petal.y = -80;
+                        petal.speedX = 0.01 + Math.random() / 15;
+                        petal.speedY = 0.3 + Math.random() * 0.6;
+                        petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                    }
+
+                    petal.dx += petal.speedX;
+                    const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                    const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                    petal.element.style.top = petal.y + 'px';
+                    petal.element.style.left = swayX + 'px';
+                    petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    docWidth = window.innerWidth;
+                    docHeight = window.innerHeight;
+                }, 250);
+            });
+        })();
+    </script>
 </body>
 
 </html>

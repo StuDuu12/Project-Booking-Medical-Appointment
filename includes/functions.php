@@ -1,9 +1,5 @@
 <?php
 
-/**
- * Common Functions Library - PDO Version
- * Global Hospital Management System
- */
 
 if (!isset($_SESSION)) {
     session_start();
@@ -56,22 +52,15 @@ function display_specs()
 }
 
 /**
- * Update appointment payment status
+ * Update appointment status
+ * Note: The 'payment' field does not exist in appointmenttb table
+ * This function is deprecated and should not be used
  */
 function updatePaymentStatus($contact, $status)
 {
-    try {
-        $con = getDB();
-        $stmt = $con->prepare("UPDATE appointmenttb SET payment = :status WHERE contact = :contact");
-        $stmt->execute([
-            ':status' => $status,
-            ':contact' => $contact
-        ]);
-        return $stmt->rowCount() > 0;
-    } catch (PDOException $e) {
-        error_log("Update payment error: " . $e->getMessage());
-        return false;
-    }
+    // This function is deprecated - payment field does not exist in database
+    error_log("WARNING: updatePaymentStatus called but 'payment' field does not exist in appointmenttb table");
+    return false;
 }
 
 /**
@@ -296,13 +285,13 @@ function getDoctorByUsername($username)
 /**
  * Create appointment
  */
-function createAppointment($fname, $lname, $email, $contact, $doctor, $payment, $appdate, $apptime)
+function createAppointment($fname, $lname, $email, $contact, $doctor, $appdate, $apptime)
 {
     try {
         $con = getDB();
 
-        $stmt = $con->prepare("INSERT INTO appointmenttb (fname, lname, email, contact, doctor, payment, appdate, apptime) 
-                               VALUES (:fname, :lname, :email, :contact, :doctor, :payment, :appdate, :apptime)");
+        $stmt = $con->prepare("INSERT INTO appointmenttb (fname, lname, email, contact, doctor, appdate, apptime, userStatus, doctorStatus) 
+                               VALUES (:fname, :lname, :email, :contact, :doctor, :appdate, :apptime, '1', '1')");
 
         $result = $stmt->execute([
             ':fname' => $fname,
@@ -310,7 +299,6 @@ function createAppointment($fname, $lname, $email, $contact, $doctor, $payment, 
             ':email' => $email,
             ':contact' => $contact,
             ':doctor' => $doctor,
-            ':payment' => $payment,
             ':appdate' => $appdate,
             ':apptime' => $apptime
         ]);

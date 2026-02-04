@@ -60,16 +60,22 @@ try {
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
     <style>
         body {
-            background-color: #f8fafc;
+            background-image:
+                linear-gradient(135deg, rgba(254, 226, 226, 0.85) 0%, rgba(252, 165, 165, 0.85) 25%, rgba(248, 113, 113, 0.85) 50%, rgba(239, 68, 68, 0.85) 75%, rgba(220, 38, 38, 0.85) 100%),
+                url('../../images/ngua.png');
+            background-size: cover, contain;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            background-attachment: fixed, fixed;
             font-family: 'Inter', sans-serif;
         }
 
         .medical-record-card {
             background: white;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #10b981;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid #ffd700;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
@@ -82,19 +88,19 @@ try {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
         }
 
         .record-date {
-            font-size: 14px;
+            font-size: 13px;
             color: #6b7280;
             font-weight: 500;
         }
 
         .record-doctor {
-            color: #0891b2;
+            color: #d2302c;
             font-weight: 600;
         }
 
@@ -138,7 +144,7 @@ try {
         }
 
         .record-item-value {
-            font-size: 15px;
+            font-size: 13px;
             color: #1f2937;
             font-weight: 500;
         }
@@ -152,20 +158,20 @@ try {
 
         .vital-card {
             background: #f0fdf4;
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
             border: 1px solid #bbf7d0;
         }
 
         .vital-label {
             font-size: 11px;
-            color: #047857;
+            color: #8b0000;
             font-weight: 600;
             text-transform: uppercase;
         }
 
         .vital-value {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: #065f46;
             margin-top: 5px;
@@ -186,32 +192,32 @@ try {
         }
 
         .page-header {
-            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
             color: white;
-            padding: 30px;
+            padding: 24px;
             border-radius: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
         }
 
         .page-header p {
-            margin: 5px 0 0 0;
+            margin: 4px 0 0 0;
             opacity: 0.9;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .patient-info-card {
             background: white;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-left: 4px solid #0891b2;
+            padding: 16px;
+            margin-bottom: 24px;
+            border-left: 4px solid #d2302c;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
@@ -236,7 +242,7 @@ try {
         }
 
         .info-value {
-            font-size: 16px;
+            font-size: 14px;
             color: #1f2937;
             font-weight: 600;
         }
@@ -245,7 +251,7 @@ try {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #0891b2;
+            color: #d2302c;
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 20px;
@@ -253,15 +259,15 @@ try {
         }
 
         .back-link:hover {
-            color: #06b6d4;
+            color: #ff4d4d;
             gap: 12px;
         }
 
         .filter-section {
             background: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
@@ -273,21 +279,21 @@ try {
         }
 
         .filter-input {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .filter-input:focus {
             outline: none;
-            border-color: #0891b2;
-            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+            border-color: #d2302c;
+            box-shadow: 0 0 0 3px rgba(210, 48, 44, 0.1);
         }
 
         .btn-filter {
-            padding: 8px 16px;
-            background-color: #0891b2;
+            padding: 6px 14px;
+            background-color: #d2302c;
             color: white;
             border: none;
             border-radius: 6px;
@@ -297,7 +303,7 @@ try {
         }
 
         .btn-filter:hover {
-            background-color: #06b6d4;
+            background-color: #ff4d4d;
         }
 
         .btn-reset {
@@ -350,10 +356,85 @@ try {
                 width: 100%;
             }
         }
+
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(ellipse at center, #ffb7d5 0%, #ff69b4 40%, #ff1493 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        .petal::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, transparent 50%);
+            border-radius: 50% 0 50% 0;
+            transform: rotate(90deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100vh) rotateZ(360deg);
+                opacity: 0;
+            }
+        }
+
+        .petal:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .petal:nth-child(even) {
+            animation-duration: 12s;
+        }
+
+        .petal:nth-child(3n) {
+            animation-duration: 10s;
+        }
+
+        .petal:nth-child(5n) {
+            animation-duration: 15s;
+        }
     </style>
 </head>
 
 <body>
+    <div class="petals-container" id="petals"></div>
+    <script>
+        function createPetals() {
+            const c = document.getElementById('petals');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (8 + Math.random() * 10) + 's';
+                c.appendChild(p);
+            }
+        }
+        window.addEventListener('load', createPetals);
+    </script>
     <?php displayMessage(); ?>
 
     <div class="container-lg py-4">
@@ -371,13 +452,13 @@ try {
         <!-- Patient Info Card -->
         <?php if ($patient_profile) { ?>
             <div class="patient-info-card">
-                <h5 class="mb-3" style="color: #0891b2; font-weight: 700;">
+                <h5 class="mb-3" style="color: #d2302c; font-weight: 700;">
                     <i class="fas fa-user-circle"></i> Thông tin cá nhân
                 </h5>
                 <div class="patient-info-grid">
                     <div class="info-item">
                         <div class="info-label">Họ và tên</div>
-                        <div class="info-value"><?php echo $patient_profile['fname'] . ' ' . $patient_profile['lname']; ?></div>
+                        <div class="info-value"><?php echo $patient_profile['lname'] . ' ' . $patient_profile['fname']; ?></div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Email</div>
@@ -472,7 +553,7 @@ try {
                         <!-- Vitals Section -->
                         <?php if ($record['height'] || $record['weight'] || $record['blood_pressure'] || $record['heart_rate'] || $record['temperature']) { ?>
                             <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-                                <h6 style="color: #0891b2; font-weight: 700; margin-bottom: 15px;">
+                                <h6 style="color: #d2302c; font-weight: 700; margin-bottom: 15px;">
                                     <i class="fas fa-heartbeat"></i> Chỉ số sức khỏe
                                 </h6>
                                 <div class="vitals-grid">
@@ -517,7 +598,7 @@ try {
                         <!-- Additional Notes -->
                         <?php if ($record['notes']) { ?>
                             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-                                <h6 style="color: #0891b2; font-weight: 700; margin-bottom: 10px;">
+                                <h6 style="color: #d2302c; font-weight: 700; margin-bottom: 10px;">
                                     <i class="fas fa-sticky-note"></i> Ghi chú
                                 </h6>
                                 <p style="color: #374151; margin: 0; line-height: 1.6;"><?php echo nl2br($record['notes']); ?></p>
@@ -555,6 +636,89 @@ try {
         }
 
         document.getElementById('searchInput').addEventListener('keyup', filterRecords);
+    </script>
+
+    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    <script type="text/javascript">
+        (function() {
+            const isMobile = window.matchMedia('(max-width: 576px)').matches;
+            const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+            const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+            const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+            const petals = [];
+            let docWidth = window.innerWidth;
+            let docHeight = window.innerHeight;
+
+            for (let i = 0; i < petalCount; i++) {
+                const size = 10 + Math.random() * 14;
+                const opacity = 0.5 + Math.random() * 0.4;
+                const rotation = Math.random() * 360;
+                const blur = Math.random() * 0.5;
+
+                const petal = {
+                    x: Math.random() * docWidth,
+                    y: Math.random() * docHeight - docHeight,
+                    dx: 0,
+                    rotation: rotation,
+                    rotationSpeed: (Math.random() - 0.5) * 1.5,
+                    amplitude: 20 + Math.random() * 35,
+                    speedX: 0.01 + Math.random() / 15,
+                    speedY: 0.3 + Math.random() * 0.6,
+                    size: size,
+                    opacity: opacity,
+                    blur: blur,
+                    element: null
+                };
+
+                const div = document.createElement('div');
+                div.id = 'cherry-petal-' + i;
+                div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                document.body.appendChild(div);
+                petal.element = div;
+                petals.push(petal);
+            }
+
+            function animate() {
+                docWidth = window.innerWidth;
+                docHeight = window.innerHeight;
+
+                petals.forEach(petal => {
+                    petal.y += petal.speedY;
+                    petal.rotation += petal.rotationSpeed;
+
+                    if (petal.y > docHeight + 80) {
+                        petal.x = Math.random() * docWidth;
+                        petal.y = -80;
+                        petal.speedX = 0.01 + Math.random() / 15;
+                        petal.speedY = 0.3 + Math.random() * 0.6;
+                        petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                    }
+
+                    petal.dx += petal.speedX;
+                    const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                    const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                    petal.element.style.top = petal.y + 'px';
+                    petal.element.style.left = swayX + 'px';
+                    petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    docWidth = window.innerWidth;
+                    docHeight = window.innerHeight;
+                }, 250);
+            });
+        })();
     </script>
 </body>
 
