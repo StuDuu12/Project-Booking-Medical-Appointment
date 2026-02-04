@@ -751,6 +751,33 @@ if (isset($_GET['cancel'])) {
 
         // Gọi hàm khi trang load xong
         window.addEventListener('load', createPetals);
+
+        // Hàm tìm kiếm lịch hẹn
+        function filterAppointments() {
+            const input = document.getElementById('appointmentSearch');
+            if (!input) return;
+
+            const filter = input.value.toLowerCase();
+            const table = document.querySelector('.data-table tbody');
+            if (!table) return;
+
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let found = false;
+
+                for (let j = 0; j < cells.length; j++) {
+                    const cellText = cells[j].textContent || cells[j].innerText;
+                    if (cellText.toLowerCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                rows[i].style.display = found ? '' : 'none';
+            }
+        }
     </script>
 
     <body>
@@ -802,12 +829,6 @@ if (isset($_GET['cancel'])) {
                         <a href="patient-history.php" class="sidebar-menu-link">
                             <i class="fas fa-history sidebar-menu-icon"></i>
                             <span>Lịch sử bệnh án</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-menu-item">
-                        <a href="medicine-inventory.php" class="sidebar-menu-link">
-                            <i class="fas fa-pills sidebar-menu-icon"></i>
-                            <span>Quản lý kho thuốc</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
@@ -883,7 +904,8 @@ if (isset($_GET['cancel'])) {
                                     <div class="stat-label">Bệnh nhân hôm nay</div>
                                     <div class="stat-value">
                                         <?php
-                                        $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) AND userStatus = '1' AND doctorStatus = '1'");
+                                        // Đếm bệnh nhân có lịch hẹn HÔM NAY và đang hoạt động
+                                        $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) AND appdate = CURDATE() AND userStatus = '1' AND doctorStatus = '1'");
                                         $stmt->execute([':doctor' => $doctor_fullname]);
                                         $row = $stmt->fetch(PDO::FETCH_ASSOC);
                                         echo $row['active'];
@@ -1118,12 +1140,12 @@ if (isset($_GET['cancel'])) {
                             <h2 class="section-title">Lịch hẹn bệnh nhân</h2>
                         </div>
                         <div class="mb-4">
-                            <form method="post" action="search.php" class="search-box-form">
-                                <div class="input-group" style="max-width: 500px;">
-                                    <input type="text" class="form-control" placeholder="Tìm theo SĐT..." name="contact">
-                                    <div class="input-group-append"><button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Tìm</button></div>
+                            <div class="input-group" style="max-width: 500px;">
+                                <input type="text" id="appointmentSearch" class="form-control" placeholder="Tìm theo SĐT, tên bệnh nhân, email..." onkeyup="filterAppointments()">
+                                <div class="input-group-append">
+                                    <span class="btn btn-primary"><i class="fas fa-search"></i> Tìm</span>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                         <div class="data-table-container">
                             <table class="data-table">
@@ -1140,21 +1162,30 @@ if (isset($_GET['cancel'])) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $stmt = $pdo->prepare("SELECT pid,ID,fname,lname,contact,appdate,apptime,userStatus,doctorStatus FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) ORDER BY appdate DESC");
-                                    $stmt->execute([':doctor' => trim($doctor)]);
+                                    // JOIN với patreg để lấy tên bệnh nhân chính xác
+                                    $stmt = $pdo->prepare("
+                                        SELECT a.pid, a.ID, a.appdate, a.apptime, a.userStatus, a.doctorStatus,
+                                               CONCAT(p.fname, ' ', p.lname) as patient_name,
+                                               p.contact as patient_contact
+                                        FROM appointmenttb a
+                                        LEFT JOIN patreg p ON a.pid = p.pid
+                                        WHERE TRIM(a.doctor) = TRIM(:doctor)
+                                        ORDER BY a.appdate DESC, a.apptime DESC
+                                    ");
+                                    $stmt->execute([':doctor' => $doctor_fullname]);
                                     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     ?>
                                         <tr>
                                             <td>#<?php echo $row['pid']; ?></td>
-                                            <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
-                                            <td><?php echo $row['contact']; ?></td>
+                                            <td><strong><?php echo $row['patient_name'] ? $row['patient_name'] : '-'; ?></strong></td>
+                                            <td><?php echo $row['patient_contact'] ? $row['patient_contact'] : '-'; ?></td>
                                             <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
-                                            <td><?php echo $row['apptime']; ?></td>
+                                            <td><?php echo date('H:i', strtotime($row['apptime'])); ?></td>
                                             <td>
-                                                <?php if ($row['userStatus'] == 1 && $row['doctorStatus'] == 1) echo '<span class="badge badge-success">Hoạt động</span>';
-                                                else echo '<span class="badge badge-danger">Đã hủy</span>'; ?>
+                                                <?php if ($row['userStatus'] == 1 && $row['doctorStatus'] == 1) echo '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Hoạt động</span>';
+                                                else echo '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Đã hủy</span>'; ?>
                                             </td>
-                                            <td><a href="prescribe.php?pid=<?php echo $row['pid']; ?>&ID=<?php echo $row['ID']; ?>" class="btn btn-sm btn-primary">Kê đơn</a></td>
+                                            <td><a href="prescribe.php?pid=<?php echo $row['pid']; ?>&ID=<?php echo $row['ID']; ?>" class="btn btn-sm btn-primary"><i class="fas fa-prescription"></i> Kê đơn</a></td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>

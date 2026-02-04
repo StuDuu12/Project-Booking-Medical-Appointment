@@ -35,8 +35,8 @@ if (isset($_POST['add_medical_record'])) {
         $temperature = isset($_POST['temperature']) && $_POST['temperature'] !== '' ? floatval($_POST['temperature']) : null;
 
         // Get doctor ID
-        $stmt = $pdo->prepare("SELECT id FROM doctb WHERE fullname = :fullname");
-        $stmt->execute([':fullname' => $doctor]);
+        $stmt = $pdo->prepare("SELECT id FROM doctb WHERE username = :username");
+        $stmt->execute([':username' => $doctor]);
         $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $doctor_id = $doctor_result['id'] ?? null;
 
@@ -70,29 +70,57 @@ if (isset($_POST['add_medical_record'])) {
     }
 }
 
-// Get doctor ID for queries
+// Handle delete medical record
+if (isset($_POST['delete_record_id'])) {
+    try {
+        $record_id = intval($_POST['delete_record_id']);
+
+        // Get doctor ID to verify ownership
+        $stmt = $pdo->prepare("SELECT id FROM doctb WHERE username = :username");
+        $stmt->execute([':username' => $doctor]);
+        $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $current_doctor_id = $doctor_result['id'] ?? null;
+
+        // Verify that this record belongs to the current doctor before deleting
+        $stmt = $pdo->prepare("DELETE FROM medical_records WHERE id = :id AND doctor_id = :doctor_id");
+        $stmt->execute([':id' => $record_id, ':doctor_id' => $current_doctor_id]);
+
+        if ($stmt->rowCount() > 0) {
+            redirectWithMessage($_SERVER['PHP_SELF'], 'success', 'Đã xóa bệnh án thành công!');
+        } else {
+            redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Không thể xóa bệnh án này. Vui lòng thử lại.');
+        }
+    } catch (PDOException $e) {
+        error_log("Delete medical record error: " . $e->getMessage());
+        redirectWithMessage($_SERVER['PHP_SELF'], 'error', 'Lỗi khi xóa bệnh án: ' . $e->getMessage());
+    }
+}
+
+// Get doctor ID and fullname for queries
 $doctor_id = null;
+$doctor_fullname = null;
 try {
-    $stmt = $pdo->prepare("SELECT id FROM doctb WHERE fullname = :fullname");
-    $stmt->execute([':fullname' => $doctor]);
+    $stmt = $pdo->prepare("SELECT id, fullname FROM doctb WHERE username = :username");
+    $stmt->execute([':username' => $doctor]);
     $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
     $doctor_id = $doctor_result['id'] ?? null;
+    $doctor_fullname = $doctor_result['fullname'] ?? $doctor;
 } catch (PDOException $e) {
-    error_log("Get doctor ID error: " . $e->getMessage());
+    error_log("Get doctor info error: " . $e->getMessage());
 }
 
 // Fetch patients for this doctor
 $doctor_patients = [];
-if ($doctor_id) {
+if ($doctor_id && $doctor_fullname) {
     try {
         $stmt = $pdo->prepare("
             SELECT DISTINCT p.pid, p.fname, p.lname, p.contact, p.email
             FROM patreg p
             INNER JOIN appointmenttb a ON p.pid = a.pid
-            WHERE a.doctor = :doctor_name
+            WHERE TRIM(a.doctor) = TRIM(:doctor_name)
             ORDER BY p.fname, p.lname
         ");
-        $stmt->execute([':doctor_name' => $doctor]);
+        $stmt->execute([':doctor_name' => $doctor_fullname]);
         $doctor_patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Get doctor patients error: " . $e->getMessage());
@@ -691,7 +719,7 @@ if ($selected_patient_id && $doctor_id) {
                                 <option value="">-- Chọn bác sĩ --</option>
                                 <?php
                                 try {
-                                    $doctors = $pdo->query("SELECT id, fullname FROM doctb ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
+                                    $doctors = $pdo->query("SELECT MIN(id) as id, fullname FROM doctb GROUP BY fullname ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
                                     foreach ($doctors as $doc) {
                                         $selected = ($doc['fullname'] === $doctor) ? 'selected' : '';
                                         echo "<option value='" . $doc['id'] . "' " . $selected . ">" . $doc['fullname'] . "</option>";
@@ -892,8 +920,93 @@ if ($selected_patient_id && $doctor_id) {
         // Initialize doctor select on page load
         document.addEventListener('DOMContentLoaded', function() {
             const doctorSelect = document.getElementById('doctor_select');
+            const patientSelect = document.getElementById('patient_select');
+            const appointmentSelect = document.getElementById('appointment_select');
+
+            // Khi chọn bác sĩ → load bệnh nhân đã đặt lịch của bác sĩ đó
+            if (doctorSelect) {
+                doctorSelect.addEventListener('change', function() {
+                    const doctorId = this.value;
+
+                    // Reset patient và appointment
+                    patientSelect.innerHTML = '<option value="">-- Đang tải... --</option>';
+                    appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
+
+                    if (doctorId) {
+                        // Load bệnh nhân của bác sĩ này
+                        $.ajax({
+                            url: 'get_doctor_patients.php',
+                            method: 'GET',
+                            data: {
+                                doctor_id: doctorId
+                            },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    patientSelect.innerHTML = '<option value="">-- Chọn bệnh nhân --</option>';
+                                    response.patients.forEach(function(patient) {
+                                        const option = document.createElement('option');
+                                        option.value = patient.pid;
+                                        option.textContent = patient.fname + ' ' + patient.lname + ' - ' + patient.contact;
+                                        patientSelect.appendChild(option);
+                                    });
+                                } else {
+                                    patientSelect.innerHTML = '<option value="">Không có bệnh nhân</option>';
+                                }
+                            },
+                            error: function() {
+                                patientSelect.innerHTML = '<option value="">Lỗi khi tải dữ liệu</option>';
+                            }
+                        });
+                    } else {
+                        patientSelect.innerHTML = '<option value="">-- Chọn bác sĩ trước --</option>';
+                    }
+                });
+            }
+
+            // Khi chọn bệnh nhân → load lịch hẹn của bệnh nhân với bác sĩ đó
+            if (patientSelect) {
+                patientSelect.addEventListener('change', function() {
+                    const patientId = this.value;
+                    const doctorId = doctorSelect.value;
+
+                    appointmentSelect.innerHTML = '<option value="">-- Đang tải... --</option>';
+
+                    if (patientId && doctorId) {
+                        // Load lịch hẹn của bệnh nhân này với bác sĩ đã chọn
+                        $.ajax({
+                            url: 'get_patient_appointments.php',
+                            method: 'GET',
+                            data: {
+                                patient_id: patientId,
+                                doctor_id: doctorId
+                            },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    appointmentSelect.innerHTML = '<option value="">-- Không bắt buộc --</option>';
+                                    response.appointments.forEach(function(apt) {
+                                        const option = document.createElement('option');
+                                        option.value = apt.ID;
+                                        option.textContent = 'Lịch #' + apt.ID + ' - ' + apt.appdate + ' ' + apt.apptime;
+                                        appointmentSelect.appendChild(option);
+                                    });
+                                } else {
+                                    appointmentSelect.innerHTML = '<option value="">Không có lịch hẹn</option>';
+                                }
+                            },
+                            error: function() {
+                                appointmentSelect.innerHTML = '<option value="">Lỗi khi tải dữ liệu</option>';
+                            }
+                        });
+                    } else {
+                        appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
+                    }
+                });
+            }
+
+            // Trigger change nếu đã có giá trị mặc định
             if (doctorSelect && doctorSelect.value) {
-                // Trigger change event to load patients and appointments
                 doctorSelect.dispatchEvent(new Event('change'));
             }
 
@@ -919,8 +1032,126 @@ if ($selected_patient_id && $doctor_id) {
             });
         });
 
-        // Tất cả các tác vụ đã được chuyển sang xử lý PHP thuần, không dùng AJAX
-        // Các nút view, edit, delete sẽ redirect tới các trang PHP tương ứng hoặc submit form
+        // Handle View Record Button
+        document.querySelectorAll('.view-record').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent triggering parent collapse
+                const recordId = this.getAttribute('data-record-id');
+
+                // Show modal
+                $('#viewDetailModal').modal('show');
+                $('#viewDetailContent').html('<div class="text-center p-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Đang tải dữ liệu...</p></div>');
+
+                // Load record data
+                $.ajax({
+                    url: 'get_record_detail.php',
+                    method: 'GET',
+                    data: {
+                        id: recordId
+                    },
+                    success: function(response) {
+                        $('#viewDetailContent').html(response);
+                    },
+                    error: function() {
+                        $('#viewDetailContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Lỗi khi tải dữ liệu. Vui lòng thử lại.</div>');
+                    }
+                });
+            });
+        });
+
+        // Handle Edit Record Button  
+        document.querySelectorAll('.edit-record').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent triggering parent collapse
+                const recordId = this.getAttribute('data-record-id');
+
+                // Show edit modal
+                $('#editModal').modal('show');
+                $('#editRecordId').val(recordId);
+
+                // Load record data
+                $.ajax({
+                    url: 'get_record_detail.php',
+                    method: 'GET',
+                    data: {
+                        id: recordId,
+                        mode: 'edit'
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            const record = data.record;
+                            $('#editDoctorName').val(record.doctor_name);
+                            $('#editSymptoms').val(record.symptoms);
+                            $('#editDiagnosis').val(record.diagnosis);
+                            $('#editTreatment').val(record.treatment_plan);
+                            $('#editHeight').val(record.height);
+                            $('#editWeight').val(record.weight);
+                            $('#editBloodPressure').val(record.blood_pressure);
+                            $('#editHeartRate').val(record.heart_rate);
+                            $('#editTemperature').val(record.temperature);
+                            $('#editNotes').val(record.notes);
+                        } else {
+                            alert('Lỗi khi tải dữ liệu: ' + (data.message || 'Unknown error'));
+                            $('#editModal').modal('hide');
+                        }
+                    },
+                    error: function() {
+                        alert('Lỗi kết nối. Vui lòng thử lại.');
+                        $('#editModal').modal('hide');
+                    }
+                });
+            });
+        });
+
+        // Handle Delete Record Button
+        document.querySelectorAll('.delete-record').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent triggering parent collapse
+                const recordId = this.getAttribute('data-record-id');
+
+                if (confirm('Bạn có chắc chắn muốn xóa bệnh án này không? Hành động này không thể hoàn tác.')) {
+                    // Create form and submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '';
+
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'delete_record_id';
+                    input.value = recordId;
+
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+
+        // Handle Edit Form Submit
+        $('#editForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const formData = $(this).serialize();
+
+            $.ajax({
+                url: 'update_record.php',
+                method: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        alert('Cập nhật bệnh án thành công!');
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Lỗi kết nối. Vui lòng thử lại.');
+                }
+            });
+        });
     </script>
 
     <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->

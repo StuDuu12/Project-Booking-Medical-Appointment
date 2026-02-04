@@ -1,6 +1,102 @@
-<!DOCTYPE html>
 <?php
+// Tắt hiển thị lỗi để không làm hỏng JSON response
+error_reporting(0);
+ini_set('display_errors', 0);
+
 session_start();
+
+// Xử lý AJAX request trước để tránh output HTML
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'])) {
+    header('Content-Type: application/json');
+    ob_clean(); // Xóa bất kỳ output nào trước đó
+
+    try {
+        require_once('../../config.php');
+
+        $pid = intval($_POST['history_pid']);
+
+        if (!isset($pdo)) {
+            throw new Exception("Không thể kết nối database");
+        }
+
+        // Lấy thông tin bệnh nhân
+        $patientStmt = $pdo->prepare("SELECT fname, lname, email FROM patreg WHERE pid = :pid");
+        $patientStmt->execute([':pid' => $pid]);
+        $patient = $patientStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$patient) {
+            echo json_encode(['html' => '<div class="alert alert-warning text-center">Không tìm thấy thông tin bệnh nhân</div>']);
+            exit();
+        }
+
+        // Lấy danh sách hồ sơ bệnh án từ bảng medical_records
+        $stmt = $pdo->prepare("
+            SELECT mr.*, 
+                   d.fullname as doctor_name,
+                   d.spec as doctor_specialty
+            FROM medical_records mr
+            LEFT JOIN doctb d ON mr.doctor_id = d.id
+            WHERE mr.patient_id = :pid
+            ORDER BY mr.record_date DESC, mr.created_at DESC
+        ");
+        $stmt->execute([':pid' => $pid]);
+        $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($records)) {
+            $html = '<div class="alert alert-info text-center">Chưa có hồ sơ bệnh án nào cho bệnh nhân này</div>';
+        } else {
+            $html = '<div class="mb-3"><strong>Bệnh nhân:</strong> ' . htmlspecialchars($patient['fname'] . ' ' . $patient['lname']) . '</div>';
+            $html .= '<div class="table-responsive">';
+            $html .= '<table class="table table-bordered table-hover">';
+            $html .= '<thead class="thead-light">';
+            $html .= '<tr>';
+            $html .= '<th style="width: 12%;">Ngày khám</th>';
+            $html .= '<th style="width: 15%;">Bác sĩ</th>';
+            $html .= '<th style="width: 13%;">Chuyên khoa</th>';
+            $html .= '<th style="width: 30%;">Triệu chứng</th>';
+            $html .= '<th style="width: 30%;">Chẩn đoán & Điều trị</th>';
+            $html .= '</tr>';
+            $html .= '</thead><tbody>';
+
+            foreach ($records as $rec) {
+                $html .= '<tr>';
+                $html .= '<td>' . date('d/m/Y', strtotime($rec['record_date'])) . '</td>';
+                $html .= '<td>' . htmlspecialchars($rec['doctor_name'] ?: 'N/A') . '</td>';
+                $html .= '<td><span class="badge badge-info">' . htmlspecialchars($rec['doctor_specialty'] ?: 'N/A') . '</span></td>';
+
+                // Triệu chứng
+                $symptoms = $rec['symptoms'] ?: $rec['chief_complaint'] ?: 'Không ghi nhận';
+                $html .= '<td><small>' . htmlspecialchars(substr($symptoms, 0, 150)) . '</small></td>';
+
+                // Chẩn đoán & điều trị
+                $treatment = '';
+                if (!empty($rec['diagnosis'])) {
+                    $treatment .= '<strong>Chẩn đoán:</strong> ' . htmlspecialchars(substr($rec['diagnosis'], 0, 100)) . '<br>';
+                }
+                if (!empty($rec['treatment_plan'])) {
+                    $treatment .= '<strong>Điều trị:</strong> ' . htmlspecialchars(substr($rec['treatment_plan'], 0, 100));
+                }
+                if (!empty($rec['prescription'])) {
+                    $treatment .= '<br><strong>Đơn thuốc:</strong> ' . htmlspecialchars(substr($rec['prescription'], 0, 80));
+                }
+                if (empty($treatment)) {
+                    $treatment = '<span class="text-muted">Chưa có thông tin</span>';
+                }
+                $html .= '<td><small>' . $treatment . '</small></td>';
+                $html .= '</tr>';
+            }
+            $html .= '</tbody></table></div>';
+            $html .= '<div class="text-muted small mt-2">📋 Tổng cộng: <strong>' . count($records) . '</strong> hồ sơ bệnh án</div>';
+        }
+
+        echo json_encode(['html' => $html], JSON_UNESCAPED_UNICODE);
+    } catch (Exception $e) {
+        echo json_encode(['html' => '<div class="alert alert-danger">Lỗi: ' . htmlspecialchars($e->getMessage()) . '</div>'], JSON_UNESCAPED_UNICODE);
+    }
+    exit();
+}
+
+// Load các file cần thiết cho trang thường
 require_once('../../config.php');
 require_once('../../includes/messages.php');
 require_once('../../includes/functions.php');
@@ -193,6 +289,7 @@ if (isset($_GET['reset_schedule'])) {
     }
 }
 ?>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -722,6 +819,12 @@ if (isset($_GET['reset_schedule'])) {
                     <a href="?page=prescriptions" class="sidebar-menu-link <?php echo ($page === 'prescriptions') ? 'active' : ''; ?>">
                         <i class="fas fa-file-prescription sidebar-menu-icon"></i>
                         <span>Đơn thuốc</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="medicine-inventory.php" class="sidebar-menu-link">
+                        <i class="fas fa-pills sidebar-menu-icon"></i>
+                        <span>Quản lý Kho thuốc</span>
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
@@ -1396,18 +1499,25 @@ if (isset($_GET['reset_schedule'])) {
                                     <th>Trạng thái</th>
                                 </tr>
                             </thead>
-                            <tbody><?php $query = "select * from appointmenttb order by appdate desc, apptime desc";
+                            <tbody><?php
+                                    // JOIN với patreg để lấy tên bệnh nhân chính xác
+                                    $query = "SELECT a.*, 
+                                              CONCAT(p.fname, ' ', p.lname) as patient_fullname,
+                                              p.contact as patient_contact
+                                              FROM appointmenttb a
+                                              LEFT JOIN patreg p ON a.pid = p.pid
+                                              ORDER BY a.appdate DESC, a.apptime DESC";
                                     $result = $pdo->query($query);
-                                    while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
+                                    while ($row = $result->fetch(PDO::FETCH_ASSOC)) { ?><tr>
                                         <td>#<?php echo $row['ID']; ?></td>
-                                        <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
-                                        <td><?php echo $row['contact']; ?></td>
-                                        <td><?php echo $row['doctor']; ?></td>
-                                        <td>₹<?php echo $row['docFees']; ?></td>
-                                        <td><?php echo date('d M Y', strtotime($row['appdate'])); ?></td>
-                                        <td><?php echo date('h:i A', strtotime($row['apptime'])); ?></td>
-                                        <td><?php if ($row['userStatus'] == 1 && $row['doctorStatus'] == 1) echo '<span class="badge badge-success">Đang hoạt động</span>';
-                                            else echo '<span class="badge badge-danger">Đã hủy</span>'; ?></td>
+                                        <td><strong><?php echo $row['patient_fullname'] ? $row['patient_fullname'] : ($row['fname'] . ' ' . $row['lname']); ?></strong></td>
+                                        <td><?php echo $row['patient_contact'] ? $row['patient_contact'] : $row['contact']; ?></td>
+                                        <td>BS. <?php echo $row['doctor']; ?></td>
+                                        <td><?php echo number_format($row['docFees'], 0, ',', '.'); ?> ₫</td>
+                                        <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
+                                        <td><?php echo date('H:i', strtotime($row['apptime'])); ?></td>
+                                        <td><?php if ($row['userStatus'] == 1 && $row['doctorStatus'] == 1) echo '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Hoạt động</span>';
+                                            else echo '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Đã hủy</span>'; ?></td>
                                     </tr><?php } ?></tbody>
                         </table>
                     </div>
@@ -1474,24 +1584,28 @@ if (isset($_GET['reset_schedule'])) {
 
             <?php if ($page === 'medical-records') {
                 // Lấy danh sách chuyên khoa
-                $specs = $pdo->query("SELECT * FROM specializations")->fetchAll(PDO::FETCH_ASSOC);
-                // Lấy danh sách bác sĩ
-                $doctors = $pdo->query("SELECT id, fullname, spec_id FROM doctb")->fetchAll(PDO::FETCH_ASSOC);
+                $specs = $pdo->query("SELECT * FROM specializations ORDER BY name_vi")->fetchAll(PDO::FETCH_ASSOC);
+                // Lấy danh sách bác sĩ - loại bỏ duplicate theo fullname
+                $doctors = $pdo->query("SELECT MIN(id) as id, fullname, spec_id FROM doctb GROUP BY fullname, spec_id")->fetchAll(PDO::FETCH_ASSOC);
 
                 // Xử lý lọc
                 $filter_spec_id = isset($_POST['filter_spec_id']) ? $_POST['filter_spec_id'] : '';
 
                 // Logic: Lọc bệnh nhân đã từng khám ở khoa đó
-                $sql_pat = "SELECT DISTINCT p.*,
+                $sql_pat = "SELECT p.pid, p.fname, p.lname, p.contact, p.email, p.gender, p.date_of_birth,
                             (SELECT COUNT(*) FROM medical_records m WHERE m.patient_id = p.pid) as total_records,
                             (SELECT MAX(record_date) FROM medical_records m WHERE m.patient_id = p.pid) as last_visit
                             FROM patreg p ";
                 $params = [];
 
                 if (!empty($filter_spec_id)) {
-                    $sql_pat .= " JOIN medical_records mr ON p.pid = mr.patient_id
-                                  JOIN doctb d ON mr.doctor_id = d.id
-                                  WHERE d.spec_id = ?";
+                    // Lọc theo chuyên khoa - xử lý bác sĩ trùng tên bằng cách lấy tất cả ID có cùng fullname
+                    $sql_pat .= " WHERE p.pid IN (
+                                      SELECT DISTINCT mr.patient_id 
+                                      FROM medical_records mr
+                                      INNER JOIN doctb d ON mr.doctor_id = d.id
+                                      WHERE d.spec_id = ?
+                                  )";
                     $params[] = $filter_spec_id;
                 }
                 $sql_pat .= " ORDER BY p.pid DESC";
@@ -2022,11 +2136,26 @@ if (isset($_GET['reset_schedule'])) {
 
         function viewPatientHistory(pid) {
             $('#historyModal').modal('show');
-            $('#history_content').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
-            $.post('ajax/get_medical_records.php', {
-                pid: pid
-            }, function(data) {
-                $('#history_content').html(data);
+            $('#history_content').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>');
+
+            // Gửi AJAX request để lấy dữ liệu
+            $.ajax({
+                type: 'POST',
+                url: window.location.href,
+                data: {
+                    view_patient_history: 1,
+                    history_pid: pid
+                },
+                dataType: 'json',
+                success: function(response) {
+                    $('#history_content').html(response.html);
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error:', error);
+                    console.log('Status:', status);
+                    console.log('Response:', xhr.responseText);
+                    $('#history_content').html('<p class="text-danger text-center">Lỗi tải dữ liệu: ' + error + '</p>');
+                }
             });
         }
 

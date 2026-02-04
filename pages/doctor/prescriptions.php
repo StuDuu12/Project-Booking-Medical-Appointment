@@ -162,23 +162,6 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
             overflow: hidden;
         }
 
-        .prescription-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg, #ea580c, #f97316);
-            transition: width 0.3s ease;
-        }
-
-        .prescription-item:hover {
-            box-shadow: 0 12px 48px rgba(234, 88, 12, 0.25);
-            transform: translateY(-4px) scale(1.01);
-            border-color: #fb923c;
-        }
-
         .prescription-item:hover::before {
             width: 100%;
             opacity: 0.03;
@@ -463,10 +446,10 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?php echo date('H:i', strtotime($pres['created_at'])); ?>
                                     </small>
                                 </p>
-                                <a href="view_prescription.php?id=<?php echo $pres['ID']; ?>" class="btn btn-info btn-sm mb-2 d-block">
+                                <a href="view_prescription.php?id=<?php echo $pres['pres_id']; ?>" class="btn btn-info btn-sm mb-2 d-block">
                                     <i class="fas fa-eye mr-1"></i>Xem chi tiết
                                 </a>
-                                <a href="export_prescription_pdf.php?id=<?php echo $pres['ID']; ?>" class="btn btn-medical btn-sm d-block">
+                                <a href="export_prescription_pdf.php?id=<?php echo $pres['pres_id']; ?>" class="btn btn-medical btn-sm d-block">
                                     <i class="fas fa-file-pdf mr-1"></i>Xuất PDF
                                 </a>
                             </div>
