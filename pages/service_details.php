@@ -199,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
                     <?php foreach ($reviews as $rev): ?>
                         <div class="review-card">
                             <div class="d-flex justify-content-between mb-2">
-                                <h6 class="font-weight-bold"><?php echo htmlspecialchars($rev['fname'] . ' ' . $rev['lname']); ?></h6>
+                                <h6 class="font-weight-bold"><?php echo htmlspecialchars($rev['lname'] . ' ' . $rev['fname']); ?></h6>
                                 <small class="text-muted"><?php echo date('d/m/Y', strtotime($rev['created_at'])); ?></small>
                             </div>
                             <div class="rating-stars mb-2" style="font-size: 0.8rem;">

@@ -15,7 +15,7 @@ $user_name = '';
 if (isset($_SESSION['patientSession'])) {
     $user_type = 'patient';
     $user_id = $_SESSION['patientSession'];
-    $stmt = $pdo->prepare("SELECT CONCAT(fname, ' ', lname) as name FROM patreg WHERE pid = ?");
+    $stmt = $pdo->prepare("SELECT CONCAT(lname, ' ', fname) as name FROM patreg WHERE pid = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch();
     $user_name = $user['name'] ?? 'Patient';

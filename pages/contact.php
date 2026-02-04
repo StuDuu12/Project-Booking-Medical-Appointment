@@ -356,7 +356,7 @@ $base_path = '../';
 		<div class="map-container">
 			<h2><i class="fas fa-map"></i> Vị trí trên bản đồ</h2>
 			<iframe
-				src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.3193502183947!2d106.66408931533447!3d10.786834992314842!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752ed23c0f0f83%3A0xf1234567890!2sHo%20Chi%20Minh%20City!5e0!3m2!1sen!2s!4v1234567890"
+				src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.8374169573435!2d105.80580547620408!3d21.028547880626528!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x313455b74444fbff%3A0xe1e0e0e0e0e0e0e0!2sTr%C6%B0%E1%BB%9Dng%20%C4%90%E1%BA%A1i%20h%E1%BB%8Dc%20S%C6%B0%20Ph%E1%BA%A1m%20H%C3%A0%20N%E1%BB%99i!5e0!3m2!1svi!2s!4v1706878800000"
 				allowfullscreen=""
 				loading="lazy">
 			</iframe>

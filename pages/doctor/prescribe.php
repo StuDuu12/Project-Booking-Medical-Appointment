@@ -180,29 +180,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
         .page-header {
             background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
             color: white;
-            padding: 30px;
-            border-radius: 16px;
-            margin-bottom: 30px;
+            padding: 24px;
+            border-radius: 14px;
+            margin-bottom: 24px;
             box-shadow: 0 8px 24px rgba(210, 48, 44, 0.15);
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
         }
 
         .page-header p {
-            margin: 8px 0 0 0;
+            margin: 6px 0 0 0;
             opacity: 0.95;
-            font-size: 15px;
+            font-size: 13px;
         }
 
         .patient-info-card {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            padding: 25px;
-            border-radius: 16px;
-            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 24px;
             box-shadow: 0 4px 12px rgba(251, 191, 36, 0.1);
         }
 
@@ -220,27 +220,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
             display: block;
             color: #92400e;
             font-weight: 500;
-            font-size: 12px;
+            font-size: 11px;
             margin-bottom: 3px;
         }
 
         .info-item strong {
             color: #78350f;
-            font-size: 15px;
+            font-size: 13px;
         }
 
         .form-card {
             background: white;
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 25px;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 12px rgba(8, 145, 178, 0.12);
             border-left: 5px solid #d2302c;
         }
 
         .section-title {
             color: #d2302c;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             margin-bottom: 20px;
             padding-bottom: 10px;
@@ -250,8 +250,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
         .form-label {
             font-weight: 600;
             color: #1f2937;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
         }
 
         .required-field::after {
@@ -262,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
         .form-control {
             border-radius: 8px;
             border: 1px solid #d1d5db;
-            padding: 10px 12px;
+            padding: 8px 10px;
             transition: all 0.3s;
         }
 
@@ -273,21 +273,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
 
         .medication-item {
             background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 16px;
             border: 2px solid #ddd6fe;
             position: relative;
         }
 
         .medication-number {
             position: absolute;
-            top: -12px;
-            left: 20px;
+            top: -10px;
+            left: 18px;
             background: linear-gradient(135deg, #d2302c, #ff4d4d);
             color: white;
-            width: 35px;
-            height: 35px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -322,7 +322,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
             background: linear-gradient(135deg, #d2302c, #ff4d4d);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 10px 24px;
             border-radius: 8px;
             font-weight: 600;
             transition: all 0.3s;
@@ -339,7 +339,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
             background: linear-gradient(135deg, #ffd700, #d4af37);
             color: #8b0000;
             border: none;
-            padding: 10px 24px;
+            padding: 8px 20px;
             border-radius: 8px;
             font-weight: 600;
             transition: all 0.3s;
@@ -615,6 +615,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
                 alert('Vui lòng thêm ít nhất một loại thuốc!');
             }
         });
+    </script>
+
+    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    <script type="text/javascript">
+        (function() {
+            const isMobile = window.matchMedia('(max-width: 576px)').matches;
+            const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+            const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+            const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+            const petals = [];
+            let docWidth = window.innerWidth;
+            let docHeight = window.innerHeight;
+
+            for (let i = 0; i < petalCount; i++) {
+                const size = 10 + Math.random() * 14;
+                const opacity = 0.5 + Math.random() * 0.4;
+                const rotation = Math.random() * 360;
+                const blur = Math.random() * 0.5;
+
+                const petal = {
+                    x: Math.random() * docWidth,
+                    y: Math.random() * docHeight - docHeight,
+                    dx: 0,
+                    rotation: rotation,
+                    rotationSpeed: (Math.random() - 0.5) * 1.5,
+                    amplitude: 20 + Math.random() * 35,
+                    speedX: 0.01 + Math.random() / 15,
+                    speedY: 0.3 + Math.random() * 0.6,
+                    size: size,
+                    opacity: opacity,
+                    blur: blur,
+                    element: null
+                };
+
+                const div = document.createElement('div');
+                div.id = 'cherry-petal-' + i;
+                div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                document.body.appendChild(div);
+                petal.element = div;
+                petals.push(petal);
+            }
+
+            function animate() {
+                docWidth = window.innerWidth;
+                docHeight = window.innerHeight;
+
+                petals.forEach(petal => {
+                    petal.y += petal.speedY;
+                    petal.rotation += petal.rotationSpeed;
+
+                    if (petal.y > docHeight + 80) {
+                        petal.x = Math.random() * docWidth;
+                        petal.y = -80;
+                        petal.speedX = 0.01 + Math.random() / 15;
+                        petal.speedY = 0.3 + Math.random() * 0.6;
+                        petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                    }
+
+                    petal.dx += petal.speedX;
+                    const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                    const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                    petal.element.style.top = petal.y + 'px';
+                    petal.element.style.left = swayX + 'px';
+                    petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    docWidth = window.innerWidth;
+                    docHeight = window.innerHeight;
+                }, 250);
+            });
+        })();
     </script>
 </body>
 

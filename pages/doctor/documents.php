@@ -196,10 +196,10 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .page-header {
             background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
-            padding: 40px;
-            border-radius: 24px;
+            padding: 32px;
+            border-radius: 20px;
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             box-shadow: 0 20px 60px rgba(30, 58, 138, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
@@ -232,7 +232,7 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .page-header h1 {
             margin: 0;
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 800;
             position: relative;
             z-index: 1;
@@ -247,26 +247,26 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .upload-card {
             background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-            border-radius: 24px;
-            padding: 25px;
-            margin-bottom: 20px;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
             border-left: 6px solid #3b82f6;
         }
 
         .documents-card {
             background: white;
-            border-radius: 24px;
-            padding: 25px;
+            border-radius: 20px;
+            padding: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
         }
 
         .doc-item {
             background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
             border: 2px solid #bfdbfe;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 12px;
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -295,8 +295,8 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .file-icon {
-            font-size: 40px;
-            margin-right: 18px;
+            font-size: 34px;
+            margin-right: 14px;
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
         }
 
@@ -304,13 +304,13 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
             background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
             color: white;
             border: none;
-            padding: 8px 18px;
-            border-radius: 10px;
+            padding: 6px 14px;
+            border-radius: 8px;
             font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 0.5px;
         }
 
@@ -324,11 +324,11 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         .back-link {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             color: #1e3a8a;
             background: white;
-            padding: 12px 24px;
-            border-radius: 12px;
+            padding: 10px 20px;
+            border-radius: 10px;
             text-decoration: none;
             font-weight: 700;
             margin-bottom: 20px;
@@ -349,9 +349,9 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .form-control {
-            border-radius: 10px;
+            border-radius: 8px;
             border: 2px solid #e5e7eb;
-            padding: 10px 16px;
+            padding: 8px 14px;
         }
 
         label {
@@ -621,6 +621,89 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    <script type="text/javascript">
+        (function() {
+            const isMobile = window.matchMedia('(max-width: 576px)').matches;
+            const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+            const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+            const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+            const petals = [];
+            let docWidth = window.innerWidth;
+            let docHeight = window.innerHeight;
+
+            for (let i = 0; i < petalCount; i++) {
+                const size = 10 + Math.random() * 14;
+                const opacity = 0.5 + Math.random() * 0.4;
+                const rotation = Math.random() * 360;
+                const blur = Math.random() * 0.5;
+
+                const petal = {
+                    x: Math.random() * docWidth,
+                    y: Math.random() * docHeight - docHeight,
+                    dx: 0,
+                    rotation: rotation,
+                    rotationSpeed: (Math.random() - 0.5) * 1.5,
+                    amplitude: 20 + Math.random() * 35,
+                    speedX: 0.01 + Math.random() / 15,
+                    speedY: 0.3 + Math.random() * 0.6,
+                    size: size,
+                    opacity: opacity,
+                    blur: blur,
+                    element: null
+                };
+
+                const div = document.createElement('div');
+                div.id = 'cherry-petal-' + i;
+                div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                document.body.appendChild(div);
+                petal.element = div;
+                petals.push(petal);
+            }
+
+            function animate() {
+                docWidth = window.innerWidth;
+                docHeight = window.innerHeight;
+
+                petals.forEach(petal => {
+                    petal.y += petal.speedY;
+                    petal.rotation += petal.rotationSpeed;
+
+                    if (petal.y > docHeight + 80) {
+                        petal.x = Math.random() * docWidth;
+                        petal.y = -80;
+                        petal.speedX = 0.01 + Math.random() / 15;
+                        petal.speedY = 0.3 + Math.random() * 0.6;
+                        petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                    }
+
+                    petal.dx += petal.speedX;
+                    const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                    const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                    petal.element.style.top = petal.y + 'px';
+                    petal.element.style.left = swayX + 'px';
+                    petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    docWidth = window.innerWidth;
+                    docHeight = window.innerHeight;
+                }, 250);
+            });
+        })();
+    </script>
 </body>
 
 </html>

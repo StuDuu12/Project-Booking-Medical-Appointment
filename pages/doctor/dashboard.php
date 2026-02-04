@@ -68,22 +68,22 @@ if (isset($_GET['cancel'])) {
         }
 
         .navbar-user .dropdown-item {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
             transition: all 0.2s;
             display: flex;
             align-items: center;
         }
 
         .navbar-user .dropdown-item i {
-            width: 20px;
-            font-size: 0.9rem;
+            width: 18px;
+            font-size: 0.8rem;
         }
 
         .navbar-user .dropdown-item:hover {
             background: #fff5f5;
             color: #d2302c;
-            padding-left: 1.75rem;
+            padding-left: 1.5rem;
         }
 
         .navbar-user .dropdown-item.text-danger:hover {
@@ -124,27 +124,27 @@ if (isset($_GET['cancel'])) {
         }
 
         .btn-sm {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            padding: 0.35rem 0.7rem;
             white-space: nowrap;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.2rem;
             width: 100%;
-            max-width: 1400px;
+            max-width: 1280px;
             margin: 0 auto;
         }
 
         .top-navbar {
-            padding: 1rem 1.5rem;
+            padding: 0.8rem 1.2rem;
             flex-wrap: wrap;
         }
 
         .navbar-title {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
         }
 
         .search-box-form .input-group {
@@ -155,9 +155,9 @@ if (isset($_GET['cancel'])) {
         /* Style riêng cho trang Lịch (List View) */
         .schedule-wrapper {
             background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 40px rgba(210, 48, 44, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(210, 48, 44, 0.1);
             border: 2px solid rgba(255, 215, 0, 0.2);
             overflow: hidden;
         }
@@ -192,9 +192,9 @@ if (isset($_GET['cancel'])) {
             color: white;
             font-weight: 700;
             text-align: center;
-            padding: 1.25rem 1rem !important;
-            font-size: 0.95rem;
-            letter-spacing: 0.5px;
+            padding: 1rem 0.8rem !important;
+            font-size: 0.85rem;
+            letter-spacing: 0.4px;
             text-transform: uppercase;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             border: none;
@@ -239,8 +239,8 @@ if (isset($_GET['cancel'])) {
 
         .table-schedule td {
             vertical-align: middle;
-            padding: 1.25rem 1rem !important;
-            font-size: 0.95rem;
+            padding: 1rem 0.8rem !important;
+            font-size: 0.85rem;
             border: none;
             text-align: center;
         }
@@ -255,8 +255,8 @@ if (isset($_GET['cancel'])) {
         }
 
         .schedule-badge {
-            font-size: 0.95rem;
-            padding: 6px 12px;
+            font-size: 0.85rem;
+            padding: 5px 10px;
             border-radius: 4px;
         }
 
@@ -279,12 +279,12 @@ if (isset($_GET['cancel'])) {
             display: inline-block;
             background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 50%, #ff6b6b 100%);
             color: white;
-            padding: 0.7rem 1.4rem;
-            border-radius: 25px;
-            margin: 0.4rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            margin: 0.3rem;
             font-weight: 700;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 12px rgba(210, 48, 44, 0.25);
+            font-size: 0.85rem;
+            box-shadow: 0 3px 10px rgba(210, 48, 44, 0.25);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -323,13 +323,13 @@ if (isset($_GET['cancel'])) {
 
         .schedule-card-header {
             background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
-            border-bottom: 3px solid #ffd700;
-            border-radius: 16px 16px 0 0;
-            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid #ffd700;
+            border-radius: 14px 14px 0 0;
+            padding: 1rem 1.2rem;
         }
 
         .schedule-card-header h5 {
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: #8b0000;
             margin: 0;
@@ -342,7 +342,7 @@ if (isset($_GET['cancel'])) {
         }
 
         .day-label {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: #1e293b;
             display: flex;
@@ -1146,7 +1146,7 @@ if (isset($_GET['cancel'])) {
                                     ?>
                                         <tr>
                                             <td>#<?php echo $row['pid']; ?></td>
-                                            <td><?php echo $row['fname'] . ' ' . $row['lname']; ?></td>
+                                            <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
                                             <td><?php echo $row['contact']; ?></td>
                                             <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
                                             <td><?php echo $row['apptime']; ?></td>
@@ -1187,7 +1187,7 @@ if (isset($_GET['cancel'])) {
                                     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { ?>
                                         <tr>
                                             <td>#<?php echo $row['ID']; ?></td>
-                                            <td><?php echo $row['fname'] . ' ' . $row['lname']; ?></td>
+                                            <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
                                             <td><?php echo $row['disease']; ?></td>
                                             <td><span class="badge badge-info">Chi tiết</span></td>
                                             <td><?php echo date('d/m/Y', strtotime($row['appdate'])); ?></td>
@@ -1217,7 +1217,7 @@ if (isset($_GET['cancel'])) {
                                     ?>
                                             <tr>
                                                 <td>#<?php echo $row['app_id']; ?></td>
-                                                <td><?php echo htmlspecialchars($row['fname'] . ' ' . $row['lname']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['lname'] . ' ' . $row['fname']); ?></td>
                                                 <td><?php echo htmlspecialchars($row['disease']); ?></td>
                                                 <td>
                                                     <span class="badge badge-info">
@@ -1937,6 +1937,89 @@ if (isset($_GET['cancel'])) {
                 form.submit();
             }
         }
+    </script>
+
+    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    <script type="text/javascript">
+        (function() {
+            const isMobile = window.matchMedia('(max-width: 576px)').matches;
+            const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+            const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+            const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+            const petals = [];
+            let docWidth = window.innerWidth;
+            let docHeight = window.innerHeight;
+
+            for (let i = 0; i < petalCount; i++) {
+                const size = 10 + Math.random() * 14;
+                const opacity = 0.5 + Math.random() * 0.4;
+                const rotation = Math.random() * 360;
+                const blur = Math.random() * 0.5;
+
+                const petal = {
+                    x: Math.random() * docWidth,
+                    y: Math.random() * docHeight - docHeight,
+                    dx: 0,
+                    rotation: rotation,
+                    rotationSpeed: (Math.random() - 0.5) * 1.5,
+                    amplitude: 20 + Math.random() * 35,
+                    speedX: 0.01 + Math.random() / 15,
+                    speedY: 0.3 + Math.random() * 0.6,
+                    size: size,
+                    opacity: opacity,
+                    blur: blur,
+                    element: null
+                };
+
+                const div = document.createElement('div');
+                div.id = 'cherry-petal-' + i;
+                div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                document.body.appendChild(div);
+                petal.element = div;
+                petals.push(petal);
+            }
+
+            function animate() {
+                docWidth = window.innerWidth;
+                docHeight = window.innerHeight;
+
+                petals.forEach(petal => {
+                    petal.y += petal.speedY;
+                    petal.rotation += petal.rotationSpeed;
+
+                    if (petal.y > docHeight + 80) {
+                        petal.x = Math.random() * docWidth;
+                        petal.y = -80;
+                        petal.speedX = 0.01 + Math.random() / 15;
+                        petal.speedY = 0.3 + Math.random() * 0.6;
+                        petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                    }
+
+                    petal.dx += petal.speedX;
+                    const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                    const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                    petal.element.style.top = petal.y + 'px';
+                    petal.element.style.left = swayX + 'px';
+                    petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    docWidth = window.innerWidth;
+                    docHeight = window.innerHeight;
+                }, 250);
+            });
+        })();
     </script>
     </body>
 

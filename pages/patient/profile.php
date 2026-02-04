@@ -51,8 +51,8 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 
         .profile-header {
             background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
-            padding: 3rem 0;
-            margin-bottom: 2rem;
+            padding: 2.4rem 0;
+            margin-bottom: 1.6rem;
         }
 
         .profile-avatar-section {
@@ -61,8 +61,8 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
         .profile-avatar {
-            width: 150px;
-            height: 150px;
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
             border: 5px solid white;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -71,12 +71,12 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
         .avatar-upload-btn {
-            margin-top: 1rem;
+            margin-top: 0.8rem;
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid white;
             color: white;
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -101,7 +101,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
             border: none;
             color: #6b7280;
             font-weight: 600;
-            padding: 1rem 2rem;
+            padding: 0.8rem 1.6rem;
             transition: all 0.3s;
         }
 
@@ -115,45 +115,45 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
         .tab-content {
-            padding: 2rem;
+            padding: 1.6rem;
         }
 
         .info-card {
             background: #f9fafb;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
         }
 
         .info-label {
             font-weight: 600;
             color: #6b7280;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
         }
 
         .info-value {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #111827;
             font-weight: 500;
         }
 
         .form-section-title {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #111827;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.6rem;
             border-bottom: 2px solid #e5e7eb;
         }
 
         .avatar-preview {
-            width: 200px;
-            height: 200px;
+            width: 170px;
+            height: 170px;
             border-radius: 50%;
             object-fit: cover;
             border: 4px solid #e5e7eb;
-            margin: 1rem auto;
+            margin: 0.8rem auto;
             display: block;
         }
 
@@ -246,7 +246,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                 </a>
                 <img src="<?php echo $patient['avatar'] ? '../../' . $patient['avatar'] : '../../assets/images/default-avatar.png'; ?>"
                     alt="Avatar" class="profile-avatar" id="headerAvatar">
-                <h2 class="mt-3"><?php echo htmlspecialchars($fname . ' ' . $lname); ?></h2>
+                <h2 class="mt-3"><?php echo htmlspecialchars($lname . ' ' . $fname); ?></h2>
                 <p class="mb-0"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($email); ?></p>
                 <p><i class="fas fa-phone"></i> <?php echo htmlspecialchars($contact); ?></p>
             </div>
@@ -573,6 +573,89 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                 reader.readAsDataURL(file);
             }
         }
+    </script>
+
+    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    <script type="text/javascript">
+        (function() {
+            const isMobile = window.matchMedia('(max-width: 576px)').matches;
+            const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+            const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+            const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+            const petals = [];
+            let docWidth = window.innerWidth;
+            let docHeight = window.innerHeight;
+
+            for (let i = 0; i < petalCount; i++) {
+                const size = 10 + Math.random() * 14;
+                const opacity = 0.5 + Math.random() * 0.4;
+                const rotation = Math.random() * 360;
+                const blur = Math.random() * 0.5;
+
+                const petal = {
+                    x: Math.random() * docWidth,
+                    y: Math.random() * docHeight - docHeight,
+                    dx: 0,
+                    rotation: rotation,
+                    rotationSpeed: (Math.random() - 0.5) * 1.5,
+                    amplitude: 20 + Math.random() * 35,
+                    speedX: 0.01 + Math.random() / 15,
+                    speedY: 0.3 + Math.random() * 0.6,
+                    size: size,
+                    opacity: opacity,
+                    blur: blur,
+                    element: null
+                };
+
+                const div = document.createElement('div');
+                div.id = 'cherry-petal-' + i;
+                div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                document.body.appendChild(div);
+                petal.element = div;
+                petals.push(petal);
+            }
+
+            function animate() {
+                docWidth = window.innerWidth;
+                docHeight = window.innerHeight;
+
+                petals.forEach(petal => {
+                    petal.y += petal.speedY;
+                    petal.rotation += petal.rotationSpeed;
+
+                    if (petal.y > docHeight + 80) {
+                        petal.x = Math.random() * docWidth;
+                        petal.y = -80;
+                        petal.speedX = 0.01 + Math.random() / 15;
+                        petal.speedY = 0.3 + Math.random() * 0.6;
+                        petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                    }
+
+                    petal.dx += petal.speedX;
+                    const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                    const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                    petal.element.style.top = petal.y + 'px';
+                    petal.element.style.left = swayX + 'px';
+                    petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    docWidth = window.innerWidth;
+                    docHeight = window.innerHeight;
+                }, 250);
+            });
+        })();
     </script>
 </body>
 

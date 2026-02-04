@@ -8,8 +8,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Bệnh viện DBD - Hệ thống Quản lý Bệnh viện</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+	<title>Bệnh viện D.B.D - Hệ thống Quản lý Bệnh viện</title>
 	<link rel="shortcut icon" type="image/x-icon" href="images/favicon.png" />
 
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
@@ -38,17 +38,44 @@ if (session_status() === PHP_SESSION_NONE) {
 			box-sizing: border-box;
 		}
 
+		html {
+			font-size: 16px;
+			-webkit-text-size-adjust: 100%;
+			-ms-text-size-adjust: 100%;
+		}
+
 		body {
 			font-family: 'Inter', sans-serif;
 			color: var(--text-dark);
 			overflow-x: hidden;
+			font-size: 1rem;
+			line-height: 1.6;
+		}
+
+		/* Container customization */
+		.container {
+			max-width: 1100px;
+			padding-left: 12px;
+			padding-right: 12px;
+		}
+
+		@media (min-width: 1600px) {
+			.container {
+				max-width: 1200px;
+			}
+		}
+
+		@media (min-width: 1920px) {
+			.container {
+				max-width: 1280px;
+			}
 		}
 
 		/* Navbar */
 		.navbar-custom {
 			background: white;
 			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-			padding: 1rem 0;
+			padding: 0.6rem 0;
 			position: fixed;
 			width: 100%;
 			top: 0;
@@ -56,24 +83,27 @@ if (session_status() === PHP_SESSION_NONE) {
 		}
 
 		.navbar-brand {
-			font-size: 1.75rem;
+			font-size: 1.3rem;
 			font-weight: 700;
 			background: var(--primary-gradient);
 			-webkit-background-clip: text;
 			-webkit-text-fill-color: transparent;
 			background-clip: text;
+			padding-left: 0.3rem;
 		}
 
 		.navbar-brand i {
 			background: var(--primary-gradient);
 			-webkit-background-clip: text;
 			-webkit-text-fill-color: transparent;
+			font-size: 1.3rem;
 		}
 
 		.nav-link-custom {
 			color: var(--text-dark) !important;
 			font-weight: 500;
-			margin: 0 1rem;
+			font-size: 0.875rem;
+			margin: 0 0.6rem;
 			transition: color 0.3s;
 		}
 
@@ -82,11 +112,12 @@ if (session_status() === PHP_SESSION_NONE) {
 		}
 
 		.btn-nav {
-			padding: 0.5rem 1.5rem;
-			border-radius: 8px;
+			padding: 0.4rem 1.1rem;
+			border-radius: 7px;
 			font-weight: 600;
+			font-size: 0.85rem;
 			transition: all 0.3s;
-			margin-left: 0.5rem;
+			margin-left: 0.4rem;
 		}
 
 		.btn-login {
@@ -180,33 +211,33 @@ if (session_status() === PHP_SESSION_NONE) {
 
 		.hero-content h1 {
 			font-family: 'Playfair Display', serif;
-			font-size: 3.8rem;
+			font-size: 2.8rem;
 			font-weight: 700;
-			margin-bottom: 1.5rem;
-			line-height: 1.3;
-			text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.4);
-			letter-spacing: 2px;
+			margin-bottom: 1rem;
+			line-height: 1.25;
+			text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+			letter-spacing: 1px;
 			font-style: italic;
 			color: #ffffff;
 		}
 
 		.hero-content p {
-			font-size: 1.15rem;
-			margin-bottom: 2rem;
+			font-size: 0.95rem;
+			margin-bottom: 1.5rem;
 			opacity: 0.95;
-			line-height: 1.8;
+			line-height: 1.6;
 			font-weight: 500;
-			letter-spacing: 0.3px;
-			text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+			letter-spacing: 0.2px;
+			text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 		}
 
 		.hero-buttons .btn {
-			padding: 1rem 2.5rem;
-			font-size: 1.1rem;
-			border-radius: 12px;
+			padding: 0.75rem 1.8rem;
+			font-size: 0.9rem;
+			border-radius: 8px;
 			font-weight: 600;
-			margin-right: 1rem;
-			margin-bottom: 1rem;
+			margin-right: 0.8rem;
+			margin-bottom: 0.8rem;
 		}
 
 		.btn-hero-primary {
@@ -248,40 +279,40 @@ if (session_status() === PHP_SESSION_NONE) {
 
 		/* Features Section */
 		.features-section {
-			padding: 5rem 0;
+			padding: 4rem 0;
 			background: linear-gradient(135deg, #fff5f5 0%, #ffffff 50%, #fff5f5 100%);
 		}
 
 		.section-title {
 			text-align: center;
-			margin-bottom: 4rem;
+			margin-bottom: 3rem;
 		}
 
 		.section-title h2 {
-			font-size: 2.5rem;
+			font-size: 1.9rem;
 			font-weight: 700;
-			margin-bottom: 1rem;
+			margin-bottom: 0.8rem;
 			color: #8b0000;
 			text-shadow: 1px 1px 2px rgba(139, 0, 0, 0.1);
 		}
 
 		.section-title p {
-			font-size: 1.1rem;
+			font-size: 0.95rem;
 			color: #d2302c;
 			font-weight: 500;
 		}
 
 		.feature-card {
 			background: linear-gradient(135deg, #ffffff 0%, #fffbfb 100%);
-			padding: 2.5rem;
-			border-radius: 16px;
+			padding: 1.6rem;
+			border-radius: 12px;
 			text-align: center;
 			transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 			border: 2px solid rgba(255, 215, 0, 0.2);
 			height: 100%;
 			position: relative;
 			overflow: hidden;
-			box-shadow: 0 4px 12px rgba(210, 48, 44, 0.08);
+			box-shadow: 0 3px 10px rgba(210, 48, 44, 0.08);
 		}
 
 		.feature-card::before {
@@ -308,44 +339,45 @@ if (session_status() === PHP_SESSION_NONE) {
 		}
 
 		.feature-icon {
-			width: 80px;
-			height: 80px;
+			width: 60px;
+			height: 60px;
 			background: linear-gradient(135deg, #ff6b6b 0%, #d2302c 100%);
-			border-radius: 16px;
+			border-radius: 12px;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			margin: 0 auto 1.5rem;
-			box-shadow: 0 8px 16px rgba(210, 48, 44, 0.25);
+			margin: 0 auto 1rem;
+			box-shadow: 0 6px 14px rgba(210, 48, 44, 0.25);
 			transition: all 0.35s ease;
 		}
 
 		.feature-card:hover .feature-icon {
-			transform: scale(1.1) rotate(5deg);
-			box-shadow: 0 12px 24px rgba(210, 48, 44, 0.35);
+			transform: scale(1.08) rotate(5deg);
+			box-shadow: 0 10px 20px rgba(210, 48, 44, 0.35);
 			background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
 		}
 
 		.feature-icon i {
-			font-size: 2rem;
+			font-size: 1.5rem;
 			color: white;
 		}
 
 		.feature-card h3 {
-			font-size: 1.5rem;
+			font-size: 1.15rem;
 			font-weight: 600;
-			margin-bottom: 1rem;
+			margin-bottom: 0.7rem;
 			color: #8b0000;
 		}
 
 		.feature-card p {
 			color: #666;
-			line-height: 1.6;
+			line-height: 1.55;
+			font-size: 0.875rem;
 		}
 
 		/* Stats Section */
 		.stats-section {
-			padding: 5rem 0;
+			padding: 4rem 0;
 			background: var(--primary-gradient);
 			color: white;
 			position: relative;
@@ -367,45 +399,45 @@ if (session_status() === PHP_SESSION_NONE) {
 
 		.stat-item {
 			text-align: center;
-			padding: 2rem;
+			padding: 1.5rem;
 			position: relative;
 			z-index: 1;
 		}
 
 		.stat-number {
-			font-size: 3rem;
+			font-size: 2.4rem;
 			font-weight: 800;
-			margin-bottom: 0.5rem;
-			text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			margin-bottom: 0.4rem;
+			text-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 		}
 
 		.stat-label {
-			font-size: 1.1rem;
+			font-size: 0.95rem;
 			opacity: 0.9;
 		}
 
 		/* CTA Section */
 		.cta-section {
-			padding: 5rem 0;
+			padding: 3.5rem 0;
 			background: white;
 		}
 
 		.cta-content {
 			text-align: center;
-			max-width: 700px;
+			max-width: 650px;
 			margin: 0 auto;
 		}
 
 		.cta-content h2 {
-			font-size: 2.5rem;
+			font-size: 1.9rem;
 			font-weight: 700;
-			margin-bottom: 1.5rem;
+			margin-bottom: 1rem;
 		}
 
 		.cta-content p {
-			font-size: 1.2rem;
+			font-size: 0.95rem;
 			color: var(--text-light);
-			margin-bottom: 2rem;
+			margin-bottom: 1.5rem;
 		}
 
 		/* Footer - Tet Theme */
@@ -473,6 +505,56 @@ if (session_status() === PHP_SESSION_NONE) {
 			font-weight: 500;
 		}
 
+		/* Responsive - Large screens */
+		@media (min-width: 1400px) {
+			.hero-content h1 {
+				font-size: 3rem;
+			}
+
+			.hero-content p {
+				font-size: 1rem;
+			}
+
+			.section-title h2 {
+				font-size: 2.1rem;
+			}
+
+			.feature-card h3 {
+				font-size: 1.25rem;
+			}
+		}
+
+		@media (min-width: 1600px) {
+			.hero-content h1 {
+				font-size: 3.3rem;
+			}
+
+			.navbar-brand {
+				font-size: 1.45rem;
+			}
+
+			.btn-nav {
+				padding: 0.45rem 1.25rem;
+				font-size: 0.88rem;
+			}
+		}
+
+		/* Responsive - Tablets */
+		@media (max-width: 992px) {
+			.hero-content h1 {
+				font-size: 2.4rem;
+			}
+
+			.hero-content p {
+				font-size: 0.9rem;
+			}
+
+			.section-title h2 {
+				font-size: 1.75rem;
+			}
+		}
+
+		/* Responsive - Mobile */
 		@media (max-width: 768px) {
 			.hero-content h1 {
 				font-size: 2.5rem;
@@ -488,6 +570,15 @@ if (session_status() === PHP_SESSION_NONE) {
 
 			.stat-number {
 				font-size: 2rem;
+			}
+
+			.navbar-brand {
+				font-size: 1.5rem;
+			}
+
+			.btn-nav {
+				padding: 0.5rem 1.2rem;
+				font-size: 0.95rem;
 			}
 		}
 	</style>
@@ -512,14 +603,14 @@ if (session_status() === PHP_SESSION_NONE) {
 					$welcomeName = '';
 					$isUserLoggedIn = false;
 
-					if (isset($_SESSION['patientSession'])) {
+					if (isset($_SESSION['patientSession']) && isset($_SESSION['pid'])) {
 						$isUserLoggedIn = true;
 						try {
 							$stmt = $pdo->prepare("SELECT fname, lname FROM patreg WHERE pid = ?");
-							$stmt->execute([$_SESSION['patientSession']]);
+							$stmt->execute([$_SESSION['pid']]);
 							$user = $stmt->fetch(PDO::FETCH_ASSOC);
 							if ($user) {
-								$welcomeName = trim($user['fname'] . ' ' . $user['lname']);
+								$welcomeName = trim($user['lname'] . ' ' . $user['fname']);
 							}
 						} catch (Exception $e) {
 							$welcomeName = '';
@@ -544,10 +635,46 @@ if (session_status() === PHP_SESSION_NONE) {
 					if ($isUserLoggedIn && !empty($welcomeName)): ?>
 						<h1>Chào mừng</h1>
 						<h1 style="color: #ffd700; margin: 0.5rem 0;"><?php echo htmlspecialchars($welcomeName); ?></h1>
-						<h1 style="margin-top: 0.5rem;">đến với Bệnh viện DBD</h1>
+						<h1 style="margin-top: 0.5rem;">đến với </h1>
+						<h1 class="gradient-text-yellow-orange" style="margin-top: 0.5rem; margin-bottom: 1rem; font-size: 2.8rem;"> Bệnh viện D.B.D</h1>
 					<?php else: ?>
-						<h1>Chào mừng đến với Bệnh viện DBD</h1>
+						<h1>Chào mừng</h1>
+						<h1 style="margin-top: 0.5rem;">đến với </h1>
+						<h1 class="gradient-text-yellow-orange" style="margin-top: 0.5rem; margin-bottom: 1rem; font-size: 2.8rem;"> Bệnh viện D.B.D</h1>
 					<?php endif; ?>
+
+					<style>
+						.gradient-text-yellow-orange {
+							background: linear-gradient(135deg, #ffff99 0%, #ffff66 25%, #ffeb99 50%, #ffd699 75%, #ffb366 100%);
+							-webkit-background-clip: text;
+							-webkit-text-fill-color: transparent;
+							background-clip: text;
+						}
+
+						@media (min-width: 1400px) {
+							.gradient-text-yellow-orange {
+								font-size: 3rem !important;
+							}
+						}
+
+						@media (min-width: 1600px) {
+							.gradient-text-yellow-orange {
+								font-size: 3.3rem !important;
+							}
+						}
+
+						@media (max-width: 992px) {
+							.gradient-text-yellow-orange {
+								font-size: 2.4rem !important;
+							}
+						}
+
+						@media (max-width: 768px) {
+							.gradient-text-yellow-orange {
+								font-size: 2rem !important;
+							}
+						}
+					</style>
 
 					<p style="background: rgba(255, 255, 255, 0.08); padding: 1.5rem; border-left: 4px solid #ffd700; border-radius: 8px; backdrop-filter: blur(10px);">
 						<strong>Hệ thống quản lý bệnh viện hiện đại</strong> — Đặt lịch khám nhanh chóng, tiện lợi, an toàn. Chăm sóc sức khỏe của bạn là ưu tiên hàng đầu của chúng tôi.
@@ -1130,60 +1257,86 @@ if (session_status() === PHP_SESSION_NONE) {
 		}
 	</style>
 
-	<!-- Hiệu ứng hoa đào rơi -->
+	<!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
 	<script type="text/javascript">
 		(function() {
-			const isMobile = window.matchMedia('(max-width: 767px)').matches;
-			const petalCount = isMobile ? 10 : 20;
+			const isMobile = window.matchMedia('(max-width: 576px)').matches;
+			const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+			const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
 			const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
 
 			const petals = [];
-			let docWidth = window.innerWidth - 10;
+			let docWidth = window.innerWidth;
 			let docHeight = window.innerHeight;
 
-			// Khởi tạo hoa đào
 			for (let i = 0; i < petalCount; i++) {
+				const size = 10 + Math.random() * 14;
+				const opacity = 0.5 + Math.random() * 0.4;
+				const rotation = Math.random() * 360;
+				const blur = Math.random() * 0.5;
+
 				const petal = {
 					x: Math.random() * docWidth,
-					y: Math.random() * docHeight,
+					y: Math.random() * docHeight - docHeight,
 					dx: 0,
-					amplitude: Math.random() * 20,
-					speedX: 0.02 + Math.random() / 10,
-					speedY: 0.7 + Math.random(),
+					rotation: rotation,
+					rotationSpeed: (Math.random() - 0.5) * 1.5,
+					amplitude: 20 + Math.random() * 35,
+					speedX: 0.01 + Math.random() / 15,
+					speedY: 0.3 + Math.random() * 0.6,
+					size: size,
+					opacity: opacity,
+					blur: blur,
 					element: null
 				};
 
 				const div = document.createElement('div');
-				div.id = 'petal' + i;
-				div.style.cssText = `position:fixed;z-index:${99+i};visibility:visible;pointer-events:none;width:15px;left:${petal.x}px;top:${petal.y}px`;
-				div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto">`;
+				div.id = 'cherry-petal-' + i;
+				div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+				div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
 				document.body.appendChild(div);
 				petal.element = div;
 				petals.push(petal);
 			}
 
-			// Animation loop
 			function animate() {
-				docWidth = window.innerWidth - 10;
+				docWidth = window.innerWidth;
 				docHeight = window.innerHeight;
 
 				petals.forEach(petal => {
 					petal.y += petal.speedY;
-					if (petal.y > docHeight - 50) {
-						petal.x = Math.random() * (docWidth - petal.amplitude - 30);
-						petal.y = 0;
-						petal.speedX = 0.02 + Math.random() / 10;
-						petal.speedY = 0.7 + Math.random();
+					petal.rotation += petal.rotationSpeed;
+
+					if (petal.y > docHeight + 80) {
+						petal.x = Math.random() * docWidth;
+						petal.y = -80;
+						petal.speedX = 0.01 + Math.random() / 15;
+						petal.speedY = 0.3 + Math.random() * 0.6;
+						petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
 					}
+
 					petal.dx += petal.speedX;
+					const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+					const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
 					petal.element.style.top = petal.y + 'px';
-					petal.element.style.left = (petal.x + petal.amplitude * Math.sin(petal.dx)) + 'px';
+					petal.element.style.left = swayX + 'px';
+					petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
 				});
 
 				requestAnimationFrame(animate);
 			}
 
 			animate();
+
+			let resizeTimer;
+			window.addEventListener('resize', () => {
+				clearTimeout(resizeTimer);
+				resizeTimer = setTimeout(() => {
+					docWidth = window.innerWidth;
+					docHeight = window.innerHeight;
+				}, 250);
+			});
 		})();
 	</script>
 

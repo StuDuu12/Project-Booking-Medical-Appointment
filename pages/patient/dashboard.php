@@ -272,7 +272,7 @@ function generate_bill()
         $output .= '
     <label> Mã bệnh nhân : </label>' . $row["pid"] . '<br/><br/>
     <label> Mã lịch hẹn : </label>' . $row["ID"] . '<br/><br/>
-    <label> Tên bệnh nhân : </label>' . $row["fname"] . ' ' . $row["lname"] . '<br/><br/>
+    <label> Tên bệnh nhân : </label>' . $row["lname"] . ' ' . $row["fname"] . '<br/><br/>
     <label> Bác sĩ khám : </label>' . $row["doctor"] . '<br/><br/>
     <label> Ngày khám : </label>' . date('d/m/Y', strtotime($row["appdate"])) . '<br/><br/>
     <label> Giờ khám : </label>' . date('H:i', strtotime($row["apptime"])) . '<br/><br/>
@@ -354,22 +354,22 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .navbar-user .dropdown-item {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
             transition: all 0.2s;
             display: flex;
             align-items: center;
         }
 
         .navbar-user .dropdown-item i {
-            width: 20px;
-            font-size: 0.9rem;
+            width: 18px;
+            font-size: 0.8rem;
         }
 
         .navbar-user .dropdown-item:hover {
             background: #fff5f5;
             color: #d2302c;
-            padding-left: 1.75rem;
+            padding-left: 1.5rem;
         }
 
         .navbar-user .dropdown-item.text-danger:hover {
@@ -391,20 +391,20 @@ if (isset($_GET["generate_bill"])) {
         /* Time Slots Grid - Cinema Style */
         .specializations-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.2rem;
         }
 
         .spec-card {
             background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 14px;
+            padding: 1.2rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 3px solid transparent;
-            box-shadow: 0 4px 12px rgba(210, 48, 44, 0.1);
+            border: 2px solid transparent;
+            box-shadow: 0 3px 10px rgba(210, 48, 44, 0.1);
         }
 
         .spec-card:hover {
@@ -420,15 +420,15 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .spec-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1rem;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 0.8rem;
             background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.2));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.75rem;
             color: var(--medical-blue);
         }
 
@@ -438,31 +438,31 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .spec-name {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
 
         .spec-count {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             opacity: 0.8;
         }
 
         .doctors-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.2rem;
         }
 
         .doctor-card {
             background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 14px;
+            padding: 1.2rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 3px solid transparent;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.1);
+            border: 2px solid transparent;
+            box-shadow: 0 3px 10px rgba(8, 145, 178, 0.1);
         }
 
         .doctor-card:hover {
@@ -477,57 +477,57 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .doctor-avatar {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1rem;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 0.8rem;
             background: linear-gradient(135deg, var(--medical-blue), var(--medical-teal));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.75rem;
             color: white;
             font-weight: 700;
         }
 
         .doctor-name {
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             font-weight: 700;
             text-align: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             color: var(--medical-dark);
         }
 
         .doctor-spec {
             text-align: center;
             color: var(--medical-blue);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
         }
 
         .doctor-fee {
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--health-green);
         }
 
         .time-slots-container {
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         .slots-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 0.8rem;
+            margin-top: 1.2rem;
         }
 
         .time-slot {
             background: white;
             border: 2px solid var(--steel-gray);
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 10px;
+            padding: 0.8rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -573,35 +573,35 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .slot-time {
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: block;
         }
 
         .slot-status {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             display: block;
-            margin-top: 0.5rem;
+            margin-top: 0.4rem;
             opacity: 0.8;
         }
 
         .booking-summary {
             background: linear-gradient(135deg, rgba(8, 145, 178, 0.05), rgba(6, 182, 212, 0.1));
-            border-radius: 16px;
-            padding: 2rem;
-            margin-top: 2rem;
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
             border: 2px solid var(--medical-blue-light);
         }
 
         .summary-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.75rem 0;
+            padding: 0.6rem 0;
             border-bottom: 1px solid rgba(8, 145, 178, 0.1);
         }
 
         .summary-item:last-child {
             border-bottom: none;
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: var(--medical-blue);
         }
@@ -609,7 +609,7 @@ if (isset($_GET["generate_bill"])) {
         .step-indicator {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             position: relative;
         }
 
@@ -620,17 +620,17 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .step-number {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 0.5rem;
+            width: 45px;
+            height: 45px;
+            margin: 0 auto 0.4rem;
             background: white;
-            border: 3px solid var(--steel-gray);
+            border: 2px solid var(--steel-gray);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             color: var(--steel-gray);
             position: relative;
             z-index: 2;
@@ -650,17 +650,17 @@ if (isset($_GET["generate_bill"])) {
         }
 
         .step-label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--charcoal);
         }
 
         .step-line {
             position: absolute;
-            top: 25px;
+            top: 22px;
             left: 50%;
             right: -50%;
-            height: 3px;
+            height: 2px;
             background: var(--steel-gray);
             z-index: 1;
         }
@@ -681,14 +681,14 @@ if (isset($_GET["generate_bill"])) {
 
         .empty-state {
             text-align: center;
-            padding: 3rem;
+            padding: 2.5rem;
             color: var(--charcoal);
         }
 
         .empty-state i {
-            font-size: 4rem;
+            font-size: 3.5rem;
             color: var(--steel-gray);
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
         }
 
         @media (max-width: 768px) {
@@ -849,7 +849,7 @@ if (isset($_GET["generate_bill"])) {
                                 <?php echo strtoupper(substr($fname, 0, 1)); ?>
                             </div>
                             <div class="navbar-user-info">
-                                <div class="navbar-user-name"><?php echo $fname . ' ' . $lname; ?></div>
+                                <div class="navbar-user-name"><?php echo $lname . ' ' . $fname; ?></div>
                                 <div class="navbar-user-role">Bệnh nhân</div>
                             </div>
                         </a>
@@ -1451,7 +1451,7 @@ if (isset($_GET["generate_bill"])) {
                                     <?php echo strtoupper(substr($fname, 0, 1) . substr($lname, 0, 1)); ?>
                                 </div>
                                 <div>
-                                    <h3 style="font-size: 1.5rem; margin: 0; font-weight: 700;"><?php echo htmlspecialchars($fname . ' ' . $lname); ?></h3>
+                                    <h3 style="font-size: 1.5rem; margin: 0; font-weight: 700;"><?php echo htmlspecialchars($lname . ' ' . $fname); ?></h3>
                                     <p style="margin: 0.5rem 0 0 0; opacity: 0.9;"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($email); ?></p>
                                     <p style="margin: 0.25rem 0 0 0; opacity: 0.9;"><i class="fas fa-phone"></i> <?php echo htmlspecialchars($contact); ?></p>
                                 </div>
@@ -1572,6 +1572,89 @@ if (isset($_GET["generate_bill"])) {
                         block: 'nearest'
                     });
                 }
+            </script>
+
+            <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+            <script type="text/javascript">
+                (function() {
+                    const isMobile = window.matchMedia('(max-width: 576px)').matches;
+                    const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+                    const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+                    const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+                    const petals = [];
+                    let docWidth = window.innerWidth;
+                    let docHeight = window.innerHeight;
+
+                    for (let i = 0; i < petalCount; i++) {
+                        const size = 10 + Math.random() * 14;
+                        const opacity = 0.5 + Math.random() * 0.4;
+                        const rotation = Math.random() * 360;
+                        const blur = Math.random() * 0.5;
+
+                        const petal = {
+                            x: Math.random() * docWidth,
+                            y: Math.random() * docHeight - docHeight,
+                            dx: 0,
+                            rotation: rotation,
+                            rotationSpeed: (Math.random() - 0.5) * 1.5,
+                            amplitude: 20 + Math.random() * 35,
+                            speedX: 0.01 + Math.random() / 15,
+                            speedY: 0.3 + Math.random() * 0.6,
+                            size: size,
+                            opacity: opacity,
+                            blur: blur,
+                            element: null
+                        };
+
+                        const div = document.createElement('div');
+                        div.id = 'cherry-petal-' + i;
+                        div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                        div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                        document.body.appendChild(div);
+                        petal.element = div;
+                        petals.push(petal);
+                    }
+
+                    function animate() {
+                        docWidth = window.innerWidth;
+                        docHeight = window.innerHeight;
+
+                        petals.forEach(petal => {
+                            petal.y += petal.speedY;
+                            petal.rotation += petal.rotationSpeed;
+
+                            if (petal.y > docHeight + 80) {
+                                petal.x = Math.random() * docWidth;
+                                petal.y = -80;
+                                petal.speedX = 0.01 + Math.random() / 15;
+                                petal.speedY = 0.3 + Math.random() * 0.6;
+                                petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                            }
+
+                            petal.dx += petal.speedX;
+                            const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                            const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                            petal.element.style.top = petal.y + 'px';
+                            petal.element.style.left = swayX + 'px';
+                            petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                        });
+
+                        requestAnimationFrame(animate);
+                    }
+
+                    animate();
+
+                    let resizeTimer;
+                    window.addEventListener('resize', () => {
+                        clearTimeout(resizeTimer);
+                        resizeTimer = setTimeout(() => {
+                            docWidth = window.innerWidth;
+                            docHeight = window.innerHeight;
+                        }, 250);
+                    });
+                })();
             </script>
 </body>
 

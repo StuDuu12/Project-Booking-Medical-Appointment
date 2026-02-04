@@ -73,8 +73,8 @@ try {
         .medical-record-card {
             background: white;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
             border-left: 4px solid #ffd700;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
@@ -88,13 +88,13 @@ try {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
         }
 
         .record-date {
-            font-size: 14px;
+            font-size: 13px;
             color: #6b7280;
             font-weight: 500;
         }
@@ -144,7 +144,7 @@ try {
         }
 
         .record-item-value {
-            font-size: 15px;
+            font-size: 13px;
             color: #1f2937;
             font-weight: 500;
         }
@@ -158,7 +158,7 @@ try {
 
         .vital-card {
             background: #f0fdf4;
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
             border: 1px solid #bbf7d0;
         }
@@ -171,7 +171,7 @@ try {
         }
 
         .vital-value {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: #065f46;
             margin-top: 5px;
@@ -194,29 +194,29 @@ try {
         .page-header {
             background: linear-gradient(135deg, #d2302c 0%, #ff4d4d 100%);
             color: white;
-            padding: 30px;
+            padding: 24px;
             border-radius: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
         }
 
         .page-header p {
-            margin: 5px 0 0 0;
+            margin: 4px 0 0 0;
             opacity: 0.9;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .patient-info-card {
             background: white;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
+            padding: 16px;
+            margin-bottom: 24px;
             border-left: 4px solid #d2302c;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
@@ -242,7 +242,7 @@ try {
         }
 
         .info-value {
-            font-size: 16px;
+            font-size: 14px;
             color: #1f2937;
             font-weight: 600;
         }
@@ -265,9 +265,9 @@ try {
 
         .filter-section {
             background: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
@@ -279,10 +279,10 @@ try {
         }
 
         .filter-input {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .filter-input:focus {
@@ -292,7 +292,7 @@ try {
         }
 
         .btn-filter {
-            padding: 8px 16px;
+            padding: 6px 14px;
             background-color: #d2302c;
             color: white;
             border: none;
@@ -458,7 +458,7 @@ try {
                 <div class="patient-info-grid">
                     <div class="info-item">
                         <div class="info-label">Họ và tên</div>
-                        <div class="info-value"><?php echo $patient_profile['fname'] . ' ' . $patient_profile['lname']; ?></div>
+                        <div class="info-value"><?php echo $patient_profile['lname'] . ' ' . $patient_profile['fname']; ?></div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Email</div>
@@ -636,6 +636,89 @@ try {
         }
 
         document.getElementById('searchInput').addEventListener('keyup', filterRecords);
+    </script>
+
+    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    <script type="text/javascript">
+        (function() {
+            const isMobile = window.matchMedia('(max-width: 576px)').matches;
+            const isTablet = window.matchMedia('(min-width: 577px) and (max-width: 992px)').matches;
+            const petalCount = isMobile ? 15 : (isTablet ? 30 : 50);
+            const petalImage = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizrrtX-KQtKY8e8pxCHjLROT5pYW7sVkUpET9HHpW8QO-PnoIRKVsvRDxM6shrE4Q-44Oh9teSGK1SApaZ1OJvhR4z7ENgKSJOLWfsdKw9jPszAa2HqaE6W8ohyGHRvff6TgKXEUjnn73LLLp3FHbtMTJnIkPxPhujWwG5ZsFgW7ctQ0zrR5KKSqlewg/s16000/hoadao-anonyviet.com.png';
+
+            const petals = [];
+            let docWidth = window.innerWidth;
+            let docHeight = window.innerHeight;
+
+            for (let i = 0; i < petalCount; i++) {
+                const size = 10 + Math.random() * 14;
+                const opacity = 0.5 + Math.random() * 0.4;
+                const rotation = Math.random() * 360;
+                const blur = Math.random() * 0.5;
+
+                const petal = {
+                    x: Math.random() * docWidth,
+                    y: Math.random() * docHeight - docHeight,
+                    dx: 0,
+                    rotation: rotation,
+                    rotationSpeed: (Math.random() - 0.5) * 1.5,
+                    amplitude: 20 + Math.random() * 35,
+                    speedX: 0.01 + Math.random() / 15,
+                    speedY: 0.3 + Math.random() * 0.6,
+                    size: size,
+                    opacity: opacity,
+                    blur: blur,
+                    element: null
+                };
+
+                const div = document.createElement('div');
+                div.id = 'cherry-petal-' + i;
+                div.style.cssText = `position:fixed;z-index:9998;visibility:visible;pointer-events:none;width:${size}px;left:${petal.x}px;top:${petal.y}px;opacity:${opacity};transition:transform 0.15s ease-out;will-change:transform,top,left`;
+                div.innerHTML = `<img src="${petalImage}" alt="Hoa đào" style="width:100%;height:auto;transform:rotate(${rotation}deg);filter:drop-shadow(2px 2px 4px rgba(255,105,180,0.4)) blur(${blur}px) brightness(1.1);">`;
+                document.body.appendChild(div);
+                petal.element = div;
+                petals.push(petal);
+            }
+
+            function animate() {
+                docWidth = window.innerWidth;
+                docHeight = window.innerHeight;
+
+                petals.forEach(petal => {
+                    petal.y += petal.speedY;
+                    petal.rotation += petal.rotationSpeed;
+
+                    if (petal.y > docHeight + 80) {
+                        petal.x = Math.random() * docWidth;
+                        petal.y = -80;
+                        petal.speedX = 0.01 + Math.random() / 15;
+                        petal.speedY = 0.3 + Math.random() * 0.6;
+                        petal.rotationSpeed = (Math.random() - 0.5) * 1.5;
+                    }
+
+                    petal.dx += petal.speedX;
+                    const swayX = petal.x + petal.amplitude * Math.sin(petal.dx);
+                    const scaleEffect = 0.95 + Math.sin(petal.dx * 2) * 0.05;
+
+                    petal.element.style.top = petal.y + 'px';
+                    petal.element.style.left = swayX + 'px';
+                    petal.element.querySelector('img').style.transform = `rotate(${petal.rotation}deg) scale(${scaleEffect})`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    docWidth = window.innerWidth;
+                    docHeight = window.innerHeight;
+                }, 250);
+            });
+        })();
     </script>
 </body>
 

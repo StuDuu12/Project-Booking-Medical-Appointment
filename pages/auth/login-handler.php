@@ -38,7 +38,7 @@ if (isset($_POST['login_submit'])) {
             if (password_verify($password, $row['password']) || $row['password'] === $password) {
                 unset($_SESSION['login_data'], $_SESSION['login_errors']);
                 $_SESSION['pid'] = $row['pid'];
-                $_SESSION['username'] = $row['fname'] . " " . $row['lname'];
+                $_SESSION['username'] = $row['lname'] . " " . $row['fname'];
                 $_SESSION['fname'] = $row['fname'];
                 $_SESSION['lname'] = $row['lname'];
                 $_SESSION['gender'] = $row['gender'];

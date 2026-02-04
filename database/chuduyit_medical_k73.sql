@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 28, 2026 at 04:04 PM
+-- Generation Time: Feb 04, 2026 at 09:13 AM
 -- Server version: 10.11.11-MariaDB-cll-lve
 -- PHP Version: 8.3.23
 
@@ -16,21 +16,17 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-SET FOREIGN_KEY_CHECKS = 0;
 
 --
 -- Database: `chuduyit_medical_k73`
 --
-
-CREATE DATABASE IF NOT EXISTS `chuduyit_medical_k73` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `chuduyit_medical_k73`;
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `admintb`
 --
-DROP TABLE IF EXISTS `admintb`;
+
 CREATE TABLE `admintb` (
   `username` varchar(50) NOT NULL,
   `password` varchar(30) NOT NULL
@@ -48,7 +44,7 @@ INSERT INTO `admintb` (`username`, `password`) VALUES
 --
 -- Table structure for table `appointmenttb`
 --
-DROP TABLE IF EXISTS `appointmenttb`;
+
 CREATE TABLE `appointmenttb` (
   `ID` int(11) NOT NULL,
   `pid` int(11) NOT NULL,
@@ -89,7 +85,7 @@ INSERT INTO `appointmenttb` (`ID`, `pid`, `fname`, `lname`, `gender`, `email`, `
 --
 -- Table structure for table `contact`
 --
-DROP TABLE IF EXISTS `contact`;
+
 CREATE TABLE `contact` (
   `name` varchar(30) NOT NULL,
   `email` text NOT NULL,
@@ -114,7 +110,7 @@ INSERT INTO `contact` (`name`, `email`, `contact`, `message`) VALUES
 --
 -- Table structure for table `doctb`
 --
-DROP TABLE IF EXISTS `doctb`;
+
 CREATE TABLE `doctb` (
   `id` int(11) NOT NULL,
   `username` varchar(255) NOT NULL,
@@ -173,49 +169,123 @@ INSERT INTO `doctb` (`id`, `username`, `password`, `fullname`, `email`, `spec`, 
 (32, 'ho.van', '123', 'Hồ Thị Vân', 'ho.van@hospital.vn', 'Ophthalmology', 32, 280000, '0901234584', NULL, 'Bác sĩ mắt, điều trị cận thị và tật khúc xạ', 9, 1, '2026-01-14 18:04:43', NULL, 0),
 (33, 'nguyen.tung', '123', 'Nguyễn Thanh Tùng', 'nguyen.tung@hospital.vn', 'Internal_Medicine', 37, 200000, '0901234587', NULL, 'Bác sĩ nội khoa tổng quát, kinh nghiệm 20 năm', 20, 1, '2026-01-14 18:04:43', NULL, 0),
 (34, 'tran.huong', '123', 'Trần Thị Hương', 'tran.huong@hospital.vn', 'Internal_Medicine', 37, 220000, '0901234588', NULL, 'Bác sĩ đa khoa, khám sức khỏe tổng quát', 15, 1, '2026-01-14 18:04:43', NULL, 0),
-(35, 'le.hai', '123', 'Lê Văn Hải', 'le.hai@hospital.vn', 'Allergy_Immunology', 6, 320000, '0901234601', NULL, 'Chuyên gia dị ứng, điều trị hen phế quản và viêm mũi dị ứng', 14, 1, '2026-01-14 18:04:43', NULL, 0),
-(36, 'pham.thu', '123', 'Phạm Thị Thu', 'pham.thu@hospital.vn', 'Allergy_Immunology', 6, 300000, '0901234602', NULL, 'Bác sĩ dị ứng, test và điều trị dị ứng thực phẩm', 11, 1, '2026-01-14 18:04:43', NULL, 0),
-(37, 'vu.tuan', '123', 'Vũ Anh Tuấn', 'vu.tuan@hospital.vn', 'Anesthesiology', 7, 350000, '0901234603', NULL, 'Bác sĩ gây mê hồi sức, chuyên gây mê ngoài màng cứng', 15, 1, '2026-01-14 18:04:43', NULL, 0),
-(38, 'dang.hoa', '123', 'Đặng Thị Hoa', 'dang.hoa@hospital.vn', 'Anesthesiology', 7, 330000, '0901234604', NULL, 'Bác sĩ gây mê, kiểm soát đau sau phẫu thuật', 12, 1, '2026-01-14 18:04:43', NULL, 0),
-(39, 'hoang.khang', '123', 'Hoàng Minh Khang', 'hoang.khang@hospital.vn', 'Geriatrics', 11, 280000, '0901234605', NULL, 'Bác sĩ lão khoa, chăm sóc người cao tuổi mắc nhiều bệnh mãn tính', 16, 1, '2026-01-14 18:04:43', NULL, 0),
-(40, 'ngo.phuong', '123', 'Ngô Thị Phương Nga', 'ngo.phuong@hospital.vn', 'Geriatrics', 11, 260000, '0901234606', NULL, 'Bác sĩ lão khoa, phục hồi chức năng sau đột quỵ', 13, 1, '2026-01-14 18:04:43', NULL, 0),
-(41, 'ly.thanh', '123', 'Lý Quốc Thanh', 'ly.thanh@hospital.vn', 'Emergency_Medicine', 13, 400000, '0901234607', NULL, 'Bác sĩ cấp cứu, hồi sức tim phổi', 17, 1, '2026-01-14 18:04:43', NULL, 0),
-(42, 'mai.lan', '123', 'Mai Thị Lan Anh', 'mai.lan@hospital.vn', 'Emergency_Medicine', 13, 380000, '0901234608', NULL, 'Bác sĩ cấp cứu, xử lý chấn thương đa khoa', 14, 1, '2026-01-14 18:04:43', NULL, 0),
-(43, 'phan.cuong', '123', 'Phan Văn Cường', 'phan.cuong@hospital.vn', 'General_Surgery', 14, 450000, '0901234609', NULL, 'Phẫu thuật viên tổng quát, mổ nội soi ổ bụng', 18, 1, '2026-01-14 18:04:43', NULL, 0),
-(44, 'cao.huyen', '123', 'Cao Thị Huyền', 'cao.huyen@hospital.vn', 'General_Surgery', 14, 420000, '0901234610', NULL, 'Bác sĩ ngoại khoa, phẫu thuật tuyến giáp và vú', 15, 1, '2026-01-14 18:04:43', NULL, 0),
-(45, 'dinh.quang', '123', 'Đinh Quang Dũng', 'dinh.quang@hospital.vn', 'Preventive_Medicine', 15, 200000, '0901234611', NULL, 'Bác sĩ y học dự phòng, tư vấn dinh dưỡng và lối sống', 10, 1, '2026-01-14 18:04:43', NULL, 0),
-(46, 'to.my', '123', 'Tô Thị Mỹ Linh', 'to.my@hospital.vn', 'Preventive_Medicine', 15, 220000, '0901234612', NULL, 'Bác sĩ y học dự phòng, tiêm chủng và tư vấn sức khỏe', 8, 1, '2026-01-14 18:04:43', NULL, 0),
-(47, 'lam.duy', '123', 'Lâm Văn Duy', 'lam.duy@hospital.vn', 'Infectious_Disease', 17, 350000, '0901234613', NULL, 'Bác sĩ truyền nhiễm, điều trị sốt xuất huyết và sốt rét', 14, 1, '2026-01-14 18:04:43', NULL, 0),
-(48, 'vo.chi', '123', 'Võ Thị Chi', 'vo.chi@hospital.vn', 'Infectious_Disease', 17, 330000, '0901234614', NULL, 'Bác sĩ truyền nhiễm, HIV/AIDS và viêm gan virus', 12, 1, '2026-01-14 18:04:43', NULL, 0),
-(49, 'vu.bao', '123', 'Vũ Quốc Bảo', 'vu.bao@hospital.vn', 'Nephrology', 18, 380000, '0901234615', NULL, 'Chuyên gia thận học, lọc máu và ghép thận', 16, 1, '2026-01-14 18:04:43', NULL, 0),
-(50, 'dang.thuy', '123', 'Đặng Thị Thúy Vân', 'dang.thuy@hospital.vn', 'Nephrology', 18, 360000, '0901234616', NULL, 'Bác sĩ nội thận, sỏi thận và viêm thận', 13, 1, '2026-01-14 18:04:43', NULL, 0),
-(51, 'ly.tan', '123', 'Lý Văn Tấn', 'ly.tan@hospital.vn', 'Pediatrics', 1, 260000, '0901234617', NULL, 'Bác sĩ nhi khoa, chuyên bệnh tiêu hóa trẻ em', 11, 1, '2026-01-14 18:04:43', NULL, 0),
-(52, 'mai.anh', '123', 'Mai Thị Ánh Tuyết', 'mai.anh@hospital.vn', 'Obstetrics_Gynecology', 2, 320000, '0901234618', NULL, 'Bác sĩ sản khoa, siêu âm thai và tầm soát', 10, 1, '2026-01-14 18:04:43', NULL, 0),
-(53, 'phan.duc', '123', 'Phan Minh Đức', 'phan.duc@hospital.vn', 'Dermatology', 3, 300000, '0901234619', NULL, 'Bác sĩ da liễu, laser và điều trị sẹo', 9, 1, '2026-01-14 18:04:43', NULL, 0),
-(54, 'cao.linh', '123', 'Cao Thị Linh Chi', 'cao.linh@hospital.vn', 'Gastroenterology', 4, 310000, '0901234620', NULL, 'Bác sĩ tiêu hóa, nội soi dạ dày và đại tràng', 11, 1, '2026-01-14 18:04:43', NULL, 0),
-(55, 'dinh.hung', '123', 'Đinh Việt Hùng', 'dinh.hung@hospital.vn', 'Rheumatology', 5, 320000, '0901234621', NULL, 'Bác sĩ cơ xương khớp, điều trị thoái hóa cột sống', 12, 1, '2026-01-14 18:04:43', NULL, 0),
-(56, 'to.nhi', '123', 'Tô Thị Như Nhi', 'to.nhi@hospital.vn', 'ENT', 8, 270000, '0901234622', NULL, 'Bác sĩ TMH, điều trị viêm tai giữa và ngạt mũi', 9, 1, '2026-01-14 18:04:43', NULL, 0),
-(57, 'lam.son', '123', 'Lâm Quốc Sơn', 'lam.son@hospital.vn', 'Oncology', 9, 480000, '0901234623', NULL, 'Bác sĩ ung bướu, phẫu thuật cắt bỏ khối u', 16, 1, '2026-01-14 18:04:43', NULL, 0),
-(58, 'vo.hanh', '123', 'Võ Thị Hạnh Phúc', 'vo.hanh@hospital.vn', 'Cardiology', 10, 330000, '0901234624', NULL, 'Bác sĩ tim mạch, can thiệp mạch vành', 14, 1, '2026-01-14 18:04:43', NULL, 0),
-(59, 'vu.phuc', '123', 'Vũ Minh Phúc', 'vu.phuc@hospital.vn', 'Orthopedics', 12, 370000, '0901234625', NULL, 'Bác sĩ chỉnh hình, phẫu thuật cột sống', 13, 1, '2026-01-14 18:04:43', NULL, 0),
-(60, 'dang.hanh', '123', 'Đặng Thị Hạnh', 'dang.hanh@hospital.vn', 'Dentistry', 16, 260000, '0901234626', NULL, 'Bác sĩ nha khoa, chỉnh nha và niềng răng', 10, 1, '2026-01-14 18:04:43', NULL, 0),
-(61, 'nguyen.khanh', '123', 'Nguyễn Thị Khánh Linh', 'nguyen.khanh@hospital.vn', 'Allergy_Immunology', 6, 310000, '0901234627', NULL, 'Bác sĩ dị ứng - miễn dịch, chuyên điều trị viêm da cơ địa', 10, 1, '2026-01-14 18:04:43', NULL, 0),
-(62, 'tran.binh', '123', 'Trần Văn Bình', 'tran.binh2@hospital.vn', 'Anesthesiology', 7, 340000, '0901234628', NULL, 'Bác sĩ gây mê, chuyên gây tê vùng và giảm đau', 13, 1, '2026-01-14 18:04:43', NULL, 0),
-(63, 'le.phuong', '123', 'Lê Thị Phương Anh', 'le.phuong@hospital.vn', 'Geriatrics', 11, 270000, '0901234629', NULL, 'Bác sĩ lão khoa, chuyên điều trị sa sút trí tuệ và Parkinson', 14, 1, '2026-01-14 18:04:43', NULL, 0),
-(64, 'pham.quoc', '123', 'Phạm Quốc Huy', 'pham.quoc@hospital.vn', 'Emergency_Medicine', 13, 390000, '0901234630', NULL, 'Bác sĩ cấp cứu, chuyên xử lý ngộ độc và sốc', 15, 1, '2026-01-14 18:04:43', NULL, 0),
-(65, 'vu.minh', '123', 'Vũ Minh Tuấn', 'vu.minh@hospital.vn', 'General_Surgery', 14, 430000, '0901234631', NULL, 'Phẫu thuật viên, chuyên phẫu thuật ruột thừa và sỏi mật', 14, 1, '2026-01-14 18:04:43', NULL, 0),
-(66, 'dang.mai', '123', 'Đặng Thị Mai Linh', 'dang.mai@hospital.vn', 'Preventive_Medicine', 15, 210000, '0901234632', NULL, 'Bác sĩ y học dự phòng, tư vấn phòng bệnh không lây', 9, 1, '2026-01-14 18:04:43', NULL, 0),
-(67, 'hoang.nam', '123', 'Hoàng Văn Nam', 'hoang.nam@hospital.vn', 'Infectious_Disease', 17, 340000, '0901234633', NULL, 'Bác sĩ truyền nhiễm, điều trị lao và bệnh nhiệt đới', 13, 1, '2026-01-14 18:04:43', NULL, 0),
-(68, 'ngo.lan', '123', 'Ngô Thị Lan Hương', 'ngo.lan@hospital.vn', 'Nephrology', 18, 370000, '0901234634', NULL, 'Bác sĩ nội thận, điều trị suy thận mãn và thận hư', 12, 1, '2026-01-14 18:04:43', NULL, 0),
-(69, 'ly.hong', '123', 'Lý Thị Hồng Nhung', 'ly.hong@hospital.vn', 'Endocrinology', 19, 330000, '0901234635', NULL, 'Bác sĩ nội tiết, chuyên bệnh tuyến yên và tuyến thượng thận', 12, 1, '2026-01-14 18:04:43', NULL, 0),
-(70, 'mai.tung', '123', 'Mai Văn Tùng', 'mai.tung@hospital.vn', 'Psychiatry', 20, 380000, '0901234636', NULL, 'Bác sĩ tâm thần, điều trị rối loạn lưỡng cực và tâm thần phân liệt', 13, 1, '2026-01-14 18:04:43', NULL, 0);
+(35, 'le.hai', '123', 'Lê Văn Hải', 'le.hai@hospital.vn', 'Allergy_Immunology', 6, 320000, '0901234601', NULL, 'Chuyên gia dị ứng, điều trị hen phế quản và viêm mũi dị ứng', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(36, 'pham.thu', '123', 'Phạm Thị Thu', 'pham.thu@hospital.vn', 'Allergy_Immunology', 6, 300000, '0901234602', NULL, 'Bác sĩ dị ứng, test và điều trị dị ứng thực phẩm', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(37, 'vu.tuan', '123', 'Vũ Anh Tuấn', 'vu.tuan@hospital.vn', 'Anesthesiology', 7, 350000, '0901234603', NULL, 'Bác sĩ gây mê hồi sức, chuyên gây mê ngoài màng cứng', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(38, 'dang.hoa', '123', 'Đặng Thị Hoa', 'dang.hoa@hospital.vn', 'Anesthesiology', 7, 330000, '0901234604', NULL, 'Bác sĩ gây mê, kiểm soát đau sau phẫu thuật', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(39, 'hoang.khang', '123', 'Hoàng Minh Khang', 'hoang.khang@hospital.vn', 'Geriatrics', 11, 280000, '0901234605', NULL, 'Bác sĩ lão khoa, chăm sóc người cao tuổi mắc nhiều bệnh mãn tính', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(40, 'ngo.phuong', '123', 'Ngô Thị Phương Nga', 'ngo.phuong@hospital.vn', 'Geriatrics', 11, 260000, '0901234606', NULL, 'Bác sĩ lão khoa, phục hồi chức năng sau đột quỵ', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(41, 'ly.thanh', '123', 'Lý Quốc Thanh', 'ly.thanh@hospital.vn', 'Emergency_Medicine', 13, 400000, '0901234607', NULL, 'Bác sĩ cấp cứu, hồi sức tim phổi', 17, 1, '2026-01-14 11:04:43', NULL, 0),
+(42, 'mai.lan', '123', 'Mai Thị Lan Anh', 'mai.lan@hospital.vn', 'Emergency_Medicine', 13, 380000, '0901234608', NULL, 'Bác sĩ cấp cứu, xử lý chấn thương đa khoa', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(43, 'phan.cuong', '123', 'Phan Văn Cường', 'phan.cuong@hospital.vn', 'General_Surgery', 14, 450000, '0901234609', NULL, 'Phẫu thuật viên tổng quát, mổ nội soi ổ bụng', 18, 1, '2026-01-14 11:04:43', NULL, 0),
+(44, 'cao.huyen', '123', 'Cao Thị Huyền', 'cao.huyen@hospital.vn', 'General_Surgery', 14, 420000, '0901234610', NULL, 'Bác sĩ ngoại khoa, phẫu thuật tuyến giáp và vú', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(45, 'dinh.quang', '123', 'Đinh Quang Dũng', 'dinh.quang@hospital.vn', 'Preventive_Medicine', 15, 200000, '0901234611', NULL, 'Bác sĩ y học dự phòng, tư vấn dinh dưỡng và lối sống', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(46, 'to.my', '123', 'Tô Thị Mỹ Linh', 'to.my@hospital.vn', 'Preventive_Medicine', 15, 220000, '0901234612', NULL, 'Bác sĩ y học dự phòng, tiêm chủng và tư vấn sức khỏe', 8, 1, '2026-01-14 11:04:43', NULL, 0),
+(47, 'lam.duy', '123', 'Lâm Văn Duy', 'lam.duy@hospital.vn', 'Infectious_Disease', 17, 350000, '0901234613', NULL, 'Bác sĩ truyền nhiễm, điều trị sốt xuất huyết và sốt rét', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(48, 'vo.chi', '123', 'Võ Thị Chi', 'vo.chi@hospital.vn', 'Infectious_Disease', 17, 330000, '0901234614', NULL, 'Bác sĩ truyền nhiễm, HIV/AIDS và viêm gan virus', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(49, 'vu.bao', '123', 'Vũ Quốc Bảo', 'vu.bao@hospital.vn', 'Nephrology', 18, 380000, '0901234615', NULL, 'Chuyên gia thận học, lọc máu và ghép thận', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(50, 'dang.thuy', '123', 'Đặng Thị Thúy Vân', 'dang.thuy@hospital.vn', 'Nephrology', 18, 360000, '0901234616', NULL, 'Bác sĩ nội thận, sỏi thận và viêm thận', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(51, 'ly.tan', '123', 'Lý Văn Tấn', 'ly.tan@hospital.vn', 'Pediatrics', 1, 260000, '0901234617', NULL, 'Bác sĩ nhi khoa, chuyên bệnh tiêu hóa trẻ em', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(52, 'mai.anh', '123', 'Mai Thị Ánh Tuyết', 'mai.anh@hospital.vn', 'Obstetrics_Gynecology', 2, 320000, '0901234618', NULL, 'Bác sĩ sản khoa, siêu âm thai và tầm soát', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(53, 'phan.duc', '123', 'Phan Minh Đức', 'phan.duc@hospital.vn', 'Dermatology', 3, 300000, '0901234619', NULL, 'Bác sĩ da liễu, laser và điều trị sẹo', 9, 1, '2026-01-14 11:04:43', NULL, 0),
+(54, 'cao.linh', '123', 'Cao Thị Linh Chi', 'cao.linh@hospital.vn', 'Gastroenterology', 4, 310000, '0901234620', NULL, 'Bác sĩ tiêu hóa, nội soi dạ dày và đại tràng', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(55, 'dinh.hung', '123', 'Đinh Việt Hùng', 'dinh.hung@hospital.vn', 'Rheumatology', 5, 320000, '0901234621', NULL, 'Bác sĩ cơ xương khớp, điều trị thoái hóa cột sống', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(56, 'to.nhi', '123', 'Tô Thị Như Nhi', 'to.nhi@hospital.vn', 'ENT', 8, 270000, '0901234622', NULL, 'Bác sĩ TMH, điều trị viêm tai giữa và ngạt mũi', 9, 1, '2026-01-14 11:04:43', NULL, 0),
+(57, 'lam.son', '123', 'Lâm Quốc Sơn', 'lam.son@hospital.vn', 'Oncology', 9, 480000, '0901234623', NULL, 'Bác sĩ ung bướu, phẫu thuật cắt bỏ khối u', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(58, 'vo.hanh', '123', 'Võ Thị Hạnh Phúc', 'vo.hanh@hospital.vn', 'Cardiology', 10, 330000, '0901234624', NULL, 'Bác sĩ tim mạch, can thiệp mạch vành', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(59, 'vu.phuc', '123', 'Vũ Minh Phúc', 'vu.phuc@hospital.vn', 'Orthopedics', 12, 370000, '0901234625', NULL, 'Bác sĩ chỉnh hình, phẫu thuật cột sống', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(60, 'dang.hanh', '123', 'Đặng Thị Hạnh', 'dang.hanh@hospital.vn', 'Dentistry', 16, 260000, '0901234626', NULL, 'Bác sĩ nha khoa, chỉnh nha và niềng răng', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(61, 'le.hai', '123', 'Lê Văn Hải', 'le.hai@hospital.vn', 'Allergy_Immunology', 6, 320000, '0901234601', NULL, 'Chuyên gia dị ứng, điều trị hen phế quản và viêm mũi dị ứng', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(62, 'pham.thu', '123', 'Phạm Thị Thu', 'pham.thu@hospital.vn', 'Allergy_Immunology', 6, 300000, '0901234602', NULL, 'Bác sĩ dị ứng, test và điều trị dị ứng thực phẩm', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(63, 'vu.tuan', '123', 'Vũ Anh Tuấn', 'vu.tuan@hospital.vn', 'Anesthesiology', 7, 350000, '0901234603', NULL, 'Bác sĩ gây mê hồi sức, chuyên gây mê ngoài màng cứng', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(64, 'dang.hoa', '123', 'Đặng Thị Hoa', 'dang.hoa@hospital.vn', 'Anesthesiology', 7, 330000, '0901234604', NULL, 'Bác sĩ gây mê, kiểm soát đau sau phẫu thuật', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(65, 'hoang.khang', '123', 'Hoàng Minh Khang', 'hoang.khang@hospital.vn', 'Geriatrics', 11, 280000, '0901234605', NULL, 'Bác sĩ lão khoa, chăm sóc người cao tuổi mắc nhiều bệnh mãn tính', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(66, 'ngo.phuong', '123', 'Ngô Thị Phương Nga', 'ngo.phuong@hospital.vn', 'Geriatrics', 11, 260000, '0901234606', NULL, 'Bác sĩ lão khoa, phục hồi chức năng sau đột quỵ', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(67, 'ly.thanh', '123', 'Lý Quốc Thanh', 'ly.thanh@hospital.vn', 'Emergency_Medicine', 13, 400000, '0901234607', NULL, 'Bác sĩ cấp cứu, hồi sức tim phổi', 17, 1, '2026-01-14 11:04:43', NULL, 0),
+(68, 'mai.lan', '123', 'Mai Thị Lan Anh', 'mai.lan@hospital.vn', 'Emergency_Medicine', 13, 380000, '0901234608', NULL, 'Bác sĩ cấp cứu, xử lý chấn thương đa khoa', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(69, 'phan.cuong', '123', 'Phan Văn Cường', 'phan.cuong@hospital.vn', 'General_Surgery', 14, 450000, '0901234609', NULL, 'Phẫu thuật viên tổng quát, mổ nội soi ổ bụng', 18, 1, '2026-01-14 11:04:43', NULL, 0),
+(70, 'cao.huyen', '123', 'Cao Thị Huyền', 'cao.huyen@hospital.vn', 'General_Surgery', 14, 420000, '0901234610', NULL, 'Bác sĩ ngoại khoa, phẫu thuật tuyến giáp và vú', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(71, 'dinh.quang', '123', 'Đinh Quang Dũng', 'dinh.quang@hospital.vn', 'Preventive_Medicine', 15, 200000, '0901234611', NULL, 'Bác sĩ y học dự phòng, tư vấn dinh dưỡng và lối sống', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(72, 'to.my', '123', 'Tô Thị Mỹ Linh', 'to.my@hospital.vn', 'Preventive_Medicine', 15, 220000, '0901234612', NULL, 'Bác sĩ y học dự phòng, tiêm chủng và tư vấn sức khỏe', 8, 1, '2026-01-14 11:04:43', NULL, 0),
+(73, 'lam.duy', '123', 'Lâm Văn Duy', 'lam.duy@hospital.vn', 'Infectious_Disease', 17, 350000, '0901234613', NULL, 'Bác sĩ truyền nhiễm, điều trị sốt xuất huyết và sốt rét', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(74, 'vo.chi', '123', 'Võ Thị Chi', 'vo.chi@hospital.vn', 'Infectious_Disease', 17, 330000, '0901234614', NULL, 'Bác sĩ truyền nhiễm, HIV/AIDS và viêm gan virus', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(75, 'vu.bao', '123', 'Vũ Quốc Bảo', 'vu.bao@hospital.vn', 'Nephrology', 18, 380000, '0901234615', NULL, 'Chuyên gia thận học, lọc máu và ghép thận', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(76, 'dang.thuy', '123', 'Đặng Thị Thúy Vân', 'dang.thuy@hospital.vn', 'Nephrology', 18, 360000, '0901234616', NULL, 'Bác sĩ nội thận, sỏi thận và viêm thận', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(77, 'ly.tan', '123', 'Lý Văn Tấn', 'ly.tan@hospital.vn', 'Pediatrics', 1, 260000, '0901234617', NULL, 'Bác sĩ nhi khoa, chuyên bệnh tiêu hóa trẻ em', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(78, 'mai.anh', '123', 'Mai Thị Ánh Tuyết', 'mai.anh@hospital.vn', 'Obstetrics_Gynecology', 2, 320000, '0901234618', NULL, 'Bác sĩ sản khoa, siêu âm thai và tầm soát', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(79, 'phan.duc', '123', 'Phan Minh Đức', 'phan.duc@hospital.vn', 'Dermatology', 3, 300000, '0901234619', NULL, 'Bác sĩ da liễu, laser và điều trị sẹo', 9, 1, '2026-01-14 11:04:43', NULL, 0),
+(80, 'cao.linh', '123', 'Cao Thị Linh Chi', 'cao.linh@hospital.vn', 'Gastroenterology', 4, 310000, '0901234620', NULL, 'Bác sĩ tiêu hóa, nội soi dạ dày và đại tràng', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(81, 'dinh.hung', '123', 'Đinh Việt Hùng', 'dinh.hung@hospital.vn', 'Rheumatology', 5, 320000, '0901234621', NULL, 'Bác sĩ cơ xương khớp, điều trị thoái hóa cột sống', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(82, 'to.nhi', '123', 'Tô Thị Như Nhi', 'to.nhi@hospital.vn', 'ENT', 8, 270000, '0901234622', NULL, 'Bác sĩ TMH, điều trị viêm tai giữa và ngạt mũi', 9, 1, '2026-01-14 11:04:43', NULL, 0),
+(83, 'lam.son', '123', 'Lâm Quốc Sơn', 'lam.son@hospital.vn', 'Oncology', 9, 480000, '0901234623', NULL, 'Bác sĩ ung bướu, phẫu thuật cắt bỏ khối u', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(84, 'vo.hanh', '123', 'Võ Thị Hạnh Phúc', 'vo.hanh@hospital.vn', 'Cardiology', 10, 330000, '0901234624', NULL, 'Bác sĩ tim mạch, can thiệp mạch vành', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(85, 'vu.phuc', '123', 'Vũ Minh Phúc', 'vu.phuc@hospital.vn', 'Orthopedics', 12, 370000, '0901234625', NULL, 'Bác sĩ chỉnh hình, phẫu thuật cột sống', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(86, 'dang.hanh', '123', 'Đặng Thị Hạnh', 'dang.hanh@hospital.vn', 'Dentistry', 16, 260000, '0901234626', NULL, 'Bác sĩ nha khoa, chỉnh nha và niềng răng', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(87, 'nguyen.khanh', '123', 'Nguyễn Thị Khánh Linh', 'nguyen.khanh@hospital.vn', 'Allergy_Immunology', 6, 310000, '0901234627', NULL, 'Bác sĩ dị ứng - miễn dịch, chuyên điều trị viêm da cơ địa', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(88, 'tran.binh', '123', 'Trần Văn Bình', 'tran.binh2@hospital.vn', 'Anesthesiology', 7, 340000, '0901234628', NULL, 'Bác sĩ gây mê, chuyên gây tê vùng và giảm đau', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(89, 'le.phuong', '123', 'Lê Thị Phương Anh', 'le.phuong@hospital.vn', 'Geriatrics', 11, 270000, '0901234629', NULL, 'Bác sĩ lão khoa, chuyên điều trị sa sút trí tuệ và Parkinson', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(90, 'pham.quoc', '123', 'Phạm Quốc Huy', 'pham.quoc@hospital.vn', 'Emergency_Medicine', 13, 390000, '0901234630', NULL, 'Bác sĩ cấp cứu, chuyên xử lý ngộ độc và sốc', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(91, 'vu.minh', '123', 'Vũ Minh Tuấn', 'vu.minh@hospital.vn', 'General_Surgery', 14, 430000, '0901234631', NULL, 'Phẫu thuật viên, chuyên phẫu thuật ruột thừa và sỏi mật', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(92, 'dang.mai', '123', 'Đặng Thị Mai Linh', 'dang.mai@hospital.vn', 'Preventive_Medicine', 15, 210000, '0901234632', NULL, 'Bác sĩ y học dự phòng, tư vấn phòng bệnh không lây', 9, 1, '2026-01-14 11:04:43', NULL, 0),
+(93, 'hoang.nam', '123', 'Hoàng Văn Nam', 'hoang.nam@hospital.vn', 'Infectious_Disease', 17, 340000, '0901234633', NULL, 'Bác sĩ truyền nhiễm, điều trị lao và bệnh nhiệt đới', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(94, 'ngo.lan', '123', 'Ngô Thị Lan Hương', 'ngo.lan@hospital.vn', 'Nephrology', 18, 370000, '0901234634', NULL, 'Bác sĩ nội thận, điều trị suy thận mãn và thận hư', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(95, 'ly.hong', '123', 'Lý Thị Hồng Nhung', 'ly.hong@hospital.vn', 'Endocrinology', 19, 330000, '0901234635', NULL, 'Bác sĩ nội tiết, chuyên bệnh tuyến yên và tuyến thượng thận', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(96, 'mai.tung', '123', 'Mai Văn Tùng', 'mai.tung@hospital.vn', 'Psychiatry', 20, 380000, '0901234636', NULL, 'Bác sĩ tâm thần, điều trị rối loạn lưỡng cực và tâm thần phân liệt', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(97, 'nguyen.thao', '123', 'Nguyễn Thị Thảo', 'nguyen.thao@hospital.vn', 'Laboratory', 22, 150000, '0901234640', NULL, 'Bác sĩ xét nghiệm, chuyên sinh hóa và huyết học', 8, 1, '2026-01-14 11:04:43', NULL, 0),
+(98, 'tran.duc', '123', 'Trần Văn Đức', 'tran.duc@hospital.vn', 'Laboratory', 22, 160000, '0901234641', NULL, 'Bác sĩ xét nghiệm, vi sinh và miễn dịch', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(99, 'le.huyen', '123', 'Lê Thị Huyền', 'le.huyen@hospital.vn', 'Laboratory', 22, 155000, '0901234642', NULL, 'Bác sĩ xét nghiệm lâm sàng, giải phẫu bệnh', 9, 1, '2026-01-14 11:04:43', NULL, 0),
+(100, 'pham.long', '123', 'Phạm Văn Long', 'pham.long@hospital.vn', 'Hematology', 23, 380000, '0901234643', NULL, 'Chuyên gia huyết học, điều trị bạch cầu và ung thư máu', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(101, 'vu.nga', '123', 'Vũ Thị Nga', 'vu.nga@hospital.vn', 'Hematology', 23, 360000, '0901234644', NULL, 'Bác sĩ huyết học, rối loạn đông máu và thiếu máu', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(102, 'dang.khoa', '123', 'Đặng Minh Khoa', 'dang.khoa@hospital.vn', 'Hematology', 23, 370000, '0901234645', NULL, 'Bác sĩ huyết học, ghép tủy xương', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(103, 'hoang.phuc', '123', 'Hoàng Văn Phúc', 'hoang.phuc@hospital.vn', 'Plastic_Surgery', 24, 500000, '0901234646', NULL, 'Phẫu thuật viên thẩm mỹ, nâng ngực và hút mỡ', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(104, 'ngo.thuy', '123', 'Ngô Thị Thúy Kiều', 'ngo.thuy@hospital.vn', 'Plastic_Surgery', 24, 480000, '0901234647', NULL, 'Bác sĩ phẫu thuật thẩm mỹ, nâng mũi và cắt mí', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(105, 'ly.cuong', '123', 'Lý Văn Cường', 'ly.cuong@hospital.vn', 'Plastic_Surgery', 24, 520000, '0901234648', NULL, 'Phẫu thuật tạo hình, tái tạo sau tai nạn và bỏng', 18, 1, '2026-01-14 11:04:43', NULL, 0),
+(106, 'mai.phuong', '123', 'Mai Thị Phương', 'mai.phuong@hospital.vn', 'Speech_Therapy', 26, 250000, '0901234649', NULL, 'Chuyên gia ngôn ngữ trị liệu, rối loạn nói ở trẻ em', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(107, 'phan.hai', '123', 'Phan Văn Hải', 'phan.hai@hospital.vn', 'Speech_Therapy', 26, 240000, '0901234650', NULL, 'Bác sĩ ngôn ngữ trị liệu, phục hồi sau đột quỵ', 9, 1, '2026-01-14 11:04:43', NULL, 0),
+(108, 'cao.uyen', '123', 'Cao Thị Uyển', 'cao.uyen@hospital.vn', 'Speech_Therapy', 26, 260000, '0901234651', NULL, 'Chuyên gia trị liệu, rối loạn nuốt và giao tiếp', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(109, 'dinh.tuan', '123', 'Đinh Anh Tuấn', 'dinh.tuan@hospital.vn', 'Rehabilitation', 27, 280000, '0901234652', NULL, 'Bác sĩ phục hồi chức năng, vật lý trị liệu sau chấn thương', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(110, 'to.anh', '123', 'Tô Thị Ánh', 'to.anh@hospital.vn', 'Rehabilitation', 27, 270000, '0901234653', NULL, 'Bác sĩ PHCN, phục hồi sau phẫu thuật xương khớp', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(111, 'lam.quang', '123', 'Lâm Quang Huy', 'lam.quang@hospital.vn', 'Rehabilitation', 27, 290000, '0901234654', NULL, 'Chuyên gia phục hồi chức năng, bại liệt và tai biến', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(112, 'vo.thanh', '123', 'Võ Văn Thanh', 'vo.thanh@hospital.vn', 'Fertility', 28, 450000, '0901234655', NULL, 'Chuyên gia vô sinh, thụ tinh trong ống nghiệm IVF', 17, 1, '2026-01-14 11:04:43', NULL, 0),
+(113, 'vu.linh', '123', 'Vũ Thị Linh Đan', 'vu.linh@hospital.vn', 'Fertility', 28, 430000, '0901234656', NULL, 'Bác sĩ vô sinh, siêu âm buồng trứng và điều trị hormone', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(114, 'dang.hieu', '123', 'Đặng Văn Hiếu', 'dang.hieu@hospital.vn', 'Fertility', 28, 460000, '0901234657', NULL, 'Chuyên gia hỗ trợ sinh sản, điều trị hiếm muộn', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(115, 'ly.thu', '123', 'Lý Thị Thu Hà', 'ly.thu@hospital.vn', 'Tuberculosis', 30, 300000, '0901234658', NULL, 'Bác sĩ lao phổi, điều trị lao và viêm phổi mãn tính', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(116, 'mai.son', '123', 'Mai Văn Sơn', 'mai.son@hospital.vn', 'Tuberculosis', 30, 310000, '0901234659', NULL, 'Bác sĩ bệnh phổi, COPD và hen phế quản', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(117, 'phan.lan', '123', 'Phan Thị Lan', 'phan.lan@hospital.vn', 'Tuberculosis', 30, 320000, '0901234660', NULL, 'Chuyên gia lao, điều trị lao kháng thuốc', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(118, 'cao.dat', '123', 'Cao Minh Đạt', 'cao.dat@hospital.vn', 'Sports_Medicine', 31, 350000, '0901234661', NULL, 'Bác sĩ thể thao, chấn thương và phục hồi vận động viên', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(119, 'dinh.thao', '123', 'Đinh Thị Thảo', 'dinh.thao@hospital.vn', 'Sports_Medicine', 31, 340000, '0901234662', NULL, 'Bác sĩ y học thể thao, dinh dưỡng và tăng cường thể lực', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(120, 'to.khanh', '123', 'Tô Văn Khánh', 'to.khanh@hospital.vn', 'Sports_Medicine', 31, 360000, '0901234663', NULL, 'Chuyên gia y học thể thao, phòng ngừa chấn thương', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(121, 'lam.hoang', '123', 'Lâm Văn Hoàng', 'lam.hoang@hospital.vn', 'Andrology', 33, 380000, '0901234664', NULL, 'Bác sĩ nam khoa, rối loạn cương và vô sinh nam', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(122, 'vo.dung', '123', 'Võ Thị Dung', 'vo.dung@hospital.vn', 'Andrology', 33, 370000, '0901234665', NULL, 'Bác sĩ nam khoa, viêm tuyến tiền liệt', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(123, 'vu.tien', '123', 'Vũ Văn Tiến', 'vu.tien@hospital.vn', 'Andrology', 33, 390000, '0901234666', NULL, 'Chuyên gia nam khoa, hormone và sức khỏe nam giới', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(124, 'dang.tung', '123', 'Đặng Văn Tùng', 'dang.tung@hospital.vn', 'Urology', 34, 420000, '0901234667', NULL, 'Phẫu thuật viên tiết niệu, sỏi thận và u bàng quang', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(125, 'ly.huong', '123', 'Lý Thị Hương Giang', 'ly.huong@hospital.vn', 'Urology', 34, 400000, '0901234668', NULL, 'Bác sĩ ngoại tiết niệu, phẫu thuật nội soi', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(126, 'mai.quan', '123', 'Mai Văn Quân', 'mai.quan@hospital.vn', 'Urology', 34, 430000, '0901234669', NULL, 'Phẫu thuật viên tiết niệu, ung thư tiền liệt tuyến', 17, 1, '2026-01-14 11:04:43', NULL, 0),
+(127, 'phan.minh', '123', 'Phan Minh Nhật', 'phan.minh@hospital.vn', 'Radiology', 35, 280000, '0901234670', NULL, 'Bác sĩ chẩn đoán hình ảnh, siêu âm và CT', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(128, 'cao.van', '123', 'Cao Thị Vân Anh', 'cao.van@hospital.vn', 'Radiology', 35, 290000, '0901234671', NULL, 'Bác sĩ X-quang, MRI và chẩn đoán qua hình ảnh', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(129, 'dinh.bao', '123', 'Đinh Quốc Bảo', 'dinh.bao@hospital.vn', 'Radiology', 35, 300000, '0901234672', NULL, 'Chuyên gia chẩn đoán hình ảnh, can thiệp mạch máu', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(130, 'to.hai', '123', 'Tô Văn Hải', 'to.hai@hospital.vn', 'Neurosurgery', 36, 550000, '0901234673', NULL, 'Phẫu thuật viên thần kinh, u não và thoát vị đĩa đệm', 18, 1, '2026-01-14 11:04:43', NULL, 0),
+(131, 'lam.thu', '123', 'Lâm Thị Thu', 'lam.thu@hospital.vn', 'Neurosurgery', 36, 530000, '0901234674', NULL, 'Bác sĩ ngoại thần kinh, phẫu thuật cột sống', 16, 1, '2026-01-14 11:04:43', NULL, 0),
+(132, 'vo.quan', '123', 'Võ Văn Quân', 'vo.quan@hospital.vn', 'Neurosurgery', 36, 570000, '0901234675', NULL, 'Giáo sư ngoại thần kinh, phẫu thuật não và mạch máu não', 20, 1, '2026-01-14 11:04:43', NULL, 0),
+(133, 'vu.duy', '123', 'Vũ Văn Duy', 'vu.duy@hospital.vn', 'Thoracic_Cardiovascular_Surgery', 37, 600000, '0901234676', NULL, 'Phẫu thuật viên tim mạch, ghép tim và bypass', 19, 1, '2026-01-14 11:04:43', NULL, 0),
+(134, 'dang.nhi', '123', 'Đặng Thị Nhi', 'dang.nhi@hospital.vn', 'Thoracic_Cardiovascular_Surgery', 37, 580000, '0901234677', NULL, 'Bác sĩ ngoại lồng ngực, phẫu thuật phổi', 17, 1, '2026-01-14 11:04:43', NULL, 0),
+(135, 'ly.nam', '123', 'Lý Văn Nam', 'ly.nam@hospital.vn', 'Thoracic_Cardiovascular_Surgery', 37, 620000, '0901234678', NULL, 'Chuyên gia phẫu thuật tim mạch, van tim', 21, 1, '2026-01-14 11:04:43', NULL, 0),
+(136, 'mai.duc', '123', 'Mai Văn Đức', 'mai.duc@hospital.vn', 'Urology_Internal', 38, 350000, '0901234679', NULL, 'Bác sĩ ngoại niệu, viêm bàng quang và tiết niệu', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(137, 'phan.thu', '123', 'Phan Thị Thu Hà', 'phan.thu@hospital.vn', 'Urology_Internal', 38, 360000, '0901234680', NULL, 'Bác sĩ ngoại niệu, sỏi tiết niệu và phẫu thuật', 13, 1, '2026-01-14 11:04:43', NULL, 0),
+(138, 'cao.tuan', '123', 'Cao Anh Tuấn', 'cao.tuan@hospital.vn', 'Urology_Internal', 38, 370000, '0901234681', NULL, 'Bác sĩ ngoại niệu, nội soi và điều trị', 14, 1, '2026-01-14 11:04:43', NULL, 0),
+(139, 'dinh.lan', '123', 'Đinh Thị Lan', 'dinh.lan@hospital.vn', 'Nutrition', 39, 200000, '0901234682', NULL, 'Chuyên gia dinh dưỡng, giảm cân và tiểu đường', 10, 1, '2026-01-14 11:04:43', NULL, 0),
+(140, 'to.long', '123', 'Tô Văn Long', 'to.long@hospital.vn', 'Nutrition', 39, 210000, '0901234683', NULL, 'Bác sĩ dinh dưỡng, chế độ ăn cho bệnh nhân nội khoa', 9, 1, '2026-01-14 11:04:43', NULL, 0),
+(141, 'lam.nga', '123', 'Lâm Thị Nga', 'lam.nga@hospital.vn', 'Nutrition', 39, 220000, '0901234684', NULL, 'Chuyên gia dinh dưỡng lâm sàng, dinh dưỡng trẻ em', 11, 1, '2026-01-14 11:04:43', NULL, 0),
+(148, 'vo.binh', '123', 'Võ Văn Bình', 'vo.binh@hospital.vn', 'Pain_Management', 42, 380000, '0901234685', NULL, 'Chuyên gia điều trị đau, đau mãn tính và ung thư', 15, 1, '2026-01-14 11:04:43', NULL, 0),
+(149, 'vu.mai', '123', 'Vũ Thị Mai', 'vu.mai@hospital.vn', 'Pain_Management', 42, 370000, '0901234686', NULL, 'Bác sĩ điều trị đau, tiêm khớp và giảm đau', 12, 1, '2026-01-14 11:04:43', NULL, 0),
+(150, 'dang.phong', '123', 'Đặng Văn Phong', 'dang.phong@hospital.vn', 'Pain_Management', 42, 390000, '0901234687', NULL, 'Chuyên gia quản lý đau, đau thần kinh', 16, 1, '2026-01-14 11:04:43', NULL, 0);
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `doctor_ratings`
 --
-DROP TABLE IF EXISTS `doctor_ratings`;
+
 CREATE TABLE `doctor_ratings` (
   `id` int(11) NOT NULL,
   `doctor_id` int(11) NOT NULL,
@@ -238,7 +308,7 @@ INSERT INTO `doctor_ratings` (`id`, `doctor_id`, `patient_id`, `appointment_id`,
 --
 -- Table structure for table `doctor_schedules`
 --
-DROP TABLE IF EXISTS `doctor_schedules`;
+
 CREATE TABLE `doctor_schedules` (
   `id` int(11) NOT NULL,
   `doctor_id` int(11) NOT NULL,
@@ -465,7 +535,7 @@ INSERT INTO `doctor_schedules` (`id`, `doctor_id`, `day_of_week`, `start_time`, 
 --
 -- Table structure for table `forum_attachments`
 --
-DROP TABLE IF EXISTS `forum_attachments`;
+
 CREATE TABLE `forum_attachments` (
   `id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL,
@@ -481,7 +551,7 @@ CREATE TABLE `forum_attachments` (
 --
 -- Table structure for table `forum_comments`
 --
-DROP TABLE IF EXISTS `forum_comments`;
+
 CREATE TABLE `forum_comments` (
   `id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL,
@@ -505,7 +575,7 @@ INSERT INTO `forum_comments` (`id`, `post_id`, `user_id`, `user_type`, `content`
 --
 -- Table structure for table `forum_likes`
 --
-DROP TABLE IF EXISTS `forum_likes`;
+
 CREATE TABLE `forum_likes` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -520,15 +590,15 @@ CREATE TABLE `forum_likes` (
 --
 
 INSERT INTO `forum_likes` (`id`, `user_id`, `user_type`, `target_id`, `target_type`, `created_at`) VALUES
-(1, 1, 'patient', 1, 'post', '2026-01-27 03:17:16'),
-(2, 1, 'patient', 2, 'post', '2026-01-27 03:17:18');
+(2, 1, 'patient', 2, 'post', '2026-01-27 03:17:18'),
+(4, 1, 'patient', 1, 'post', '2026-02-03 14:08:25');
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `forum_posts`
 --
-DROP TABLE IF EXISTS `forum_posts`;
+
 CREATE TABLE `forum_posts` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -550,8 +620,8 @@ CREATE TABLE `forum_posts` (
 --
 
 INSERT INTO `forum_posts` (`id`, `user_id`, `user_type`, `title`, `content`, `tags`, `category`, `status`, `privacy`, `views`, `is_pinned`, `created_at`, `updated_at`) VALUES
-(1, 4, 'patient', 'Câu hỏi về lịch hẹn khám tim mạch', 'Xin chào, tôi muốn hỏi về quy trình đặt lịch khám tim mạch. Tôi cần chuẩn bị gì trước khi đến khám?', '#tim-mạch,#câu-hỏi', 'question', 'open', 'public', 4, 0, '2026-01-27 01:28:05', '2026-01-27 03:50:24'),
-(2, 1, 'patient', 'Chia sẻ kinh nghiệm khám tại Global Hospital', 'Tôi vừa khám xong tại bệnh viện, cảm thấy rất hài lòng với dịch vụ. Bác sĩ tận tâm và chuyên nghiệp.', '#chia-sẻ,#kinh-nghiệm', 'discussion', 'open', 'public', 4, 0, '2026-01-27 01:28:05', '2026-01-27 02:58:07');
+(1, 4, 'patient', 'Câu hỏi về lịch hẹn khám tim mạch', 'Xin chào, tôi muốn hỏi về quy trình đặt lịch khám tim mạch. Tôi cần chuẩn bị gì trước khi đến khám?', '#tim-mạch,#câu-hỏi', 'question', 'open', 'public', 23, 0, '2026-01-27 01:28:05', '2026-02-03 14:08:25'),
+(2, 1, 'patient', 'Chia sẻ kinh nghiệm khám tại Global Hospital', 'Tôi vừa khám xong tại bệnh viện, cảm thấy rất hài lòng với dịch vụ. Bác sĩ tận tâm và chuyên nghiệp.', '#chia-sẻ,#kinh-nghiệm', 'discussion', 'open', 'public', 7, 0, '2026-01-27 01:28:05', '2026-02-01 16:41:54');
 
 -- --------------------------------------------------------
 
@@ -559,7 +629,6 @@ INSERT INTO `forum_posts` (`id`, `user_id`, `user_type`, `title`, `content`, `ta
 -- Table structure for table `medical_attachments`
 --
 
-DROP TABLE IF EXISTS `medical_attachments`; 
 CREATE TABLE `medical_attachments` (
   `id` int(11) NOT NULL,
   `record_id` int(11) NOT NULL,
@@ -578,7 +647,6 @@ CREATE TABLE `medical_attachments` (
 -- Table structure for table `medical_documents`
 --
 
-DROP TABLE IF EXISTS `medical_documents`;
 CREATE TABLE `medical_documents` (
   `id` int(11) NOT NULL,
   `pid` int(11) NOT NULL,
@@ -598,7 +666,6 @@ CREATE TABLE `medical_documents` (
 -- Table structure for table `medical_records`
 --
 
-DROP TABLE IF EXISTS `medical_records`;
 CREATE TABLE `medical_records` (
   `id` int(11) NOT NULL,
   `patient_id` int(11) NOT NULL,
@@ -638,7 +705,9 @@ CREATE TABLE `medical_records` (
 INSERT INTO `medical_records` (`id`, `patient_id`, `doctor_id`, `appointment_id`, `record_date`, `record_type`, `height`, `weight`, `bmi`, `blood_pressure`, `heart_rate`, `temperature`, `respiratory_rate`, `chief_complaint`, `symptoms`, `diagnosis`, `medical_history`, `family_history`, `allergies`, `lab_results`, `imaging_results`, `treatment_plan`, `prescription`, `notes`, `follow_up_date`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
 (1, 4, 17, 4, '2026-01-10', 'checkup', 175.00, 70.00, 22.86, '120/80', 75, 36.50, 18, 'Khám sức khỏe định kỳ', 'Không có triệu chứng bất thường', 'Sức khỏe tốt, các chỉ số bình thường', 'Chưa có tiền sử bệnh lý', 'Gia đình khỏe mạnh', 'Không', 'Công thức máu bình thường', 'X-quang lồng ngực bình thường', 'Duy trì chế độ ăn uống và tập thể dục', 'Vitamin C 500mg, 1 viên/ngày', 'Bệnh nhân có ý thức bảo vệ sức khỏe tốt', NULL, 'completed', 1, '2026-01-15 14:37:31', '2026-01-15 14:37:31'),
 (2, 1, 1, 1, '2026-01-15', 'consultation', 110.00, 20.00, 16.53, '100/60', 90, 38.50, 22, 'Sốt cao, ho nhiều', 'Ho đờm, sốt 39 độ, chảy mũi', 'Viêm phế quản phổi', 'Hay bị viêm họng', 'Không có', 'Không', 'Bạch cầu tăng cao', 'Phổi có đám mờ nhỏ', 'Kháng sinh, hạ sốt, long đờm', 'Augmentin, Hapacol, Bisolvon', 'Theo dõi nhiệt độ thường xuyên', '2026-01-20', 'active', 1, '2026-01-28 09:00:00', '2026-01-28 09:00:00'),
-(3, 2, 3, 2, '2026-01-16', 'checkup', 158.00, 55.00, 22.03, '110/70', 80, 37.00, 20, 'Khám thai 8 tuần', 'Nghén nhẹ, mệt mỏi', 'Thai 8 tuần phát triển bình thường', 'Sinh thường 1 lần', 'Không', 'Không', 'Beta hCG bình thường', 'Siêu âm có tim thai', 'Bổ sung sắt, canxi, nghỉ ngơi', 'Ferrovit, Calcium Corbiere', 'Hẹn khám lại mốc 12 tuần', '2026-02-15', 'completed', 3, '2026-01-28 09:30:00', '2026-01-28 09:30:00');
+(3, 2, 3, 2, '2026-01-16', 'checkup', 158.00, 55.00, 22.03, '110/70', 80, 37.00, 20, 'Khám thai 8 tuần', 'Nghén nhẹ, mệt mỏi', 'Thai 8 tuần phát triển bình thường', 'Sinh thường 1 lần', 'Không', 'Không', 'Beta hCG bình thường', 'Siêu âm có tim thai', 'Bổ sung sắt, canxi, nghỉ ngơi', 'Ferrovit, Calcium Corbiere', 'Hẹn khám lại mốc 12 tuần', '2026-02-15', 'completed', 3, '2026-01-28 09:30:00', '2026-01-28 09:30:00'),
+(4, 1, 3, NULL, '2026-02-02', 'consultation', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', '', '31', NULL, NULL, NULL, NULL, NULL, '', '', '31321', NULL, 'active', NULL, '2026-02-02 17:07:27', '2026-02-02 17:07:27'),
+(5, 1, 2, NULL, '2026-02-02', 'consultation', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', '', 'ốm', NULL, NULL, NULL, NULL, NULL, '', '', '', NULL, 'active', NULL, '2026-02-02 17:12:19', '2026-02-02 17:12:19');
 
 -- --------------------------------------------------------
 
@@ -646,7 +715,6 @@ INSERT INTO `medical_records` (`id`, `patient_id`, `doctor_id`, `appointment_id`
 -- Table structure for table `medicines`
 --
 
-DROP TABLE IF EXISTS `medicines`;
 CREATE TABLE `medicines` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -688,7 +756,6 @@ INSERT INTO `medicines` (`id`, `name`, `generic_name`, `category`, `dosage_form`
 -- Table structure for table `medicine_stock_log`
 --
 
-DROP TABLE IF EXISTS `medicine_stock_log`;
 CREATE TABLE `medicine_stock_log` (
   `id` int(11) NOT NULL,
   `medicine_id` int(11) NOT NULL,
@@ -704,7 +771,6 @@ CREATE TABLE `medicine_stock_log` (
 -- Table structure for table `patreg`
 --
 
-DROP TABLE IF EXISTS `patreg`;
 CREATE TABLE `patreg` (
   `pid` int(11) NOT NULL,
   `fname` varchar(20) NOT NULL,
@@ -745,7 +811,6 @@ INSERT INTO `patreg` (`pid`, `fname`, `lname`, `gender`, `email`, `contact`, `ad
 -- Table structure for table `prescription_medications`
 --
 
-DROP TABLE IF EXISTS `prescription_medications`;
 CREATE TABLE `prescription_medications` (
   `id` int(11) NOT NULL,
   `prescription_id` int(11) NOT NULL,
@@ -755,7 +820,7 @@ CREATE TABLE `prescription_medications` (
   `duration` varchar(100) NOT NULL,
   `special_notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -763,7 +828,6 @@ CREATE TABLE `prescription_medications` (
 -- Table structure for table `prestb`
 --
 
-DROP TABLE IF EXISTS `prestb`;
 CREATE TABLE `prestb` (
   `pres_id` int(11) NOT NULL,
   `doctor` varchar(50) NOT NULL,
@@ -777,7 +841,6 @@ CREATE TABLE `prestb` (
   `allergy` varchar(250) NOT NULL,
   `prescription` varchar(1000) NOT NULL,
   `treatment_duration` varchar(100) DEFAULT NULL,
-  `general_notes` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -797,10 +860,37 @@ INSERT INTO `prestb` (`pres_id`, `doctor`, `pid`, `ID`, `fname`, `lname`, `appda
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `services`
+--
+
+CREATE TABLE `services` (
+  `id` int(11) NOT NULL,
+  `service_name` varchar(255) NOT NULL,
+  `description` longtext DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `status` enum('0','1') NOT NULL DEFAULT '1' COMMENT '0: Inactive, 1: Active',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_by` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `services`
+--
+
+INSERT INTO `services` (`id`, `service_name`, `description`, `price`, `status`, `created_at`, `updated_at`, `created_by`) VALUES
+(1, 'Khám tổng quát', 'Khám sức khỏe tổng quát đầy đủ', 500000.00, '1', '2026-02-02 13:05:21', '2026-02-02 13:05:21', 'System'),
+(2, 'Siêu âm', 'Siêu âm chẩn đoán', 300000.00, '1', '2026-02-02 13:05:21', '2026-02-02 13:05:21', 'System'),
+(3, 'Xét nghiệm máu', 'Xét nghiệm máu toàn bộ', 350000.00, '1', '2026-02-02 13:05:21', '2026-02-02 13:05:21', 'System'),
+(4, 'Chụp X-quang', 'Chụp X-quang các bộ phận', 300000.00, '1', '2026-02-02 13:05:21', '2026-02-02 13:05:31', 'System'),
+(5, 'Nhổ răng', 'Dịch vụ nhổ răng', 200000.00, '1', '2026-02-02 13:05:21', '2026-02-02 13:05:21', 'System');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `service_ratings`
 --
 
-DROP TABLE IF EXISTS `service_ratings`;
 CREATE TABLE `service_ratings` (
   `id` int(11) NOT NULL,
   `spec_id` int(11) NOT NULL,
@@ -816,7 +906,6 @@ CREATE TABLE `service_ratings` (
 -- Table structure for table `specializations`
 --
 
-DROP TABLE IF EXISTS `specializations`;
 CREATE TABLE `specializations` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
@@ -883,7 +972,6 @@ INSERT INTO `specializations` (`id`, `name`, `name_vi`, `icon`, `description`, `
 -- Table structure for table `time_slots`
 --
 
-DROP TABLE IF EXISTS `time_slots`;
 CREATE TABLE `time_slots` (
   `id` int(11) NOT NULL,
   `doctor_id` int(11) NOT NULL,
@@ -960,7 +1048,6 @@ INSERT INTO `time_slots` (`id`, `doctor_id`, `slot_date`, `slot_time`, `status`,
 -- Table structure for table `vaccination_records`
 --
 
-DROP TABLE IF EXISTS `vaccination_records`;
 CREATE TABLE `vaccination_records` (
   `id` int(11) NOT NULL,
   `patient_id` int(11) NOT NULL,
@@ -982,8 +1069,6 @@ CREATE TABLE `vaccination_records` (
 -- Stand-in structure for view `v_doctors`
 -- (See below for the actual view)
 --
-DROP VIEW IF EXISTS `v_doctors`;
-DROP TABLE IF EXISTS `v_doctors`;
 CREATE TABLE `v_doctors` (
 `id` int(11)
 ,`username` varchar(255)
@@ -1006,8 +1091,6 @@ CREATE TABLE `v_doctors` (
 -- Stand-in structure for view `v_medical_records_summary`
 -- (See below for the actual view)
 --
-DROP VIEW IF EXISTS `v_medical_records_summary`;
-DROP TABLE IF EXISTS `v_medical_records_summary`;
 CREATE TABLE `v_medical_records_summary` (
 `id` int(11)
 ,`patient_id` int(11)
@@ -1029,8 +1112,6 @@ CREATE TABLE `v_medical_records_summary` (
 -- Stand-in structure for view `v_patient_profiles`
 -- (See below for the actual view)
 --
-DROP VIEW IF EXISTS `v_patient_profiles`;
-DROP TABLE IF EXISTS `v_patient_profiles`;
 CREATE TABLE `v_patient_profiles` (
 `pid` int(11)
 ,`fname` varchar(20)
@@ -1179,6 +1260,14 @@ ALTER TABLE `prestb`
   ADD PRIMARY KEY (`pres_id`);
 
 --
+-- Indexes for table `services`
+--
+ALTER TABLE `services`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_service_name` (`service_name`),
+  ADD KEY `idx_status` (`status`);
+
+--
 -- Indexes for table `service_ratings`
 --
 ALTER TABLE `service_ratings`
@@ -1222,7 +1311,7 @@ ALTER TABLE `appointmenttb`
 -- AUTO_INCREMENT for table `doctb`
 --
 ALTER TABLE `doctb`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=151;
 
 --
 -- AUTO_INCREMENT for table `doctor_ratings`
@@ -1252,7 +1341,7 @@ ALTER TABLE `forum_comments`
 -- AUTO_INCREMENT for table `forum_likes`
 --
 ALTER TABLE `forum_likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `forum_posts`
@@ -1276,7 +1365,7 @@ ALTER TABLE `medical_documents`
 -- AUTO_INCREMENT for table `medical_records`
 --
 ALTER TABLE `medical_records`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `medicines`
@@ -1309,6 +1398,12 @@ ALTER TABLE `prestb`
   MODIFY `pres_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT for table `services`
+--
+ALTER TABLE `services`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `service_ratings`
 --
 ALTER TABLE `service_ratings`
@@ -1339,7 +1434,7 @@ ALTER TABLE `vaccination_records`
 --
 DROP TABLE IF EXISTS `v_doctors`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_chxtz4re7g`@`localhost` SQL SECURITY DEFINER VIEW `v_doctors`  AS SELECT `d`.`id` AS `id`, `d`.`username` AS `username`, `d`.`fullname` AS `fullname`, `d`.`email` AS `email`, `d`.`spec` AS `spec`, `d`.`spec_id` AS `spec_id`, `s`.`name_vi` AS `spec_name_vi`, `s`.`icon` AS `spec_icon`, `d`.`docFees` AS `docFees`, `d`.`phone` AS `phone`, `d`.`bio` AS `bio`, `d`.`experience_years` AS `experience_years`, `d`.`status` AS `status` FROM (`doctb` `d` left join `specializations` `s` on(`d`.`spec_id` = `s`.`id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_doctors`  AS SELECT `d`.`id` AS `id`, `d`.`username` AS `username`, `d`.`fullname` AS `fullname`, `d`.`email` AS `email`, `d`.`spec` AS `spec`, `d`.`spec_id` AS `spec_id`, `s`.`name_vi` AS `spec_name_vi`, `s`.`icon` AS `spec_icon`, `d`.`docFees` AS `docFees`, `d`.`phone` AS `phone`, `d`.`bio` AS `bio`, `d`.`experience_years` AS `experience_years`, `d`.`status` AS `status` FROM (`doctb` `d` left join `specializations` `s` on(`d`.`spec_id` = `s`.`id`)) ;
 
 -- --------------------------------------------------------
 
@@ -1348,7 +1443,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_chxtz4re7g`@`localhost` SQL SECURITY D
 --
 DROP TABLE IF EXISTS `v_medical_records_summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_chxtz4re7g`@`localhost` SQL SECURITY DEFINER VIEW `v_medical_records_summary`  AS SELECT `mr`.`id` AS `id`, `mr`.`patient_id` AS `patient_id`, concat(`p`.`fname`,' ',`p`.`lname`) AS `patient_name`, `p`.`contact` AS `patient_contact`, `p`.`blood_group` AS `blood_group`, `mr`.`doctor_id` AS `doctor_id`, `d`.`fullname` AS `doctor_name`, `mr`.`record_date` AS `record_date`, `mr`.`record_type` AS `record_type`, `mr`.`diagnosis` AS `diagnosis`, `mr`.`status` AS `status`, `mr`.`created_at` AS `created_at` FROM ((`medical_records` `mr` left join `patreg` `p` on(`mr`.`patient_id` = `p`.`pid`)) left join `doctb` `d` on(`mr`.`doctor_id` = `d`.`id`)) ORDER BY `mr`.`record_date` DESC, `mr`.`created_at` DESC ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_medical_records_summary`  AS SELECT `mr`.`id` AS `id`, `mr`.`patient_id` AS `patient_id`, concat(`p`.`fname`,' ',`p`.`lname`) AS `patient_name`, `p`.`contact` AS `patient_contact`, `p`.`blood_group` AS `blood_group`, `mr`.`doctor_id` AS `doctor_id`, `d`.`fullname` AS `doctor_name`, `mr`.`record_date` AS `record_date`, `mr`.`record_type` AS `record_type`, `mr`.`diagnosis` AS `diagnosis`, `mr`.`status` AS `status`, `mr`.`created_at` AS `created_at` FROM ((`medical_records` `mr` left join `patreg` `p` on(`mr`.`patient_id` = `p`.`pid`)) left join `doctb` `d` on(`mr`.`doctor_id` = `d`.`id`)) ORDER BY `mr`.`record_date` DESC, `mr`.`created_at` DESC ;
 
 -- --------------------------------------------------------
 
@@ -1357,7 +1452,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_chxtz4re7g`@`localhost` SQL SECURITY D
 --
 DROP TABLE IF EXISTS `v_patient_profiles`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_chxtz4re7g`@`localhost` SQL SECURITY DEFINER VIEW `v_patient_profiles`  AS SELECT `p`.`pid` AS `pid`, `p`.`fname` AS `fname`, `p`.`lname` AS `lname`, `p`.`gender` AS `gender`, `p`.`email` AS `email`, `p`.`contact` AS `contact`, `p`.`address` AS `address`, `p`.`avatar` AS `avatar`, `p`.`date_of_birth` AS `date_of_birth`, `p`.`blood_group` AS `blood_group`, `p`.`emergency_contact` AS `emergency_contact`, `p`.`emergency_contact_name` AS `emergency_contact_name`, timestampdiff(YEAR,`p`.`date_of_birth`,curdate()) AS `age`, count(distinct `a`.`ID`) AS `total_appointments`, count(distinct `mr`.`id`) AS `total_records` FROM ((`patreg` `p` left join `appointmenttb` `a` on(`p`.`pid` = `a`.`pid`)) left join `medical_records` `mr` on(`p`.`pid` = `mr`.`patient_id`)) GROUP BY `p`.`pid` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_patient_profiles`  AS SELECT `p`.`pid` AS `pid`, `p`.`fname` AS `fname`, `p`.`lname` AS `lname`, `p`.`gender` AS `gender`, `p`.`email` AS `email`, `p`.`contact` AS `contact`, `p`.`address` AS `address`, `p`.`avatar` AS `avatar`, `p`.`date_of_birth` AS `date_of_birth`, `p`.`blood_group` AS `blood_group`, `p`.`emergency_contact` AS `emergency_contact`, `p`.`emergency_contact_name` AS `emergency_contact_name`, timestampdiff(YEAR,`p`.`date_of_birth`,curdate()) AS `age`, count(distinct `a`.`ID`) AS `total_appointments`, count(distinct `mr`.`id`) AS `total_records` FROM ((`patreg` `p` left join `appointmenttb` `a` on(`p`.`pid` = `a`.`pid`)) left join `medical_records` `mr` on(`p`.`pid` = `mr`.`patient_id`)) GROUP BY `p`.`pid` ;
 
 --
 -- Constraints for dumped tables
