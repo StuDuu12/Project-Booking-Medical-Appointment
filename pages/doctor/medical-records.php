@@ -89,10 +89,10 @@ if ($doctor_id) {
             SELECT DISTINCT p.pid, p.fname, p.lname, p.contact, p.email
             FROM patreg p
             INNER JOIN appointmenttb a ON p.pid = a.pid
-            WHERE TRIM(a.doctor) = TRIM((SELECT fullname FROM doctb WHERE id = :doctor_id))
+            WHERE a.doctor = :doctor_name
             ORDER BY p.fname, p.lname
         ");
-        $stmt->execute([':doctor_id' => $doctor_id]);
+        $stmt->execute([':doctor_name' => $doctor]);
         $doctor_patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Get doctor patients error: " . $e->getMessage());
@@ -102,41 +102,43 @@ if ($doctor_id) {
 // Fetch all medical records for this doctor
 $all_medical_records = [];
 $grouped_records = []; // Group by patient_id
-try {
-    $stmt = $pdo->prepare("
-        SELECT mr.id, mr.patient_id, mr.doctor_id, mr.created_at, mr.symptoms, mr.diagnosis, mr.treatment_plan, mr.notes,
-               mr.height, mr.weight, mr.blood_pressure, mr.heart_rate, mr.temperature, mr.record_date,
-               p.fname, p.lname, p.contact, p.email, p.blood_group, p.pid,
-               d.fullname as doctor_name
-        FROM medical_records mr
-        JOIN patreg p ON mr.patient_id = p.pid
-        LEFT JOIN doctb d ON mr.doctor_id = d.id
-        WHERE mr.doctor_id = :doctor_id
-        ORDER BY p.fname, p.lname, mr.created_at DESC
-    ");
-    $stmt->execute([':doctor_id' => $doctor_id]);
-    $all_medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if ($doctor_id) {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT mr.id, mr.patient_id, mr.doctor_id, mr.created_at, mr.symptoms, mr.diagnosis, mr.treatment_plan, mr.notes,
+                   mr.height, mr.weight, mr.blood_pressure, mr.heart_rate, mr.temperature, mr.record_date,
+                   p.fname, p.lname, p.contact, p.email, p.blood_group, p.pid,
+                   d.fullname as doctor_name
+            FROM medical_records mr
+            JOIN patreg p ON mr.patient_id = p.pid
+            LEFT JOIN doctb d ON mr.doctor_id = d.id
+            WHERE mr.doctor_id = :doctor_id
+            ORDER BY p.fname, p.lname, mr.created_at DESC
+        ");
+        $stmt->execute([':doctor_id' => $doctor_id]);
+        $all_medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Group records by patient
-    foreach ($all_medical_records as $record) {
-        $patient_id = $record['patient_id'];
-        if (!isset($grouped_records[$patient_id])) {
-            $grouped_records[$patient_id] = [
-                'patient_info' => [
-                    'pid' => $record['pid'],
-                    'fname' => $record['fname'],
-                    'lname' => $record['lname'],
-                    'contact' => $record['contact'],
-                    'email' => $record['email'],
-                    'blood_group' => $record['blood_group']
-                ],
-                'records' => []
-            ];
+        // Group records by patient
+        foreach ($all_medical_records as $record) {
+            $patient_id = $record['patient_id'];
+            if (!isset($grouped_records[$patient_id])) {
+                $grouped_records[$patient_id] = [
+                    'patient_info' => [
+                        'pid' => $record['pid'],
+                        'fname' => $record['fname'],
+                        'lname' => $record['lname'],
+                        'contact' => $record['contact'],
+                        'email' => $record['email'],
+                        'blood_group' => $record['blood_group']
+                    ],
+                    'records' => []
+                ];
+            }
+            $grouped_records[$patient_id]['records'][] = $record;
         }
-        $grouped_records[$patient_id]['records'][] = $record;
+    } catch (PDOException $e) {
+        error_log("Fetch all medical records error: " . $e->getMessage());
     }
-} catch (PDOException $e) {
-    error_log("Fetch all medical records error: " . $e->getMessage());
 }
 
 // Fetch patient's medical records if selected
@@ -144,7 +146,7 @@ $selected_patient_id = isset($_GET['patient_id']) ? intval($_GET['patient_id']) 
 $patient_medical_records = [];
 $selected_patient_info = null;
 
-if ($selected_patient_id) {
+if ($selected_patient_id && $doctor_id) {
     try {
         $stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
         $stmt->execute([':pid' => $selected_patient_id]);
@@ -153,10 +155,10 @@ if ($selected_patient_id) {
         $stmt = $pdo->prepare("
             SELECT mr.*,
                    d.fullname as doctor_name,
-                   apt.appointmentDate, apt.appointmentTime
+                   a.appdate as appointmentDate, a.apptime as appointmentTime
             FROM medical_records mr
             LEFT JOIN doctb d ON mr.doctor_id = d.id
-            LEFT JOIN appointmenttb apt ON mr.appointment_id = apt.ID
+            LEFT JOIN appointmenttb a ON mr.appointment_id = a.ID
             WHERE mr.patient_id = :patient_id AND mr.doctor_id = :doctor_id
             ORDER BY mr.created_at DESC
         ");
@@ -917,236 +919,8 @@ if ($selected_patient_id) {
             });
         });
 
-        // Xem chi tiết hồ sơ
-        $('.view-record').click(function() {
-            const recordId = $(this).data('record-id');
-            fetch('ajax/get_medical_record_detail.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'record_id=' + recordId
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const record = data.record;
-                        let html = `
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
-                            <div>
-                                <strong style="color: #6b7280;">Bệnh nhân:</strong>
-                                <div>${record.fname} ${record.lname}</div>
-                            </div>
-                            <div>
-                                <strong style="color: #6b7280;">Bác sĩ:</strong>
-                                <div>${record.doctor_name || 'N/A'}</div>
-                            </div>
-                            <div>
-                                <strong style="color: #6b7280;">Ngày khám:</strong>
-                                <div>${new Date(record.record_date).toLocaleDateString('vi-VN')}</div>
-                            </div>
-                            <div>
-                                <strong style="color: #6b7280;">Tạo lúc:</strong>
-                                <div>${new Date(record.created_at).toLocaleString('vi-VN')}</div>
-                            </div>
-                        </div>
-                        <hr>
-                    `;
-
-                        if (record.symptoms) {
-                            html += `<div style="margin-bottom: 15px;">
-                            <strong style="color: #6b7280;">Triệu chứng:</strong>
-                            <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.symptoms}</div>
-                        </div>`;
-                        }
-
-                        if (record.diagnosis) {
-                            html += `<div style="margin-bottom: 15px;">
-                            <strong style="color: #6b7280;">Chẩn đoán:</strong>
-                            <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.diagnosis}</div>
-                        </div>`;
-                        }
-
-                        if (record.treatment_plan) {
-                            html += `<div style="margin-bottom: 15px;">
-                            <strong style="color: #6b7280;">Điều trị:</strong>
-                            <div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-top: 5px;">${record.treatment_plan}</div>
-                        </div>`;
-                        }
-
-                        if (record.height || record.weight || record.blood_pressure || record.heart_rate || record.temperature) {
-                            html += `<div style="margin-bottom: 15px;">
-                            <strong style="color: #6b7280;">Chỉ số sức khỏe:</strong>
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px;">`;
-                            if (record.height) html += `<div>Chiều cao: <strong>${record.height} cm</strong></div>`;
-                            if (record.weight) html += `<div>Cân nặng: <strong>${record.weight} kg</strong></div>`;
-                            if (record.blood_pressure) html += `<div>Huyết áp: <strong>${record.blood_pressure}</strong></div>`;
-                            if (record.heart_rate) html += `<div>Nhịp tim: <strong>${record.heart_rate} bpm</strong></div>`;
-                            if (record.temperature) html += `<div>Nhiệt độ: <strong>${record.temperature}°C</strong></div>`;
-                            html += `</div></div>`;
-                        }
-
-                        if (record.notes) {
-                            html += `<div style="margin-bottom: 15px;">
-                            <strong style="color: #6b7280;">Ghi chú:</strong>
-                            <div style="padding: 8px; background: #fef3c7; border-radius: 4px; margin-top: 5px;">${record.notes.replace(/\n/g, '<br>')}</div>
-                        </div>`;
-                        }
-
-                        $('#viewDetailContent').html(html);
-                        $('#viewDetailModal').modal('show');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        });
-
-        // Chỉnh sửa hồ sơ
-        $('.edit-record').click(function() {
-            const recordId = $(this).data('record-id');
-            fetch('ajax/get_medical_record_detail.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'record_id=' + recordId
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const record = data.record;
-                        $('#editRecordId').val(recordId);
-                        $('#editDoctorName').val(record.doctor_name || 'N/A');
-                        $('#editSymptoms').val(record.symptoms || '');
-                        $('#editDiagnosis').val(record.diagnosis || '');
-                        $('#editTreatment').val(record.treatment_plan || '');
-                        $('#editHeight').val(record.height || '');
-                        $('#editWeight').val(record.weight || '');
-                        $('#editBloodPressure').val(record.blood_pressure || '');
-                        $('#editHeartRate').val(record.heart_rate || '');
-                        $('#editTemperature').val(record.temperature || '');
-                        $('#editNotes').val(record.notes || '');
-                        $('#editModal').modal('show');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        });
-
-        // Submit form chỉnh sửa
-        $('#editForm').submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-
-            fetch('ajax/update_medical_record.php', {
-                    method: 'POST',
-                    body: new URLSearchParams(formData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        $('#editModal').modal('hide');
-                        location.reload();
-                    } else {
-                        alert('Lỗi: ' + (data.error || 'Không xác định'));
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        });
-
-        // Xóa hồ sơ
-        $('.delete-record').click(function() {
-            const recordId = $(this).data('record-id');
-            if (confirm('Bạn có chắc chắn muốn xóa hồ sơ bệnh án này? Hành động này không thể hoàn tác!')) {
-                fetch('ajax/delete_medical_record.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: 'record_id=' + recordId
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            location.reload();
-                        } else {
-                            alert('Lỗi: ' + (data.error || 'Không xác định'));
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
-        });
-
-        // Patient dropdown already loaded from PHP, no AJAX needed
-        // Just handle doctor selection for consistency (though doctor should be fixed in this view)
-        if (document.getElementById('doctor_select')) {
-            document.getElementById('doctor_select').addEventListener('change', function() {
-                // In this view, doctor is fixed, but keep this for consistency
-                // If doctor changes, you'd need to reload the page
-                if (!this.value) {
-                    const patientSelect = document.getElementById('patient_select');
-                    const appointmentSelect = document.getElementById('appointment_select');
-                    patientSelect.innerHTML = '<option value="">-- Chọn bác sĩ trước --</option>';
-                    patientSelect.disabled = true;
-                    appointmentSelect.innerHTML = '<option value="">-- Chọn bệnh nhân trước --</option>';
-                    appointmentSelect.disabled = true;
-                }
-            });
-        };
-
-        // Handle patient selection and load appointments
-        document.getElementById('patient_select').addEventListener('change', function() {
-            const patientId = this.value;
-            const doctorId = document.getElementById('doctor_select').value;
-            const appointmentSelect = document.getElementById('appointment_select');
-
-            if (!patientId || !doctorId) {
-                appointmentSelect.innerHTML = '<option value="">-- Chọn bác sĩ và bệnh nhân trước --</option>';
-                appointmentSelect.disabled = true;
-                return;
-            }
-
-            appointmentSelect.disabled = true;
-            appointmentSelect.innerHTML = '<option value="">Đang tải lịch hẹn...</option>';
-
-            // Send AJAX request to get appointments for this patient and doctor
-            fetch('ajax/get_appointments_by_patient.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'patient_id=' + patientId + '&doctor_id=' + doctorId
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.appointments.length > 0) {
-                        let optionsHtml = '<option value="">-- Không chọn lịch hẹn --</option>';
-                        data.appointments.forEach(apt => {
-                            const appointDate = new Date(apt.appdate);
-                            const formattedDate = appointDate.toLocaleDateString('vi-VN');
-                            const formattedTime = apt.apptime;
-                            optionsHtml += `<option value="${apt.ID}">
-                            ${formattedDate} - ${formattedTime}
-                        </option>`;
-                        });
-                        appointmentSelect.innerHTML = optionsHtml;
-                        appointmentSelect.disabled = false;
-                        // Auto-select latest appointment (first one since sorted DESC)
-                        appointmentSelect.value = data.appointments[0].ID;
-                    } else {
-                        appointmentSelect.innerHTML = '<option value="">Bác sĩ này chưa khám bệnh nhân này</option>';
-                        appointmentSelect.disabled = true;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    appointmentSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
-                    appointmentSelect.disabled = true;
-                });
-        });
-
-
-        // Handle patient selection to load appointments
+        // Tất cả các tác vụ đã được chuyển sang xử lý PHP thuần, không dùng AJAX
+        // Các nút view, edit, delete sẽ redirect tới các trang PHP tương ứng hoặc submit form
     </script>
 
     <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->

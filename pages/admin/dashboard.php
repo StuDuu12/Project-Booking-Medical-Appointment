@@ -133,35 +133,64 @@ if (isset($_POST['assign_schedule'])) {
     $end = $_POST['end_time'];
 
     if (empty($days)) {
-        echo "<script>alert('Vui lòng chọn ít nhất một ngày!');</script>";
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'error', 'Vui lòng chọn ít nhất một ngày!');
+    } elseif (strtotime($end) <= strtotime($start)) {
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'error', 'Giờ kết thúc phải sau giờ bắt đầu!');
     } else {
         $successCount = 0;
+        $duplicateCount = 0;
         foreach ($days as $day_num) {
-            // Kiểm tra trùng
-            $check = $pdo->prepare("SELECT * FROM doctor_schedules WHERE doctor_id=? AND day_of_week=? AND start_time=?");
-            $check->execute([$doctor_id, $day_num, $start]);
+            // Kiểm tra trùng lặp đầy đủ: doctor_id, day_of_week, start_time, end_time
+            $check = $pdo->prepare("SELECT id FROM doctor_schedules WHERE doctor_id=? AND day_of_week=? AND start_time=? AND end_time=?");
+            $check->execute([$doctor_id, $day_num, $start, $end]);
 
             if ($check->rowCount() == 0) {
+                // Không trùng -> Insert
                 $sql = "INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time) VALUES (?,?,?,?)";
                 $stmt = $pdo->prepare($sql);
                 if ($stmt->execute([$doctor_id, $day_num, $start, $end])) {
                     $successCount++;
                 }
+            } else {
+                $duplicateCount++;
             }
         }
-        if ($successCount > 0) {
-            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', "Đã thêm lịch cho $successCount ngày.");
+
+        if ($successCount > 0 && $duplicateCount > 0) {
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', "Đã thêm $successCount lịch mới. $duplicateCount lịch bị trùng không thêm.");
+        } elseif ($successCount > 0) {
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', "Đã thêm lịch thành công cho $successCount ngày.");
         } else {
-            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'warning', 'Không có lịch nào được thêm (có thể do trùng).');
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'warning', "Tất cả lịch đã tồn tại. Không có lịch mới nào được thêm.");
         }
     }
 }
 
 if (isset($_GET['reset_schedule'])) {
     $doc_id = $_GET['reset_schedule'];
-    $stmt = $pdo->prepare("DELETE FROM doctor_schedules WHERE doctor_id = ?");
-    $stmt->execute([$doc_id]);
-    redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', 'Đã xóa toàn bộ lịch của bác sĩ này.');
+
+    // Lấy fullname của bác sĩ này
+    $stmt_name = $pdo->prepare("SELECT fullname FROM doctb WHERE id = ?");
+    $stmt_name->execute([$doc_id]);
+    $doc_row = $stmt_name->fetch();
+
+    if ($doc_row) {
+        // Lấy tất cả ID của bác sĩ có cùng fullname (xử lý trường hợp duplicate trong DB)
+        $stmt_ids = $pdo->prepare("SELECT id FROM doctb WHERE fullname = ?");
+        $stmt_ids->execute([$doc_row['fullname']]);
+        $all_ids = $stmt_ids->fetchAll(PDO::FETCH_COLUMN);
+
+        // Xóa lịch của tất cả ID này
+        if (!empty($all_ids)) {
+            $placeholders = implode(',', array_fill(0, count($all_ids), '?'));
+            $stmt = $pdo->prepare("DELETE FROM doctor_schedules WHERE doctor_id IN ($placeholders)");
+            $stmt->execute($all_ids);
+        }
+
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', 'Đã xóa toàn bộ lịch của bác sĩ ' . $doc_row['fullname'] . '.');
+    } else {
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'error', 'Không tìm thấy bác sĩ.');
+    }
 }
 ?>
 <html lang="en">
@@ -272,22 +301,133 @@ if (isset($_GET['reset_schedule'])) {
             transform: translateY(-1px);
         }
 
-        /* CSS cho bảng lịch (Matrix) */
-        .table-schedule th,
+        /* CSS cho bảng lịch (Matrix) - Cải thiện */
+        .table-schedule {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .table-schedule thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .table-schedule th {
+            text-align: center;
+            vertical-align: middle !important;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 1rem 0.5rem !important;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .table-schedule th:first-child {
+            border-top-left-radius: 12px;
+        }
+
+        .table-schedule th:last-child {
+            border-top-right-radius: 12px;
+        }
+
+        .table-schedule tbody tr {
+            transition: all 0.3s ease;
+            background: white;
+            border-left: 3px solid transparent;
+        }
+
+        .table-schedule tbody tr:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            border-left: 3px solid #667eea;
+            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.15);
+            transform: translateX(2px);
+        }
+
+        .table-schedule tbody tr:nth-child(even) {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+        }
+
+        .table-schedule tbody tr:nth-child(even):hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+        }
+
         .table-schedule td {
             text-align: center;
             vertical-align: middle !important;
+            padding: 1rem 0.5rem !important;
+            font-size: 0.8rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table-schedule tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-schedule .doctor-name-col {
+            font-weight: 700;
+            color: #1e293b;
+            text-align: left;
+            padding-left: 1.2rem !important;
+            font-size: 0.9rem;
+        }
+
+        .table-schedule .spec-col {
+            color: #64748b;
+            font-size: 0.75rem;
+            text-align: left;
+            font-style: italic;
+            padding-left: 1rem !important;
         }
 
         .check-icon {
-            color: #d2302c;
-            font-size: 1.05rem;
+            color: #10b981;
+            font-size: 1.3rem;
             cursor: help;
+            filter: drop-shadow(0 2px 3px rgba(16, 185, 129, 0.4));
+            animation: checkBounce 0.5s ease;
+        }
+
+        @keyframes checkBounce {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
         }
 
         .cross-icon {
-            color: #e5e7eb;
-            font-size: 0.9rem;
+            color: #d1d5db;
+            font-size: 0.95rem;
+            opacity: 0.4;
+        }
+
+        .table-schedule small {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #059669;
+            letter-spacing: 0.3px;
+        }
+
+        .table-schedule .btn-outline-danger {
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .table-schedule .btn-outline-danger:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
 
         .saturday-alert {
@@ -974,15 +1114,51 @@ if (isset($_GET['reset_schedule'])) {
 
             <?php if ($page === 'manage_schedule') {
                 $is_saturday = (date('N') == 6);
-                $doctors = $pdo->query("SELECT id, fullname FROM doctb ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
-                $sql_docs = "SELECT d.id, d.fullname, s.name_vi as spec_name FROM doctb d LEFT JOIN specializations s ON d.spec_id = s.id ORDER BY d.fullname";
+
+                // Lấy danh sách bác sĩ UNIQUE theo fullname (loại bỏ duplicate trong DB) - giữ ID nhỏ nhất
+                $doctors = $pdo->query("SELECT MIN(id) as id, fullname FROM doctb GROUP BY fullname ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
+
+                // Lấy danh sách bác sĩ với chuyên khoa cho bảng - UNIQUE theo fullname
+                $sql_docs = "SELECT MIN(d.id) as id, d.fullname, 
+                             (SELECT COALESCE(s.name_vi, '---') FROM specializations s WHERE s.id = d.spec_id LIMIT 1) as spec_name 
+                             FROM doctb d 
+                             GROUP BY d.fullname, d.spec_id
+                             ORDER BY d.fullname";
                 $all_docs = $pdo->query($sql_docs)->fetchAll(PDO::FETCH_ASSOC);
-                $sql_sch = "SELECT doctor_id, day_of_week, start_time, end_time FROM doctor_schedules";
+
+                // Lấy lịch làm việc - GROUP BY để tránh duplicate trong schedules
+                $sql_sch = "SELECT doctor_id, day_of_week, MIN(start_time) as start_time, MAX(end_time) as end_time 
+                           FROM doctor_schedules 
+                           GROUP BY doctor_id, day_of_week";
                 $all_schedules = $pdo->query($sql_sch)->fetchAll(PDO::FETCH_ASSOC);
+
+                // Tạo scheduleMap - gộp lịch của các bác sĩ trùng tên
                 $scheduleMap = [];
-                foreach ($all_schedules as $sch) {
-                    $scheduleMap[$sch['doctor_id']][$sch['day_of_week']] = date('H:i', strtotime($sch['start_time'])) . ' - ' . date('H:i', strtotime($sch['end_time']));
+                // Map doctor_id -> fullname
+                $doctorNameMap = [];
+                foreach ($doctors as $doc) {
+                    $doctorNameMap[$doc['id']] = $doc['fullname'];
                 }
+                // Lấy tất cả ID của bác sĩ theo fullname (vì có thể trùng)
+                $allDoctorIds = $pdo->query("SELECT id, fullname FROM doctb")->fetchAll(PDO::FETCH_ASSOC);
+                $fullnameToIds = [];
+                foreach ($allDoctorIds as $d) {
+                    $fullnameToIds[$d['fullname']][] = $d['id'];
+                }
+
+                // Gộp lịch theo fullname
+                foreach ($all_schedules as $sch) {
+                    // Tìm fullname của doctor_id này
+                    foreach ($fullnameToIds as $fname => $ids) {
+                        if (in_array($sch['doctor_id'], $ids)) {
+                            // Lấy ID chính (nhỏ nhất) của fullname này
+                            $mainId = min($ids);
+                            $scheduleMap[$mainId][$sch['day_of_week']] = date('H:i', strtotime($sch['start_time'])) . ' - ' . date('H:i', strtotime($sch['end_time']));
+                            break;
+                        }
+                    }
+                }
+
                 $daysOfWeek = [1 => 'Thứ 2', 2 => 'Thứ 3', 3 => 'Thứ 4', 4 => 'Thứ 5', 5 => 'Thứ 6', 6 => 'Thứ 7', 0 => 'CN'];
             ?>
 
@@ -1002,21 +1178,27 @@ if (isset($_GET['reset_schedule'])) {
                     <?php endif; ?>
 
 
-                    <div class="card shadow-sm mb-5 border-0">
-                        <div class="card-header bg-white font-weight-bold py-3"><i class="fas fa-plus-circle text-primary"></i> Thêm lịch mới</div>
-                        <div class="card-body">
-                            <form method="POST">
+                    <div class="card shadow-sm mb-5 border-0" style="border-radius: 12px; overflow: hidden;">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                            <h5 class="mb-0 text-white font-weight-bold"><i class="fas fa-calendar-plus"></i> Thêm lịch làm việc mới</h5>
+                        </div>
+                        <div class="card-body" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                            <form method="POST" id="scheduleForm">
                                 <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group"><label class="font-weight-bold">Chọn Bác sĩ:</label>
-                                            <select name="doctor_id" class="form-control" required>
-                                                <option value="">-- Chọn bác sĩ --</option><?php foreach ($doctors as $doc): ?><option value="<?php echo $doc['id']; ?>">BS. <?php echo $doc['fullname']; ?></option><?php endforeach; ?>
+                                    <div class="col-lg-3 col-md-6 mb-3">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold text-dark"><i class="fas fa-user-md text-primary"></i> Chọn Bác sĩ</label>
+                                            <select name="doctor_id" class="form-control" required style="border-radius: 8px; border: 2px solid #667eea;">
+                                                <option value="">-- Chọn bác sĩ --</option>
+                                                <?php foreach ($doctors as $doc): ?>
+                                                    <option value="<?php echo $doc['id']; ?>">BS. <?php echo $doc['fullname']; ?></option>
+                                                <?php endforeach; ?>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-lg-5 col-md-12 mb-3">
                                         <div class="form-group">
-                                            <label class="font-weight-bold">Chọn Thứ (Bấm để chọn nhiều):</label>
+                                            <label class="font-weight-bold text-dark"><i class="fas fa-calendar-week text-success"></i> Chọn ngày làm việc (có thể chọn nhiều)</label>
                                             <div class="weekDays-selector">
                                                 <input type="checkbox" id="weekday-1" name="day_of_week[]" value="1"><label for="weekday-1">Thứ 2</label>
                                                 <input type="checkbox" id="weekday-2" name="day_of_week[]" value="2"><label for="weekday-2">Thứ 3</label>
@@ -1028,556 +1210,503 @@ if (isset($_GET['reset_schedule'])) {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <label class="font-weight-bold">Khung giờ:</label>
-                                        <div class="row">
-                                            <div class="col-6"><input type="time" name="start_time" class="form-control" required><small>Bắt đầu</small></div>
-                                            <div class="col-6"><input type="time" name="end_time" class="form-control" required><small>Kết thúc</small></div>
+                                    <div class="col-lg-4 col-md-6 mb-3">
+                                        <label class="font-weight-bold text-dark"><i class="fas fa-clock text-warning"></i> Khung giờ làm việc</label>
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <input type="time" name="start_time" class="form-control" required style="border-radius: 8px; border: 2px solid #48bb78;">
+                                                <small class="text-muted d-block mt-1"><i class="fas fa-arrow-right"></i> Giờ bắt đầu</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="time" name="end_time" class="form-control" required style="border-radius: 8px; border: 2px solid #ed8936;">
+                                                <small class="text-muted d-block mt-1"><i class="fas fa-arrow-left"></i> Giờ kết thúc</small>
+                                            </div>
                                         </div>
-                                        <button type="submit" name="assign_schedule" class="btn btn-primary btn-block mt-3"><i class="fas fa-save"></i> Lưu Lịch</button>
+                                        <button type="submit" name="assign_schedule" class="btn btn-block mt-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; padding: 10px; font-weight: bold; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';">
+                                            <i class="fas fa-save"></i> Lưu lịch làm việc
+                                        </button>
                                     </div>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-
-
-                    <?php if ($page === 'manage_schedule') {
-                        $is_saturday = (date('N') == 6);
-                        // Lấy danh sách cho dropdown thêm lịch
-                        $doctors_dropdown = $pdo->query("SELECT id, fullname FROM doctb ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
-
-                        // --- Xử lý hiển thị ban đầu (PHP thuần) ---
-                        $sql_docs = "SELECT d.id, d.fullname, s.name_vi as spec_name FROM doctb d LEFT JOIN specializations s ON d.spec_id = s.id ORDER BY d.fullname";
-                        $all_docs = $pdo->query($sql_docs)->fetchAll(PDO::FETCH_ASSOC);
-
-                        $sql_sch = "SELECT doctor_id, day_of_week, start_time, end_time FROM doctor_schedules";
-                        $all_schedules = $pdo->query($sql_sch)->fetchAll(PDO::FETCH_ASSOC);
-
-                        $scheduleMap = [];
-                        foreach ($all_schedules as $sch) {
-                            $scheduleMap[$sch['doctor_id']][$sch['day_of_week']] = date('H:i', strtotime($sch['start_time'])) . ' - ' . date('H:i', strtotime($sch['end_time']));
-                        }
-                        $daysOfWeek = [1 => 'Thứ 2', 2 => 'Thứ 3', 3 => 'Thứ 4', 4 => 'Thứ 5', 5 => 'Thứ 6', 6 => 'Thứ 7', 0 => 'CN'];
-                    ?>
-
-
-
-
-                        <div class="search-card">
-                            <div class="row align-items-center">
-                                <div class="col-md-6 mb-2 mb-md-0">
-                                    <div class="position-relative">
-                                        <i class="fas fa-search search-icon-overlay"></i>
-                                        <input type="text" id="matrix_search" class="form-control custom-search-input" placeholder="Nhập tên bác sĩ để lọc bảng...">
-                                    </div>
+                    <!-- Tìm kiếm và lọc -->
+                    <div class="search-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <div class="position-relative">
+                                    <i class="fas fa-search search-icon-overlay"></i>
+                                    <input type="text" id="matrix_search" class="form-control custom-search-input" placeholder="Nhập tên bác sĩ để lọc bảng...">
                                 </div>
-                                <div class="col-md-4 mb-2 mb-md-0">
-                                    <select id="matrix_spec" class="form-control custom-select-filter">
-                                        <option value="">-- Tất cả chuyên khoa --</option>
-                                        <option value="Pediatrics">Nhi khoa</option>
-                                        <option value="Obstetrics_Gynecology">Sản phụ khoa</option>
-                                        <option value="Dermatology">Da liễu</option>
-                                        <option value="Gastroenterology">Tiêu hóa</option>
-                                        <option value="Rheumatology">Cơ xương khớp</option>
-                                        <option value="Allergy_Immunology">Dị ứng - Miễn dịch</option>
-                                        <option value="Anesthesiology">Gây mê hồi sức</option>
-                                        <option value="ENT">Tai - Mũi - Họng</option>
-                                        <option value="Oncology">Ung bướu</option>
-                                        <option value="Cardiology">Tim mạch</option>
-                                        <option value="Geriatrics">Lão khoa</option>
-                                        <option value="Orthopedics">Chấn thương chỉnh hình</option>
-                                        <option value="Emergency_Medicine">Hồi sức cấp cứu</option>
-                                        <option value="General_Surgery">Ngoại tổng quát</option>
-                                        <option value="Preventive_Medicine">Y học dự phòng</option>
-                                        <option value="Dentistry">Răng - Hàm - Mặt</option>
-                                        <option value="Infectious_Disease">Truyền nhiễm</option>
-                                        <option value="Nephrology">Nội thận</option>
-                                        <option value="Endocrinology">Nội tiết</option>
-                                        <option value="Psychiatry">Tâm thần</option>
-                                        <option value="Pulmonology">Hô hấp</option>
-                                        <option value="Laboratory">Xét nghiệm</option>
-                                        <option value="Hematology">Huyết học</option>
-                                        <option value="Psychology">Tâm lý</option>
-                                        <option value="Neurology">Nội thần kinh</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2 text-right">
-                                    <span class="text-muted small"><i class="fas fa-spinner fa-spin" style="display:none;" id="matrix_loading"></i></span>
-                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <select id="matrix_spec" class="form-control custom-select-filter">
+                                    <option value="">-- Tất cả chuyên khoa --</option>
+                                    <option value="Pediatrics">Nhi khoa</option>
+                                    <option value="Obstetrics_Gynecology">Sản phụ khoa</option>
+                                    <option value="Dermatology">Da liễu</option>
+                                    <option value="Gastroenterology">Tiêu hóa</option>
+                                    <option value="Rheumatology">Cơ xương khớp</option>
+                                    <option value="Allergy_Immunology">Dị ứng - Miễn dịch</option>
+                                    <option value="Anesthesiology">Gây mê hồi sức</option>
+                                    <option value="ENT">Tai - Mũi - Họng</option>
+                                    <option value="Oncology">Ung bướu</option>
+                                    <option value="Cardiology">Tim mạch</option>
+                                    <option value="Geriatrics">Lão khoa</option>
+                                    <option value="Orthopedics">Chấn thương chỉnh hình</option>
+                                    <option value="Emergency_Medicine">Hồi sức cấp cứu</option>
+                                    <option value="General_Surgery">Ngoại tổng quát</option>
+                                    <option value="Preventive_Medicine">Y học dự phòng</option>
+                                    <option value="Dentistry">Răng - Hàm - Mặt</option>
+                                    <option value="Infectious_Disease">Truyền nhiễm</option>
+                                    <option value="Nephrology">Nội thận</option>
+                                    <option value="Endocrinology">Nội tiết</option>
+                                    <option value="Psychiatry">Tâm thần</option>
+                                    <option value="Pulmonology">Hô hấp</option>
+                                    <option value="Laboratory">Xét nghiệm</option>
+                                    <option value="Hematology">Huyết học</option>
+                                    <option value="Psychology">Tâm lý</option>
+                                    <option value="Neurology">Nội thần kinh</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 text-right">
+                                <span class="text-muted small"><i class="fas fa-spinner fa-spin" style="display:none;" id="matrix_loading"></i></span>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="data-table-container shadow-sm bg-white rounded">
-                            <div class="data-table-header border-bottom">
-                                <h3 class="data-table-title">Bảng phân công nhân sự</h3>
-                            </div>
-                            <div class="table-responsive p-0">
-                                <table class="table table-bordered table-striped table-hover table-schedule mb-0">
-                                    <thead class="thead-light">
+                    <div class="data-table-container shadow-sm bg-white rounded">
+                        <div class="data-table-header border-bottom">
+                            <h3 class="data-table-title">Bảng phân công nhân sự</h3>
+                        </div>
+                        <div class="table-responsive p-0">
+                            <table class="table table-bordered table-striped table-hover table-schedule mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width: 20%;">Bác sĩ</th>
+                                        <th style="width: 15%;">Chuyên ngành</th>
+                                        <?php foreach ($daysOfWeek as $day): ?><th><?php echo $day; ?></th><?php endforeach; ?>
+                                        <th style="width: 5%;">Xóa</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="matrix_body">
+                                    <?php foreach ($all_docs as $doc): $docId = $doc['id']; ?>
                                         <tr>
-                                            <th style="width: 20%;">Bác sĩ</th>
-                                            <th style="width: 15%;">Chuyên ngành</th>
-                                            <?php foreach ($daysOfWeek as $day): ?><th><?php echo $day; ?></th><?php endforeach; ?>
-                                            <th style="width: 5%;">Xóa</th>
+                                            <td class="doctor-name-col"><?php echo $doc['fullname']; ?></td>
+                                            <td class="spec-col"><?php echo $doc['spec_name'] ?? '---'; ?></td>
+                                            <?php foreach ($daysOfWeek as $dayKey => $dayLabel): ?>
+                                                <td>
+                                                    <?php if (isset($scheduleMap[$docId][$dayKey])): ?>
+                                                        <i class="fas fa-check-circle check-icon" title="<?php echo $scheduleMap[$docId][$dayKey]; ?>"></i><br><small class="text-success font-weight-bold"><?php echo $scheduleMap[$docId][$dayKey]; ?></small>
+                                                    <?php else: ?><i class="fas fa-times cross-icon"></i><?php endif; ?>
+                                                </td>
+                                            <?php endforeach; ?>
+                                            <td><a href="?page=manage_schedule&reset_schedule=<?php echo $docId; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Xóa hết lịch của BS này?');"><i class="fas fa-trash-alt"></i></a></td>
                                         </tr>
-                                    </thead>
-                                    <tbody id="matrix_body">
-                                        <?php foreach ($all_docs as $doc): $docId = $doc['id']; ?>
-                                            <tr>
-                                                <td class="doctor-name-col"><?php echo $doc['fullname']; ?></td>
-                                                <td class="spec-col"><?php echo $doc['spec_name'] ?? '---'; ?></td>
-                                                <?php foreach ($daysOfWeek as $dayKey => $dayLabel): ?>
-                                                    <td>
-                                                        <?php if (isset($scheduleMap[$docId][$dayKey])): ?>
-                                                            <i class="fas fa-check-circle check-icon" title="<?php echo $scheduleMap[$docId][$dayKey]; ?>"></i><br><small class="text-success font-weight-bold"><?php echo $scheduleMap[$docId][$dayKey]; ?></small>
-                                                        <?php else: ?><i class="fas fa-times cross-icon"></i><?php endif; ?>
-                                                    </td>
-                                                <?php endforeach; ?>
-                                                <td><a href="?page=manage_schedule&reset_schedule=<?php echo $docId; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Xóa hết lịch của BS này?');"><i class="fas fa-trash-alt"></i></a></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
                 </section>
 
                 <script>
+                    // Xử lý tìm kiếm và lọc bằng JavaScript phía client
                     document.addEventListener('DOMContentLoaded', function() {
                         const mSearch = document.getElementById('matrix_search');
                         const mSpec = document.getElementById('matrix_spec');
-                        const mBody = document.getElementById('matrix_body');
-                        const mLoad = document.getElementById('matrix_loading');
+                        const tableRows = document.querySelectorAll('#matrix_body tr');
 
-                        function filter_matrix(query = '', spec = '') {
-                            if (mLoad) mLoad.style.display = 'inline-block';
+                        function filterTable() {
+                            const searchQuery = mSearch.value.toLowerCase().trim();
+                            const specFilter = mSpec.value.trim();
 
-                            const fd = new FormData();
-                            fd.append('search', query);
-                            fd.append('spec', spec);
+                            tableRows.forEach(row => {
+                                const doctorName = row.querySelector('.doctor-name-col').textContent.toLowerCase();
+                                const specName = row.querySelector('.spec-col').textContent.trim();
 
-                            fetch('ajax/get_schedules.php', {
-                                    method: 'POST',
-                                    body: fd
-                                })
-                                .then(r => r.text())
-                                .then(html => {
-                                    mBody.innerHTML = html;
-                                    if (mLoad) mLoad.style.display = 'none';
-                                })
-                                .catch(e => {
-                                    console.error(e);
-                                    if (mLoad) mLoad.style.display = 'none';
-                                });
+                                const matchesSearch = searchQuery === '' || doctorName.includes(searchQuery);
+                                const matchesSpec = specFilter === '' || specName === specFilter;
+
+                                if (matchesSearch && matchesSpec) {
+                                    row.style.display = '';
+                                } else {
+                                    row.style.display = 'none';
+                                }
+                            });
                         }
 
-                        if (mSearch) mSearch.addEventListener('keyup', function() {
-                            filter_matrix(this.value, mSpec.value);
-                        });
-                        if (mSpec) mSpec.addEventListener('change', function() {
-                            filter_matrix(mSearch.value, this.value);
-                        });
+                        if (mSearch) {
+                            mSearch.addEventListener('keyup', filterTable);
+                        }
+                        if (mSpec) {
+                            mSpec.addEventListener('change', filterTable);
+                        }
                     });
                 </script>
             <?php } ?>
-            <div class="data-table-container shadow-sm bg-white rounded">
-                <div class="data-table-header border-bottom">
-                    <h3 class="data-table-title">Bảng phân công nhân sự</h3>
-                </div>
-                <div class="table-responsive p-0">
-                    <table class="table table-bordered table-striped table-hover table-schedule mb-0">
-                        <thead class="thead-light">
-                            <tr>
-                                <th style="width: 20%;">Bác sĩ</th>
-                                <th style="width: 15%;">Chuyên ngành</th>
-                                <?php foreach ($daysOfWeek as $day): ?><th><?php echo $day; ?></th><?php endforeach; ?>
-                                <th style="width: 5%;">Xóa</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($all_docs as $doc): $docId = $doc['id']; ?>
+
+            <?php if ($page === 'patients') { ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Hồ sơ bệnh nhân</h2>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
-                                    <td class="doctor-name-col"><?php echo $doc['fullname']; ?></td>
-                                    <td class="spec-col"><?php echo $doc['spec_name'] ?? '---'; ?></td>
-                                    <?php foreach ($daysOfWeek as $dayKey => $dayLabel): ?>
-                                        <td>
-                                            <?php if (isset($scheduleMap[$docId][$dayKey])): ?>
-                                                <i class="fas fa-check-circle check-icon" title="<?php echo $scheduleMap[$docId][$dayKey]; ?>"></i><br><small class="text-success font-weight-bold"><?php echo $scheduleMap[$docId][$dayKey]; ?></small>
-                                            <?php else: ?><i c lass="fas fa-times cross-icon"></i><?php endif; ?>
-                                        </td>
-                                    <?php endforeach; ?>
-                                    <td><a href="?page=manage_schedule&reset_schedule=<?php echo $docId; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Xóa hết lịch của BS này?');"><i class="fas fa-trash-alt"></i></a></td>
+                                    <th>Mã BN</th>
+                                    <th>Họ tên</th>
+                                    <th>Giới tính</th>
+                                    <th>Email</th>
+                                    <th>Liên hệ</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            </section>
-        <?php } ?>
+                            </thead>
+                            <tbody><?php $query = "select * from patreg";
+                                    $result = $pdo->query($query);
+                                    while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
+                                        <td>#<?php echo $row['pid']; ?></td>
+                                        <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
+                                        <td><?php echo $row['gender']; ?></td>
+                                        <td><?php echo $row['email']; ?></td>
+                                        <td><?php echo $row['contact']; ?></td>
+                                    </tr><?php } ?></tbody>
+                        </table>
+                    </div>
+                </section>
+            <?php } ?>
 
-        <?php if ($page === 'patients') { ?>
-            <section class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Hồ sơ bệnh nhân</h2>
-                </div>
-                <div class="data-table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Mã BN</th>
-                                <th>Họ tên</th>
-                                <th>Giới tính</th>
-                                <th>Email</th>
-                                <th>Liên hệ</th>
-                            </tr>
-                        </thead>
-                        <tbody><?php $query = "select * from patreg";
-                                $result = $pdo->query($query);
-                                while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
-                                    <td>#<?php echo $row['pid']; ?></td>
-                                    <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
-                                    <td><?php echo $row['gender']; ?></td>
-                                    <td><?php echo $row['email']; ?></td>
-                                    <td><?php echo $row['contact']; ?></td>
-                                </tr><?php } ?></tbody>
-                    </table>
-                </div>
-            </section>
-        <?php } ?>
+            <?php if ($page === 'appointments') { ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Chi tiết lịch hẹn</h2>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã LH</th>
+                                    <th>Tên bệnh nhân</th>
+                                    <th>Liên hệ</th>
+                                    <th>Bác sĩ</th>
+                                    <th>Phí</th>
+                                    <th>Ngày</th>
+                                    <th>Giờ</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody><?php $query = "select * from appointmenttb order by appdate desc, apptime desc";
+                                    $result = $pdo->query($query);
+                                    while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
+                                        <td>#<?php echo $row['ID']; ?></td>
+                                        <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
+                                        <td><?php echo $row['contact']; ?></td>
+                                        <td><?php echo $row['doctor']; ?></td>
+                                        <td>₹<?php echo $row['docFees']; ?></td>
+                                        <td><?php echo date('d M Y', strtotime($row['appdate'])); ?></td>
+                                        <td><?php echo date('h:i A', strtotime($row['apptime'])); ?></td>
+                                        <td><?php if ($row['userStatus'] == 1 && $row['doctorStatus'] == 1) echo '<span class="badge badge-success">Đang hoạt động</span>';
+                                            else echo '<span class="badge badge-danger">Đã hủy</span>'; ?></td>
+                                    </tr><?php } ?></tbody>
+                        </table>
+                    </div>
+                </section>
+            <?php } ?>
 
-        <?php if ($page === 'appointments') { ?>
-            <section class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Chi tiết lịch hẹn</h2>
-                </div>
-                <div class="data-table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Mã LH</th>
-                                <th>Tên bệnh nhân</th>
-                                <th>Liên hệ</th>
-                                <th>Bác sĩ</th>
-                                <th>Phí</th>
-                                <th>Ngày</th>
-                                <th>Giờ</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody><?php $query = "select * from appointmenttb order by appdate desc, apptime desc";
-                                $result = $pdo->query($query);
-                                while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
-                                    <td>#<?php echo $row['ID']; ?></td>
-                                    <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
-                                    <td><?php echo $row['contact']; ?></td>
-                                    <td><?php echo $row['doctor']; ?></td>
-                                    <td>₹<?php echo $row['docFees']; ?></td>
-                                    <td><?php echo date('d M Y', strtotime($row['appdate'])); ?></td>
-                                    <td><?php echo date('h:i A', strtotime($row['apptime'])); ?></td>
-                                    <td><?php if ($row['userStatus'] == 1 && $row['doctorStatus'] == 1) echo '<span class="badge badge-success">Đang hoạt động</span>';
-                                        else echo '<span class="badge badge-danger">Đã hủy</span>'; ?></td>
-                                </tr><?php } ?></tbody>
-                    </table>
-                </div>
-            </section>
-        <?php } ?>
+            <?php if ($page === 'prescriptions') { ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Hồ sơ đơn thuốc</h2>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Bác sĩ</th>
+                                    <th>Tên bệnh nhân</th>
+                                    <th>Ngày</th>
+                                    <th>Bệnh</th>
+                                    <th>Đơn thuốc</th>
+                                </tr>
+                            </thead>
+                            <tbody><?php $query = "select * from prestb order by appdate desc";
+                                    $result = $pdo->query($query);
+                                    while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
+                                        <td><?php echo $row['doctor']; ?></td>
+                                        <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
+                                        <td><?php echo date('d M Y', strtotime($row['appdate'])); ?></td>
+                                        <td><?php echo $row['disease']; ?></td>
+                                        <td><?php echo $row['prescription']; ?></td>
+                                    </tr><?php } ?></tbody>
+                        </table>
+                    </div>
+                </section>
+            <?php } ?>
 
-        <?php if ($page === 'prescriptions') { ?>
-            <section class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Hồ sơ đơn thuốc</h2>
-                </div>
-                <div class="data-table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Bác sĩ</th>
-                                <th>Tên bệnh nhân</th>
-                                <th>Ngày</th>
-                                <th>Bệnh</th>
-                                <th>Đơn thuốc</th>
-                            </tr>
-                        </thead>
-                        <tbody><?php $query = "select * from prestb order by appdate desc";
-                                $result = $pdo->query($query);
-                                while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
-                                    <td><?php echo $row['doctor']; ?></td>
-                                    <td><?php echo $row['lname'] . ' ' . $row['fname']; ?></td>
-                                    <td><?php echo date('d M Y', strtotime($row['appdate'])); ?></td>
-                                    <td><?php echo $row['disease']; ?></td>
-                                    <td><?php echo $row['prescription']; ?></td>
-                                </tr><?php } ?></tbody>
-                    </table>
-                </div>
-            </section>
-        <?php } ?>
+            <?php if ($page === 'queries') { ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Thắc mắc khách hàng</h2>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Liên hệ</th>
+                                    <th>Tin nhắn</th>
+                                </tr>
+                            </thead>
+                            <tbody><?php $query = "select * from contact";
+                                    $result = $pdo->query($query);
+                                    while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
+                                        <td><?php echo $row['name']; ?></td>
+                                        <td><?php echo $row['email']; ?></td>
+                                        <td><?php echo $row['contact']; ?></td>
+                                        <td><?php echo $row['message']; ?></td>
+                                    </tr><?php } ?></tbody>
+                        </table>
+                    </div>
+                </section>
+            <?php } ?>
 
-        <?php if ($page === 'queries') { ?>
-            <section class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Thắc mắc khách hàng</h2>
-                </div>
-                <div class="data-table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Họ tên</th>
-                                <th>Email</th>
-                                <th>Liên hệ</th>
-                                <th>Tin nhắn</th>
-                            </tr>
-                        </thead>
-                        <tbody><?php $query = "select * from contact";
-                                $result = $pdo->query($query);
-                                while ($row = $result->fetch(PDO::FETCH_BOTH)) { ?><tr>
-                                    <td><?php echo $row['name']; ?></td>
-                                    <td><?php echo $row['email']; ?></td>
-                                    <td><?php echo $row['contact']; ?></td>
-                                    <td><?php echo $row['message']; ?></td>
-                                </tr><?php } ?></tbody>
-                    </table>
-                </div>
-            </section>
-        <?php } ?>
+            <?php if ($page === 'medical-records') {
+                // Lấy danh sách chuyên khoa
+                $specs = $pdo->query("SELECT * FROM specializations")->fetchAll(PDO::FETCH_ASSOC);
+                // Lấy danh sách bác sĩ
+                $doctors = $pdo->query("SELECT id, fullname, spec_id FROM doctb")->fetchAll(PDO::FETCH_ASSOC);
 
-        <?php if ($page === 'medical-records') {
-            // Lấy danh sách chuyên khoa
-            $specs = $pdo->query("SELECT * FROM specializations")->fetchAll(PDO::FETCH_ASSOC);
-            // Lấy danh sách bác sĩ
-            $doctors = $pdo->query("SELECT id, fullname, spec_id FROM doctb")->fetchAll(PDO::FETCH_ASSOC);
+                // Xử lý lọc
+                $filter_spec_id = isset($_POST['filter_spec_id']) ? $_POST['filter_spec_id'] : '';
 
-            // Xử lý lọc
-            $filter_spec_id = isset($_POST['filter_spec_id']) ? $_POST['filter_spec_id'] : '';
-
-            // Logic: Lọc bệnh nhân đã từng khám ở khoa đó
-            $sql_pat = "SELECT DISTINCT p.*,
+                // Logic: Lọc bệnh nhân đã từng khám ở khoa đó
+                $sql_pat = "SELECT DISTINCT p.*,
                             (SELECT COUNT(*) FROM medical_records m WHERE m.patient_id = p.pid) as total_records,
                             (SELECT MAX(record_date) FROM medical_records m WHERE m.patient_id = p.pid) as last_visit
                             FROM patreg p ";
-            $params = [];
+                $params = [];
 
-            if (!empty($filter_spec_id)) {
-                $sql_pat .= " JOIN medical_records mr ON p.pid = mr.patient_id
+                if (!empty($filter_spec_id)) {
+                    $sql_pat .= " JOIN medical_records mr ON p.pid = mr.patient_id
                                   JOIN doctb d ON mr.doctor_id = d.id
                                   WHERE d.spec_id = ?";
-                $params[] = $filter_spec_id;
-            }
-            $sql_pat .= " ORDER BY p.pid DESC";
-
-            $stmt = $pdo->prepare($sql_pat);
-            $stmt->execute($params);
-            $patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        ?>
-            <section class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-notes-medical"></i> Quản lý Hồ sơ Bệnh án</h2>
-                </div>
-
-                <div class="search-card mb-4">
-                    <form method="POST" class="row align-items-center">
-                        <div class="col-md-4"><label class="font-weight-bold mb-0">Lọc bệnh nhân theo khoa đã khám:</label></div>
-                        <div class="col-md-6">
-                            <select name="filter_spec_id" class="form-control custom-select-filter" onchange="this.form.submit()">
-                                <option value="">-- Tất cả bệnh nhân --</option>
-                                <?php foreach ($specs as $s): ?>
-                                    <option value="<?php echo $s['id']; ?>" <?php if ($filter_spec_id == $s['id']) echo 'selected'; ?>><?php echo $s['name_vi']; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-2 text-right">
-                            <?php if ($filter_spec_id): ?><a href="?page=medical-records" class="btn btn-sm btn-secondary"><i class="fas fa-sync"></i> Reset</a><?php endif; ?>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="data-table-container">
-                    <div class="data-table-header">
-                        <h3 class="data-table-title">Danh sách bệnh nhân</h3>
-                    </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Mã BN</th>
-                                <th>Họ tên</th>
-                                <th>Liên hệ</th>
-                                <th>Số hồ sơ</th>
-                                <th>Khám lần cuối</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (count($patients) > 0): foreach ($patients as $p): ?>
-                                    <tr>
-                                        <td>#<?php echo $p['pid']; ?></td>
-                                        <td><strong><?php echo $p['fname'] . ' ' . $p['lname']; ?></strong></td>
-                                        <td><?php echo $p['contact']; ?></td>
-                                        <td><span class="badge badge-info"><?php echo $p['total_records']; ?> hồ sơ</span></td>
-                                        <td><?php echo $p['last_visit'] ? date('d/m/Y', strtotime($p['last_visit'])) : '-'; ?></td>
-                                        <td><button class="btn btn-primary btn-sm" onclick="viewPatientHistory(<?php echo $p['pid']; ?>)"><i class="fas fa-folder-open"></i> Chi tiết</button></td>
-                                    </tr>
-                            <?php endforeach;
-                            else: echo '<tr><td colspan="6" class="text-center py-4">Không tìm thấy dữ liệu.</td></tr>';
-                            endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title">Lịch sử khám bệnh</h5>
-                            <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
-                        </div>
-                        <div class="modal-body" id="history_content" style="background-color: #f8f9fa;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal fade modal-right"
-                id="recordModal"
-                tabindex="-1"
-                role="dialog"
-                aria-hidden="true">
-
-                <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="recordModalLabel"><i class="fas fa-file-medical-alt text-primary mr-2"></i>Phiếu Khám Bệnh</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="recordForm">
-                                <input type="hidden" name="action" id="record_action" value="add">
-                                <input type="hidden" name="patient_id" id="record_pid">
-                                <input type="hidden" name="record_id" id="record_id">
-
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            <label>Bác sĩ khám <span class="text-danger">*</span></label>
-                                            <select name="doctor_id" id="record_doctor" class="form-control" required>
-                                                <option value="">-- Chọn bác sĩ --</option>
-                                                <?php foreach ($doctors as $d): ?><option value="<?php echo $d['id']; ?>">BS. <?php echo $d['fullname']; ?></option><?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            <label>Ngày giờ khám</label>
-                                            <input type="datetime-local" name="record_date" id="record_date" class="form-control" value="<?php echo date('Y-m-d\TH:i'); ?>">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <fieldset class="vital-signs-group">
-                                    <legend class="vital-legend"><i class="fas fa-heartbeat"></i> Chỉ số sinh tồn</legend>
-                                    <div class="row g-3">
-                                        <div class="col-6 col-md-3">
-                                            <label class="small text-muted">Chiều cao (cm)</label>
-                                            <input type="number" step="0.01" name="height" id="height" class="form-control" oninput="calcBMI()" placeholder="Ví dụ: 170">
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <label class="small text-muted">Cân nặng (kg)</label>
-                                            <input type="number" step="0.01" name="weight" id="weight" class="form-control" oninput="calcBMI()" placeholder="Ví dụ: 65">
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <label class="small text-muted">BMI</label>
-                                            <input type="text" name="bmi" id="bmi" class="form-control bg-light" readonly>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <label class="small text-muted">Nhiệt độ (°C)</label>
-                                            <input type="number" step="0.1" name="temperature" id="temp" class="form-control" placeholder="37">
-                                        </div>
-                                        <div class="col-6 col-md-4">
-                                            <label class="small text-muted">Huyết áp (mmHg)</label>
-                                            <input type="text" name="blood_pressure" id="bp" class="form-control" placeholder="120/80">
-                                        </div>
-                                        <div class="col-6 col-md-4">
-                                            <label class="small text-muted">Mạch (lần/phút)</label>
-                                            <input type="number" name="heart_rate" id="hr" class="form-control">
-                                        </div>
-                                        <div class="col-6 col-md-4">
-                                            <label class="small text-muted">Nhịp thở (lần/phút)</label>
-                                            <input type="number" name="respiratory_rate" id="rr" class="form-control">
-                                        </div>
-                                    </div>
-                                </fieldset>
-
-                                <div class="form-group">
-                                    <label>Lý do khám bệnh</label>
-                                    <input type="text" name="chief_complaint" id="chief" class="form-control" placeholder="Ví dụ: Đau đầu, chóng mặt...">
-                                </div>
-
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            <label>Triệu chứng lâm sàng</label>
-                                            <textarea name="symptoms" id="symp" class="form-control" rows="3" placeholder="Mô tả triệu chứng..."></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            <label>Chẩn đoán sơ bộ <span class="text-danger">*</span></label>
-                                            <textarea name="diagnosis" id="diag" class="form-control" rows="3" required placeholder="Kết luận bệnh..."></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            <label>Hướng điều trị</label>
-                                            <textarea name="treatment_plan" id="plan" class="form-control" rows="3"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            <label>Đơn thuốc</label>
-                                            <textarea name="prescription" id="pres" class="form-control" rows="3" placeholder="Tên thuốc - Liều lượng..."></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            <label>Ghi chú thêm</label>
-                                            <textarea name="notes" id="notes" class="form-control" rows="2"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            <label>Hẹn tái khám</label>
-                                            <input type="date" name="follow_up_date" id="fup" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer bg-light" style="border-top: 1px solid #f0f0f0;">
-                            <button type="button" class="btn btn-secondary" onclick="backToHistory()"><i class="fas fa-arrow-left mr-1"></i> Quay lại</button>
-                            <button type="button" class="btn btn-primary px-4" onclick="saveRecord()"><i class="fas fa-save mr-1"></i> Lưu Hồ Sơ</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <script>
-                function backToHistory() {
-                    $('#recordModal').modal('hide');
-                    setTimeout(function() {
-                        $('#historyModal').modal('show');
-                    }, 300);
+                    $params[] = $filter_spec_id;
                 }
-            </script>
-        <?php } ?>
+                $sql_pat .= " ORDER BY p.pid DESC";
+
+                $stmt = $pdo->prepare($sql_pat);
+                $stmt->execute($params);
+                $patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            ?>
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-notes-medical"></i> Quản lý Hồ sơ Bệnh án</h2>
+                    </div>
+
+                    <div class="search-card mb-4">
+                        <form method="POST" class="row align-items-center">
+                            <div class="col-md-4"><label class="font-weight-bold mb-0">Lọc bệnh nhân theo khoa đã khám:</label></div>
+                            <div class="col-md-6">
+                                <select name="filter_spec_id" class="form-control custom-select-filter" onchange="this.form.submit()">
+                                    <option value="">-- Tất cả bệnh nhân --</option>
+                                    <?php foreach ($specs as $s): ?>
+                                        <option value="<?php echo $s['id']; ?>" <?php if ($filter_spec_id == $s['id']) echo 'selected'; ?>><?php echo $s['name_vi']; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-2 text-right">
+                                <?php if ($filter_spec_id): ?><a href="?page=medical-records" class="btn btn-sm btn-secondary"><i class="fas fa-sync"></i> Reset</a><?php endif; ?>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="data-table-container">
+                        <div class="data-table-header">
+                            <h3 class="data-table-title">Danh sách bệnh nhân</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã BN</th>
+                                    <th>Họ tên</th>
+                                    <th>Liên hệ</th>
+                                    <th>Số hồ sơ</th>
+                                    <th>Khám lần cuối</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (count($patients) > 0): foreach ($patients as $p): ?>
+                                        <tr>
+                                            <td>#<?php echo $p['pid']; ?></td>
+                                            <td><strong><?php echo $p['fname'] . ' ' . $p['lname']; ?></strong></td>
+                                            <td><?php echo $p['contact']; ?></td>
+                                            <td><span class="badge badge-info"><?php echo $p['total_records']; ?> hồ sơ</span></td>
+                                            <td><?php echo $p['last_visit'] ? date('d/m/Y', strtotime($p['last_visit'])) : '-'; ?></td>
+                                            <td><button class="btn btn-primary btn-sm" onclick="viewPatientHistory(<?php echo $p['pid']; ?>)"><i class="fas fa-folder-open"></i> Chi tiết</button></td>
+                                        </tr>
+                                <?php endforeach;
+                                else: echo '<tr><td colspan="6" class="text-center py-4">Không tìm thấy dữ liệu.</td></tr>';
+                                endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">Lịch sử khám bệnh</h5>
+                                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                            </div>
+                            <div class="modal-body" id="history_content" style="background-color: #f8f9fa;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade modal-right"
+                    id="recordModal"
+                    tabindex="-1"
+                    role="dialog"
+                    aria-hidden="true">
+
+                    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="recordModalLabel"><i class="fas fa-file-medical-alt text-primary mr-2"></i>Phiếu Khám Bệnh</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="recordForm">
+                                    <input type="hidden" name="action" id="record_action" value="add">
+                                    <input type="hidden" name="patient_id" id="record_pid">
+                                    <input type="hidden" name="record_id" id="record_id">
+
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label>Bác sĩ khám <span class="text-danger">*</span></label>
+                                                <select name="doctor_id" id="record_doctor" class="form-control" required>
+                                                    <option value="">-- Chọn bác sĩ --</option>
+                                                    <?php foreach ($doctors as $d): ?><option value="<?php echo $d['id']; ?>">BS. <?php echo $d['fullname']; ?></option><?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label>Ngày giờ khám</label>
+                                                <input type="datetime-local" name="record_date" id="record_date" class="form-control" value="<?php echo date('Y-m-d\TH:i'); ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <fieldset class="vital-signs-group">
+                                        <legend class="vital-legend"><i class="fas fa-heartbeat"></i> Chỉ số sinh tồn</legend>
+                                        <div class="row g-3">
+                                            <div class="col-6 col-md-3">
+                                                <label class="small text-muted">Chiều cao (cm)</label>
+                                                <input type="number" step="0.01" name="height" id="height" class="form-control" oninput="calcBMI()" placeholder="Ví dụ: 170">
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <label class="small text-muted">Cân nặng (kg)</label>
+                                                <input type="number" step="0.01" name="weight" id="weight" class="form-control" oninput="calcBMI()" placeholder="Ví dụ: 65">
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <label class="small text-muted">BMI</label>
+                                                <input type="text" name="bmi" id="bmi" class="form-control bg-light" readonly>
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <label class="small text-muted">Nhiệt độ (°C)</label>
+                                                <input type="number" step="0.1" name="temperature" id="temp" class="form-control" placeholder="37">
+                                            </div>
+                                            <div class="col-6 col-md-4">
+                                                <label class="small text-muted">Huyết áp (mmHg)</label>
+                                                <input type="text" name="blood_pressure" id="bp" class="form-control" placeholder="120/80">
+                                            </div>
+                                            <div class="col-6 col-md-4">
+                                                <label class="small text-muted">Mạch (lần/phút)</label>
+                                                <input type="number" name="heart_rate" id="hr" class="form-control">
+                                            </div>
+                                            <div class="col-6 col-md-4">
+                                                <label class="small text-muted">Nhịp thở (lần/phút)</label>
+                                                <input type="number" name="respiratory_rate" id="rr" class="form-control">
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <div class="form-group">
+                                        <label>Lý do khám bệnh</label>
+                                        <input type="text" name="chief_complaint" id="chief" class="form-control" placeholder="Ví dụ: Đau đầu, chóng mặt...">
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label>Triệu chứng lâm sàng</label>
+                                                <textarea name="symptoms" id="symp" class="form-control" rows="3" placeholder="Mô tả triệu chứng..."></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label>Chẩn đoán sơ bộ <span class="text-danger">*</span></label>
+                                                <textarea name="diagnosis" id="diag" class="form-control" rows="3" required placeholder="Kết luận bệnh..."></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label>Hướng điều trị</label>
+                                                <textarea name="treatment_plan" id="plan" class="form-control" rows="3"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label>Đơn thuốc</label>
+                                                <textarea name="prescription" id="pres" class="form-control" rows="3" placeholder="Tên thuốc - Liều lượng..."></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label>Ghi chú thêm</label>
+                                                <textarea name="notes" id="notes" class="form-control" rows="2"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label>Hẹn tái khám</label>
+                                                <input type="date" name="follow_up_date" id="fup" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer bg-light" style="border-top: 1px solid #f0f0f0;">
+                                <button type="button" class="btn btn-secondary" onclick="backToHistory()"><i class="fas fa-arrow-left mr-1"></i> Quay lại</button>
+                                <button type="button" class="btn btn-primary px-4" onclick="saveRecord()"><i class="fas fa-save mr-1"></i> Lưu Hồ Sơ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function backToHistory() {
+                        $('#recordModal').modal('hide');
+                        setTimeout(function() {
+                            $('#historyModal').modal('show');
+                        }, 300);
+                    }
+                </script>
+            <?php } ?>
 
         </main>
     </div>
