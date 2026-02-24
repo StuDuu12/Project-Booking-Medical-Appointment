@@ -69,7 +69,7 @@ try {
         ]);
 
         if ($result) {
-            // Update session
+            
             $_SESSION['contact'] = $contact;
             redirectWithMessage('profile.php', 'success', 'Cập nhật thông tin thành công!');
         } else {
@@ -78,15 +78,15 @@ try {
         exit();
     }
 
-    // ========================================
-    // 2. ĐỔI MẬT KHẨU
-    // ========================================
+    
+    
+    
     if ($action === 'change_password') {
         $current_password = $_POST['current_password'] ?? '';
         $new_password = $_POST['new_password'] ?? '';
         $confirm_password = $_POST['confirm_password'] ?? '';
 
-        // Validate passwords
+        
         if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
             redirectWithMessage('profile.php', 'error', 'Vui lòng nhập đầy đủ mật khẩu!');
             exit();
@@ -102,7 +102,7 @@ try {
             exit();
         }
 
-        // Get current password from database
+        
         $stmt = $pdo->prepare("SELECT password FROM patreg WHERE pid = :pid");
         $stmt->execute([':pid' => $pid]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -112,7 +112,7 @@ try {
             exit();
         }
 
-        // Verify current password (support both hashed and plain passwords)
+        
         $password_valid = password_verify($current_password, $user['password']) || $user['password'] === $current_password;
 
         if (!$password_valid) {
@@ -120,7 +120,7 @@ try {
             exit();
         }
 
-        // Update password
+        
         $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("UPDATE patreg SET password = :password, cpassword = :cpassword, updated_at = NOW() WHERE pid = :pid");
         $result = $stmt->execute([
@@ -137,17 +137,17 @@ try {
         exit();
     }
 
-    // ========================================
-    // 3. UPLOAD ẢNH ĐẠI DIỆN
-    // ========================================
+    
+    
+    
     if ($action === 'upload_avatar') {
-        // Create upload directory if not exists
+        
         $upload_dir = '../../uploads/avatars/';
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0755, true);
         }
 
-        // Check if file was uploaded
+        
         if (!isset($_FILES['avatar']) || $_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
             $error_message = 'Lỗi tải file!';
             if (isset($_FILES['avatar'])) {
@@ -171,7 +171,7 @@ try {
         $file_tmp = $file['tmp_name'];
         $file_type = pathinfo($file_name, PATHINFO_EXTENSION);
 
-        // Validate file type
+        
         $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
         $allowed_types_lower = array_map('strtolower', $allowed_types);
 
@@ -180,24 +180,24 @@ try {
             exit();
         }
 
-        // Validate file size (max 5MB)
+        
         if ($file_size > 5 * 1024 * 1024) {
             redirectWithMessage('profile.php', 'error', 'File quá lớn! Tối đa 5MB.');
             exit();
         }
 
-        // Generate unique filename
+        
         $new_filename = 'avatar_' . $pid . '_' . time() . '.' . strtolower($file_type);
         $upload_path = $upload_dir . $new_filename;
         $db_path = 'uploads/avatars/' . $new_filename;
 
-        // Move uploaded file
+        
         if (!move_uploaded_file($file_tmp, $upload_path)) {
             redirectWithMessage('profile.php', 'error', 'Lỗi lưu file!');
             exit();
         }
 
-        // Delete old avatar if exists
+        
         $stmt = $pdo->prepare("SELECT avatar FROM patreg WHERE pid = :pid");
         $stmt->execute([':pid' => $pid]);
         $patient = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -206,7 +206,7 @@ try {
             unlink('../../' . $patient['avatar']);
         }
 
-        // Update database
+        
         $stmt = $pdo->prepare("UPDATE patreg SET avatar = :avatar, updated_at = NOW() WHERE pid = :pid");
         $result = $stmt->execute([
             ':avatar' => $db_path,
@@ -217,7 +217,7 @@ try {
             redirectWithMessage('profile.php', 'success', 'Tải lên ảnh đại diện thành công!');
         } else {
             redirectWithMessage('profile.php', 'error', 'Lỗi lưu thông tin ảnh!');
-            // Delete uploaded file if database update fails
+            
             if (file_exists($upload_path)) {
                 unlink($upload_path);
             }
@@ -225,7 +225,7 @@ try {
         exit();
     }
 
-    // If no action provided
+    
     redirectWithMessage('profile.php', 'error', 'Hành động không hợp lệ!');
     exit();
 } catch (Exception $e) {

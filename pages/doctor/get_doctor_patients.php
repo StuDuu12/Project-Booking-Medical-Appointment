@@ -19,7 +19,7 @@ if (!isset($_GET['doctor_id'])) {
 $doctor_id = intval($_GET['doctor_id']);
 
 try {
-    // Lấy fullname của bác sĩ được chọn
+    
     $stmt = $pdo->prepare("SELECT fullname FROM doctb WHERE id = :doctor_id");
     $stmt->execute([':doctor_id' => $doctor_id]);
     $doctor_info = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -31,7 +31,7 @@ try {
 
     $doctor_fullname = $doctor_info['fullname'];
 
-    // Lấy danh sách bệnh nhân ĐÃ ĐẶT LỊCH với bác sĩ này (dựa vào appointmenttb)
+    
     $stmt = $pdo->prepare("
         SELECT DISTINCT p.pid, p.fname, p.lname, p.contact, p.email
         FROM patreg p

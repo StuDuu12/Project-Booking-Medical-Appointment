@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 ob_start();
 session_start();
 require_once('../../config.php');
@@ -18,48 +18,48 @@ if (!$pid) {
     exit();
 }
 
-// Handle page parameter
+
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 $allowed_pages = array('dashboard', 'book-appointment', 'appointment-history', 'prescriptions', 'profile');
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
 
-// Booking step handling
+
 $booking_step = isset($_GET['step']) ? intval($_GET['step']) : 1;
 $selected_spec = isset($_GET['spec_id']) ? intval($_GET['spec_id']) : null;
 $selected_doctor = isset($_GET['doctor_id']) ? intval($_GET['doctor_id']) : null;
 
-// Handle date from dropdown or direct date input
+
 $selected_date = null;
 if (isset($_GET['date']) && !empty($_GET['date'])) {
     $selected_date = $_GET['date'];
 } elseif (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day'])) {
-    // Construct date from dropdown selections
+    
     $year = intval($_GET['year']);
     $month = str_pad(intval($_GET['month']), 2, '0', STR_PAD_LEFT);
     $day = str_pad(intval($_GET['day']), 2, '0', STR_PAD_LEFT);
 
-    // Validate and create date
+    
     $selected_date = "$year-$month-$day";
 
-    // Validate that the date is valid and not in the past
+    
     $date_obj = DateTime::createFromFormat('Y-m-d', $selected_date);
     if (!$date_obj || $date_obj->format('Y-m-d') !== $selected_date) {
-        $selected_date = null; // Invalid date
+        $selected_date = null; 
     } elseif ($date_obj < new DateTime('today')) {
-        $selected_date = null; // Date in the past
+        $selected_date = null; 
     }
 }
 
-// Get specializations for booking
+
 $specializations = [];
 if ($page === 'book-appointment') {
     $spec_stmt = $pdo->query("SELECT id, name, name_vi, icon, description FROM specializations WHERE status = 1 ORDER BY name_vi");
     $specializations = $spec_stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Get doctors for selected specialization
+
 $doctors = [];
 if ($page === 'book-appointment' && $selected_spec && $booking_step >= 2) {
     $doc_stmt = $pdo->prepare("
@@ -74,16 +74,16 @@ if ($page === 'book-appointment' && $selected_spec && $booking_step >= 2) {
     $doctors = $doc_stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Get time slots for selected doctor and date
+
 $time_slots = [];
 $schedule_info = null;
 if ($page === 'book-appointment' && $selected_doctor && $selected_date && $booking_step >= 4) {
-    // Validate date format
+    
     $date_obj = DateTime::createFromFormat('Y-m-d', $selected_date);
     if ($date_obj && $date_obj->format('Y-m-d') === $selected_date) {
         $day_of_week = date('w', strtotime($selected_date));
 
-        // Get doctor schedule for this day
+        
         $schedule_stmt = $pdo->prepare("
             SELECT start_time, end_time, slot_duration, max_patients
             FROM doctor_schedules
@@ -99,7 +99,7 @@ if ($page === 'book-appointment' && $selected_doctor && $selected_date && $booki
         $schedule_info = $schedule_stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($schedule_info) {
-            // Generate time slots
+            
             $start_time = new DateTime($schedule_info['start_time']);
             $end_time = new DateTime($schedule_info['end_time']);
             $slot_duration = intval($schedule_info['slot_duration']);
@@ -110,7 +110,7 @@ if ($page === 'book-appointment' && $selected_doctor && $selected_date && $booki
                 $slot_time = $current_time->format('H:i:s');
                 $slot_time_display = $current_time->format('H:i');
 
-                // Check if this slot already exists in database
+                
                 $check_stmt = $pdo->prepare("
                     SELECT id, status, appointment_id
                     FROM time_slots
@@ -128,7 +128,7 @@ if ($page === 'book-appointment' && $selected_doctor && $selected_date && $booki
                 $existing_slot = $check_stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($existing_slot) {
-                    // Slot exists in database
+                    
                     $time_slots[] = [
                         'id' => $existing_slot['id'],
                         'slot_time' => $slot_time_display,
@@ -137,7 +137,7 @@ if ($page === 'book-appointment' && $selected_doctor && $selected_date && $booki
                         'appointment_id' => $existing_slot['appointment_id']
                     ];
                 } else {
-                    // Create new slot in database
+                    
                     $insert_stmt = $pdo->prepare("
                         INSERT INTO time_slots (doctor_id, slot_date, slot_time, status)
                         VALUES (:doctor_id, :slot_date, :slot_time, 'available')
@@ -160,18 +160,18 @@ if ($page === 'book-appointment' && $selected_doctor && $selected_date && $booki
                     ];
                 }
 
-                // Move to next slot
+                
                 $current_time->modify("+{$slot_duration} minutes");
             }
 
-            // If date is today, mark past slots as blocked
+            
             if ($selected_date === date('Y-m-d')) {
                 $current_time_now = date('H:i:s');
                 foreach ($time_slots as &$slot) {
                     if ($slot['slot_time_full'] <= $current_time_now && $slot['status'] === 'available') {
                         $slot['status'] = 'blocked';
 
-                        // Update in database
+                        
                         $update_stmt = $pdo->prepare("
                             UPDATE time_slots 
                             SET status = 'blocked' 
@@ -185,29 +185,29 @@ if ($page === 'book-appointment' && $selected_doctor && $selected_date && $booki
     }
 }
 
-// Book appointment with new slot system
+
 if (isset($_POST['app-submit'])) {
     $doctor_id = intval($_POST['doctor_id']);
     $slot_id = intval($_POST['slot_id']);
     $appdate = $_POST['appdate'];
     $apptime = $_POST['apptime'];
 
-    // Get doctor info
+    
     $stmt = $pdo->prepare("SELECT fullname, docFees FROM doctb WHERE id = :id");
     $stmt->execute([':id' => $doctor_id]);
     $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($doctor) {
-        // Remove currency symbols and convert to integer
+        
         $docFees = intval($doctor['docFees']);
         $doctorName = $doctor['fullname'];
 
-        // Check if slot is still available
+        
         $check_stmt = $pdo->prepare("SELECT status FROM time_slots WHERE id = :slot_id AND status = 'available'");
         $check_stmt->execute([':slot_id' => $slot_id]);
 
         if ($check_stmt->rowCount() > 0) {
-            // Insert appointment
+            
             $stmt = $pdo->prepare("INSERT INTO appointmenttb(pid,fname,lname,gender,email,contact,doctor,docFees,appdate,apptime,slot_id,userStatus,doctorStatus) VALUES(:pid,:fname,:lname,:gender,:email,:contact,:doctor,:docFees,:appdate,:apptime,:slot_id,'1','1')");
             $result = $stmt->execute([
                 ':pid' => $pid,
@@ -225,7 +225,7 @@ if (isset($_POST['app-submit'])) {
 
             if ($result) {
                 $appointment_id = $pdo->lastInsertId();
-                // Update slot status
+                
                 $update_stmt = $pdo->prepare("UPDATE time_slots SET status = 'booked', appointment_id = :app_id WHERE id = :slot_id");
                 $update_stmt->execute([':app_id' => $appointment_id, ':slot_id' => $slot_id]);
 
@@ -239,18 +239,18 @@ if (isset($_POST['app-submit'])) {
     }
 }
 
-// Cancel appointment
+
 if (isset($_GET['cancel'])) {
     $stmt = $pdo->prepare("SELECT slot_id FROM appointmenttb WHERE ID = :id");
     $stmt->execute([':id' => $_GET['ID']]);
     $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Update appointment status
+    
     $stmt = $pdo->prepare("UPDATE appointmenttb SET userStatus='0' WHERE ID = :id");
     $result = $stmt->execute([':id' => $_GET['ID']]);
 
     if ($result && $appointment['slot_id']) {
-        // Release the time slot
+        
         $slot_stmt = $pdo->prepare("UPDATE time_slots SET status = 'available', appointment_id = NULL WHERE id = :slot_id");
         $slot_stmt->execute([':slot_id' => $appointment['slot_id']]);
     }
@@ -260,26 +260,68 @@ if (isset($_GET['cancel'])) {
     }
 }
 
-// Generate bill function
+
 function generate_bill()
 {
     global $pdo;
     $pid = $_SESSION['pid'];
     $output = '';
-    $stmt = $pdo->prepare("SELECT p.pid,p.ID,p.fname,p.lname,p.doctor,p.appdate,p.apptime,p.disease,p.allergy,p.prescription,a.docFees FROM prestb p INNER JOIN appointmenttb a ON p.ID=a.ID WHERE p.pid = :pid AND p.ID = :id");
+    
+    
+    $stmt = $pdo->prepare("
+        SELECT p.pres_id, p.pid, p.ID, p.fname, p.lname, p.doctor, p.appdate, p.apptime, 
+               p.disease, p.allergy, p.prescription, a.docFees 
+        FROM prestb p 
+        INNER JOIN appointmenttb a ON p.ID = a.ID 
+        WHERE p.pid = :pid AND p.ID = :id
+    ");
     $stmt->execute([':pid' => $pid, ':id' => $_GET['ID']]);
-    while ($row = $stmt->fetch(PDO::FETCH_BOTH)) {
+    
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        
+        $prescription_text = $row['prescription'] ?? '';
+        $pres_id = $row['pres_id'] ?? null;
+        
+        
+        if (empty($prescription_text) || $prescription_text === 'Chi tiết trong bảng thuốc' || strlen($prescription_text) < 5) {
+            if ($pres_id) {
+                $med_stmt = $pdo->prepare("
+                    SELECT medication_name, dosage, frequency, duration, special_notes 
+                    FROM prescription_medications 
+                    WHERE prescription_id = :pres_id
+                ");
+                $med_stmt->execute([':pres_id' => $pres_id]);
+                $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                if (!empty($medications)) {
+                    $prescription_text = '';
+                    foreach ($medications as $idx => $med) {
+                        $prescription_text .= ($idx + 1) . '. ' . $med['medication_name'];
+                        if (!empty($med['dosage'])) $prescription_text .= ' - ' . $med['dosage'];
+                        if (!empty($med['frequency'])) $prescription_text .= ' - ' . $med['frequency'];
+                        if (!empty($med['duration'])) $prescription_text .= ' (' . $med['duration'] . ')';
+                        $prescription_text .= '<br/>';
+                    }
+                }
+            }
+        }
+        
+        
+        if (empty($prescription_text)) {
+            $prescription_text = 'Chưa có thông tin đơn thuốc';
+        }
+        
         $output .= '
-    <label> Mã bệnh nhân : </label>' . $row["pid"] . '<br/><br/>
-    <label> Mã lịch hẹn : </label>' . $row["ID"] . '<br/><br/>
-    <label> Tên bệnh nhân : </label>' . $row["lname"] . ' ' . $row["fname"] . '<br/><br/>
-    <label> Bác sĩ khám : </label>' . $row["doctor"] . '<br/><br/>
-    <label> Ngày khám : </label>' . date('d/m/Y', strtotime($row["appdate"])) . '<br/><br/>
-    <label> Giờ khám : </label>' . date('H:i', strtotime($row["apptime"])) . '<br/><br/>
-    <label> Chẩn đoán : </label>' . $row["disease"] . '<br/><br/>
-    <label> Dị ứng : </label>' . $row["allergy"] . '<br/><br/>
-    <label> Đơn thuốc : </label>' . $row["prescription"] . '<br/><br/>
-    <label> Chi phí khám : </label>' . number_format($row["docFees"]) . ' VNĐ<br/>
+    <label> Mã bệnh nhân : </label>' . htmlspecialchars($row['pid']) . '<br/><br/>
+    <label> Mã lịch hẹn : </label>' . htmlspecialchars($row['ID']) . '<br/><br/>
+    <label> Tên bệnh nhân : </label>' . htmlspecialchars($row['lname'] . ' ' . $row['fname']) . '<br/><br/>
+    <label> Bác sĩ khám : </label>' . htmlspecialchars($row['doctor']) . '<br/><br/>
+    <label> Ngày khám : </label>' . date('d/m/Y', strtotime($row['appdate'])) . '<br/><br/>
+    <label> Giờ khám : </label>' . date('H:i', strtotime($row['apptime'])) . '<br/><br/>
+    <label> Chẩn đoán : </label>' . htmlspecialchars($row['disease']) . '<br/><br/>
+    <label> Dị ứng : </label>' . htmlspecialchars($row['allergy']) . '<br/><br/>
+    <label> Đơn thuốc : </label><br/>' . $prescription_text . '<br/>
+    <label> Chi phí khám : </label>' . number_format($row['docFees']) . ' VNĐ<br/>
     ';
     }
     return $output;
@@ -323,7 +365,7 @@ if (isset($_GET["generate_bill"])) {
     <link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.png" />
     <title>Bảng điều khiển bệnh nhân - Bệnh viện Global</title>
 
-    <!-- CSS -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -706,7 +748,7 @@ if (isset($_GET["generate_bill"])) {
         }
     </style>
 
-    <!-- jQuery and Bootstrap JS for dropdown functionality -->
+    
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -791,7 +833,7 @@ if (isset($_GET["generate_bill"])) {
     </script>
     <?php displayMessage(); ?>
     <div class="dashboard-container">
-        <!-- Sidebar -->
+        
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
@@ -837,9 +879,9 @@ if (isset($_GET["generate_bill"])) {
             </ul>
         </aside>
 
-        <!-- Main Content -->
+        
         <main class="main-content">
-            <!-- Top Navbar -->
+            
             <nav class="top-navbar">
                 <div class="navbar-left">
                     <h1 class="navbar-title">Bảng điều khiển bệnh nhân</h1>
@@ -864,7 +906,7 @@ if (isset($_GET["generate_bill"])) {
                 </div>
             </nav>
 
-            <!-- Dashboard Section -->
+            
             <?php if ($page === 'dashboard') { ?>
                 <section class="content-section">
                     <div class="section-header">
@@ -872,7 +914,7 @@ if (isset($_GET["generate_bill"])) {
                         <p class="section-subtitle">Quản lý lịch khám và hồ sơ bệnh án của bạn</p>
                     </div>
 
-                    <!-- Quick Stats -->
+                    
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon primary">
@@ -926,7 +968,7 @@ if (isset($_GET["generate_bill"])) {
                         </div>
                     </div>
 
-                    <!-- Quick Actions -->
+                    
                     <div class="row mt-4">
                         <div class="col-md-4">
                             <a href="?page=book-appointment" class="stat-card" style="cursor: pointer; text-decoration: none; color: inherit;">
@@ -974,7 +1016,7 @@ if (isset($_GET["generate_bill"])) {
                         <p class="section-subtitle">Chọn chuyên khoa, bác sĩ và thời gian khám phù hợp</p>
                     </div>
 
-                    <!-- Step Indicator -->
+                    
                     <div class="step-indicator">
                         <div class="step <?php echo ($booking_step >= 1) ? 'active' : ''; ?> <?php echo ($booking_step > 1) ? 'completed' : ''; ?>" id="step1">
                             <div class="step-number"><?php echo ($booking_step > 1) ? '<i class="fas fa-check"></i>' : '1'; ?></div>
@@ -1084,7 +1126,7 @@ if (isset($_GET["generate_bill"])) {
                                             <h5 class="mb-4"><i class="fas fa-calendar-alt"></i> Chọn ngày khám bệnh</h5>
 
                                             <?php
-                                            // Get current date
+                                            
                                             $current_year = date('Y');
                                             $current_month = date('m');
                                             $current_day = date('d');
@@ -1228,7 +1270,7 @@ if (isset($_GET["generate_bill"])) {
                                         </div>
                                     </div>
 
-                                    <!-- Booking Form -->
+                                    
                                     <form method="POST" action="" id="booking-form" class="booking-summary mt-4" style="display: none;">
                                         <h4 class="mb-3">
                                             <i class="fas fa-file-medical"></i> Xác nhận thông tin đặt lịch
@@ -1289,7 +1331,7 @@ if (isset($_GET["generate_bill"])) {
                 </section>
             <?php } ?>
 
-            <!-- Appointment History Section -->
+            
             <?php if ($page === 'appointment-history') { ?>
                 <section class="content-section">
                     <div class="section-header">
@@ -1372,7 +1414,7 @@ if (isset($_GET["generate_bill"])) {
                 </section>
             <?php } ?>
 
-            <!-- Prescriptions Section -->
+            
             <?php if ($page === 'prescriptions') { ?>
                 <section class="content-section">
                     <div class="section-header">
@@ -1576,7 +1618,7 @@ if (isset($_GET["generate_bill"])) {
                 }
             </script>
 
-            <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+            
             <script type="text/javascript">
                 (function() {
                     const isMobile = window.matchMedia('(max-width: 576px)').matches;

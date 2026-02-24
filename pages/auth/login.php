@@ -3,7 +3,7 @@ session_start();
 require_once('../../includes/messages.php');
 $base_path = '../../';
 
-// Get form data and errors if redirected
+
 $login_data = $_SESSION['login_data'] ?? [];
 $errors = $_SESSION['login_errors'] ?? [];
 unset($_SESSION['login_data'], $_SESSION['login_errors']);
@@ -17,16 +17,16 @@ unset($_SESSION['login_data'], $_SESSION['login_errors']);
 	<title>Đăng nhập - Bệnh viện Global</title>
 	<link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.png" />
 
-	<!-- Google Fonts -->
+	
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-	<!-- Bootstrap CSS -->
+	
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-	<!-- Font Awesome -->
+	
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-	<!-- Modern Auth CSS -->
+	
 	<link rel="stylesheet" href="../../assets/css/custom/modern-auth.css?v=2.2">
 	<link rel="stylesheet" href="../../assets/css/custom/global-improvements.css">
 
@@ -157,7 +157,7 @@ unset($_SESSION['login_data'], $_SESSION['login_errors']);
 </head>
 
 <body>
-	<!-- Container cho hoa đào rơi -->
+	
 	<div class="petals-container" id="petals"></div>
 	<script>
 		// Tạo hoa đào rơi
@@ -179,10 +179,10 @@ unset($_SESSION['login_data'], $_SESSION['login_errors']);
 	</script>
 	<?php require_once($base_path . 'includes/navbar.php'); ?>
 
-	<!-- Auth Container -->
+	
 	<div class="auth-container">
 		<div class="auth-wrapper">
-			<!-- Login Form -->
+			
 			<div class="auth-card">
 				<div class="auth-icon">
 					<i class="fas fa-sign-in-alt"></i>
@@ -225,7 +225,7 @@ unset($_SESSION['login_data'], $_SESSION['login_errors']);
 				</form>
 			</div>
 
-			<!-- Info Card -->
+			
 			<div class="auth-card info-card">
 				<div class="auth-icon">
 					<i class="fas fa-hospital"></i>
@@ -275,12 +275,12 @@ unset($_SESSION['login_data'], $_SESSION['login_errors']);
 		</div>
 	</div>
 
-	<!-- Scripts -->
+	
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-	<!-- Hiệu ứng hoa đào rơi -->
+	
 	<script type="text/javascript">
 		(function() {
 			const isMobile = window.matchMedia('(max-width: 767px)').matches;

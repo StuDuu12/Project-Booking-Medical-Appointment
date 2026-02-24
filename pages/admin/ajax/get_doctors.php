@@ -1,12 +1,8 @@
 <?php
-/**
- * AJAX handler: search / filter doctors list
- * POST params:
- *   search  – name or email substring
- *   spec    – specialization English name (from specializations.name)
- */
 
-// Go up two folders to reach project root where config.php lives
+
+
+
 require_once dirname(__DIR__, 3) . '/config.php';
 
 $search = trim($_POST['search'] ?? '');
@@ -15,6 +11,12 @@ $spec   = trim($_POST['spec']   ?? '');
 $where  = [];
 $params = [];
 
+
+$joinType = 'LEFT JOIN';
+if ($spec !== '') {
+    $joinType = 'INNER JOIN';
+}
+
 if ($search !== '') {
     $where[]           = "(d.fullname LIKE :search OR d.email LIKE :search2)";
     $params[':search']  = "%$search%";
@@ -22,15 +24,17 @@ if ($search !== '') {
 }
 
 if ($spec !== '') {
-    $where[]          = "s.name = :spec";
+    
+    $where[]          = "TRIM(s.name_vi) = :spec";
     $params[':spec']  = $spec;
 }
 
 $whereSQL = count($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
-$sql = "SELECT d.*, COALESCE(s.name_vi, d.spec) AS spec_display
+$sql = "SELECT d.*, COALESCE(s.name_vi, d.spec, 'Chưa có') AS spec_display,
+        s.name as spec_name_en
         FROM doctb d
-        LEFT JOIN specializations s ON d.spec_id = s.id
+        $joinType specializations s ON d.spec_id = s.id
         $whereSQL
         ORDER BY d.fullname ASC";
 

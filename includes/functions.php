@@ -7,9 +7,8 @@ if (!isset($_SESSION)) {
 
 require_once __DIR__ . '/../config.php';
 
-/**
- * Display doctors dropdown
- */
+
+
 function display_docs()
 {
     try {
@@ -31,9 +30,8 @@ function display_docs()
     }
 }
 
-/**
- * Display specializations dropdown
- */
+
+
 function display_specs()
 {
     try {
@@ -51,27 +49,23 @@ function display_specs()
     }
 }
 
-/**
- * Update appointment status
- * Note: The 'payment' field does not exist in appointmenttb table
- * This function is deprecated and should not be used
- */
+
+
 function updatePaymentStatus($contact, $status)
 {
-    // This function is deprecated - payment field does not exist in database
+    
     error_log("WARNING: updatePaymentStatus called but 'payment' field does not exist in appointmenttb table");
     return false;
 }
 
-/**
- * Add new doctor
- */
+
+
 function addDoctor($username, $password, $email, $docFees)
 {
     try {
         $con = getDB();
 
-        // Check if doctor already exists
+        
         $stmt = $con->prepare("SELECT id FROM doctb WHERE username = :username OR email = :email");
         $stmt->execute([':username' => $username, ':email' => $email]);
 
@@ -79,7 +73,7 @@ function addDoctor($username, $password, $email, $docFees)
             return ['success' => false, 'message' => 'Doctor already exists'];
         }
 
-        // Hash password
+        
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt = $con->prepare("INSERT INTO doctb (username, password, email, docFees) VALUES (:username, :password, :email, :docFees)");
@@ -97,9 +91,8 @@ function addDoctor($username, $password, $email, $docFees)
     }
 }
 
-/**
- * Register new patient
- */
+
+
 function registerPatient($fname, $lname, $gender, $email, $contact, $password, $cpassword)
 {
     try {
@@ -109,7 +102,7 @@ function registerPatient($fname, $lname, $gender, $email, $contact, $password, $
 
         $con = getDB();
 
-        // Check if patient already exists
+        
         $stmt = $con->prepare("SELECT pid FROM patreg WHERE email = :email OR contact = :contact");
         $stmt->execute([':email' => $email, ':contact' => $contact]);
 
@@ -117,7 +110,7 @@ function registerPatient($fname, $lname, $gender, $email, $contact, $password, $
             return ['success' => false, 'message' => 'Patient already registered'];
         }
 
-        // Hash password
+        
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt = $con->prepare("INSERT INTO patreg (fname, lname, gender, email, contact, password, cpassword) 
@@ -136,7 +129,7 @@ function registerPatient($fname, $lname, $gender, $email, $contact, $password, $
         if ($result) {
             $pid = $con->lastInsertId();
 
-            // Set session variables
+            
             $_SESSION['pid'] = $pid;
             $_SESSION['username'] = $fname . " " . $lname;
             $_SESSION['fname'] = $fname;
@@ -155,16 +148,15 @@ function registerPatient($fname, $lname, $gender, $email, $contact, $password, $
     }
 }
 
-/**
- * Authenticate user (patient/doctor/admin)
- */
+
+
 function authenticateUser($username, $password, $userType = 'auto')
 {
     try {
         $con = getDB();
 
         if ($userType === 'auto' || $userType === 'patient') {
-            // Check patient table
+            
             $stmt = $con->prepare("SELECT * FROM patreg WHERE email = :username");
             $stmt->execute([':username' => $username]);
 
@@ -184,7 +176,7 @@ function authenticateUser($username, $password, $userType = 'auto')
         }
 
         if ($userType === 'auto' || $userType === 'doctor') {
-            // Check doctor table
+            
             $stmt = $con->prepare("SELECT * FROM doctb WHERE username = :username");
             $stmt->execute([':username' => $username]);
 
@@ -198,7 +190,7 @@ function authenticateUser($username, $password, $userType = 'auto')
         }
 
         if ($userType === 'auto' || $userType === 'admin') {
-            // Check admin table
+            
             $stmt = $con->prepare("SELECT * FROM admintb WHERE username = :username");
             $stmt->execute([':username' => $username]);
 
@@ -218,9 +210,8 @@ function authenticateUser($username, $password, $userType = 'auto')
     }
 }
 
-/**
- * Get all appointments
- */
+
+
 function getAppointments($filter = [])
 {
     try {
@@ -250,9 +241,8 @@ function getAppointments($filter = [])
     }
 }
 
-/**
- * Get patient details
- */
+
+
 function getPatientByContact($contact)
 {
     try {
@@ -266,9 +256,8 @@ function getPatientByContact($contact)
     }
 }
 
-/**
- * Get doctor details
- */
+
+
 function getDoctorByUsername($username)
 {
     try {
@@ -282,9 +271,8 @@ function getDoctorByUsername($username)
     }
 }
 
-/**
- * Create appointment
- */
+
+
 function createAppointment($fname, $lname, $email, $contact, $doctor, $appdate, $apptime)
 {
     try {
@@ -310,25 +298,22 @@ function createAppointment($fname, $lname, $email, $contact, $doctor, $appdate, 
     }
 }
 
-/**
- * Sanitize input
- */
+
+
 function sanitize($data)
 {
     return htmlspecialchars(strip_tags(trim($data)));
 }
 
-/**
- * Check if user is logged in
- */
+
+
 function isLoggedIn()
 {
     return isset($_SESSION['username']) || isset($_SESSION['dname']) || isset($_SESSION['pid']);
 }
 
-/**
- * Redirect to login if not authenticated
- */
+
+
 function requireLogin($userType = null)
 {
     if (!isLoggedIn()) {
@@ -342,11 +327,10 @@ function requireLogin($userType = null)
     }
 }
 
-/**
- * Process form submissions
- */
 
-// Handle payment update
+
+
+
 if (isset($_POST['update_data'])) {
     $contact = sanitize($_POST['contact']);
     $status = sanitize($_POST['status']);
@@ -359,7 +343,7 @@ if (isset($_POST['update_data'])) {
     exit();
 }
 
-// Handle doctor addition
+
 if (isset($_POST['doc_sub'])) {
     $doctor = sanitize($_POST['username3'] ?? $_POST['doctor'] ?? '');
     $password = $_POST['dpassword'] ?? $_POST['password3'] ?? '';

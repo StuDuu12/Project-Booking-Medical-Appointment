@@ -1,8 +1,26 @@
 <?php
+ob_start();
 session_start();
-require_once('../../config.php');
-require_once('../../includes/messages.php');
-require_once('../../includes/functions.php');
+
+set_exception_handler(function ($e) {
+    error_log("Doctor prescriptions uncaught: " . $e->getMessage());
+    while (ob_get_level()) ob_end_clean();
+    http_response_code(500);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi</h4><p>' . htmlspecialchars($e->getMessage()) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    exit;
+});
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level()) ob_end_clean();
+        http_response_code(500);
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi Server</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi Server</h4><p>' . htmlspecialchars($err['message']) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    }
+});
+
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/messages.php';
+require_once __DIR__ . '/../../includes/functions.php';
 
 $doctor = $_SESSION['dname'] ?? null;
 
@@ -11,14 +29,14 @@ if (!$doctor) {
     exit();
 }
 
-// Get doctor info
+
 $stmt = $pdo->prepare("SELECT id, fullname FROM doctb WHERE username = :doctor");
 $stmt->execute([':doctor' => $doctor]);
 $doc_info = $stmt->fetch(PDO::FETCH_ASSOC);
 $doctor_id = $doc_info['id'] ?? 0;
 $doctor_fullname = $doc_info['fullname'] ?? $doctor;
 
-// Xử lý tìm kiếm
+
 $search_query = '';
 $search_condition = '';
 if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
@@ -26,12 +44,12 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
     $search_condition = " AND (p.fname LIKE ? OR p.lname LIKE ? OR pr.disease LIKE ?)";
 }
 
-// Pagination
+
 $page_num = isset($_GET['page_num']) ? max(1, intval($_GET['page_num'])) : 1;
 $records_per_page = 10;
 $offset = ($page_num - 1) * $records_per_page;
 
-// Đếm tổng số đơn thuốc
+
 $count_sql = "SELECT COUNT(*) FROM prestb pr 
               INNER JOIN patreg p ON pr.pid = p.pid 
               WHERE pr.doctor = ? $search_condition";
@@ -47,7 +65,7 @@ $count_stmt->execute($params);
 $total_records = $count_stmt->fetchColumn();
 $total_pages = ceil($total_records / $records_per_page);
 
-// Lấy danh sách đơn thuốc
+
 $sql = "SELECT pr.*, p.fname, p.lname, p.contact, p.email
         FROM prestb pr
         INNER JOIN patreg p ON pr.pid = p.pid
@@ -353,7 +371,7 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
             Quay lại bảng điều khiển
         </a>
 
-        <!-- Header -->
+        
         <div class="page-header">
             <h1><i class="fas fa-file-prescription mr-3"></i>Quản lý Đơn thuốc</h1>
             <p class="mb-0 mt-2">Theo dõi và quản lý đơn thuốc của bệnh nhân</p>
@@ -361,7 +379,7 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <?php displayMessage(); ?>
 
-        <!-- Prescriptions List -->
+        
         <div class="prescriptions-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="mb-0"><i class="fas fa-prescription mr-2" style="color: #f43f5e;"></i>Danh sách Đơn thuốc</h5>
@@ -457,7 +475,7 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 <?php endforeach; ?>
 
-                <!-- Pagination -->
+                
                 <?php if ($total_pages > 1): ?>
                     <nav class="mt-4">
                         <ul class="pagination justify-content-center">
@@ -494,7 +512,7 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

@@ -11,12 +11,12 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['user_type']) || $_SESSION
 
 $admin = $_SESSION['username'];
 
-// Tính toán điểm dữ liệu cho dashboard stats
+
 $total_medicines = $pdo->query("SELECT COUNT(*) FROM medicines")->fetchColumn();
 $low_stock = $pdo->query("SELECT COUNT(*) FROM medicines WHERE quantity > 0 AND quantity <= 10")->fetchColumn();
 $out_of_stock = $pdo->query("SELECT COUNT(*) FROM medicines WHERE quantity = 0")->fetchColumn();
 
-// Xử lý thêm thuốc
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_medicine'])) {
     $name = trim($_POST['medicine_name']);
     $category = trim($_POST['category']);
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_medicine'])) {
     }
 }
 
-// Xử lý cập nhật thuốc
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_medicine'])) {
     $id = intval($_POST['medicine_id']);
     $name = trim($_POST['medicine_name']);
@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_medicine'])) {
     }
 }
 
-// Xử lý xóa thuốc
+
 if (isset($_GET['delete_id'])) {
     $id = intval($_GET['delete_id']);
     try {
@@ -116,7 +116,7 @@ if (isset($_GET['delete_id'])) {
     }
 }
 
-// Lấy thuốc cần sửa
+
 $edit_medicine = null;
 if (isset($_GET['edit_id'])) {
     $edit_id = intval($_GET['edit_id']);
@@ -125,7 +125,7 @@ if (isset($_GET['edit_id'])) {
     $edit_medicine = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// Tìm kiếm và lọc
+
 $search_query = $_GET['search'] ?? '';
 $category_filter = $_GET['category'] ?? '';
 $specialty_filter = $_GET['specialty'] ?? '';
@@ -150,19 +150,19 @@ if ($expiry_filter === 'expiring') {
     $search_condition .= " AND expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 MONTH)";
 }
 
-// Phân trang
+
 $page_num = max(1, intval($_GET['page_num'] ?? 1));
 $records_per_page = 20;
 $offset = ($page_num - 1) * $records_per_page;
 
-// Đếm tổng số
+
 $count_sql = "SELECT COUNT(*) FROM medicines WHERE 1=1 $search_condition";
 $count_stmt = $pdo->prepare($count_sql);
 $count_stmt->execute($params);
 $total_records = $count_stmt->fetchColumn();
 $total_pages = ceil($total_records / $records_per_page);
 
-// Lấy danh sách thuốc
+
 $sql = "SELECT * FROM medicines WHERE 1=1 $search_condition ORDER BY specialty, category, name LIMIT :limit OFFSET :offset";
 $stmt = $pdo->prepare($sql);
 foreach ($params as $key => $value) {
@@ -173,7 +173,7 @@ $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $medicines = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Nhóm thuốc theo chuyên khoa
+
 $medicines_by_specialty = [];
 foreach ($medicines as $med) {
     $spec = $med['specialty'] ?: 'Chung';
@@ -606,7 +606,7 @@ $specialties = [
     <div class="medicine-container">
         <a href="dashboard.php" class="back-link"><i class="fas fa-arrow-left"></i> Quay lại bảng điều khiển</a>
 
-        <!-- Tiêu đề và Stats -->
+        
         <div class="page-title-section">
             <h1><i class="fas fa-pills"></i>Quản lý Kho thuốc</h1>
             <div class="stats-pills">
@@ -627,7 +627,7 @@ $specialties = [
 
         <?php displayMessage(); ?>
 
-        <!-- Form thêm thuốc mới -->
+        
         <div class="card-medicine">
             <div class="card-header">
                 <h5><i class="fas fa-plus-circle"></i>Thêm Thuốc Mới</h5>
@@ -694,7 +694,7 @@ $specialties = [
             </div>
         </div>
 
-        <!-- Form chỉnh sửa thuốc -->
+        
         <?php if ($edit_medicine): ?>
             <div class="card-medicine" style="border-left: 4px solid #f59e0b;">
                 <div class="card-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
@@ -781,7 +781,7 @@ $specialties = [
             </div>
         <?php endif; ?>
 
-        <!-- Bộ lọc -->
+        
         <div class="filter-group">
             <form method="GET" style="width: 100%; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
                 <div class="form-col" style="flex: 2;">
@@ -819,7 +819,7 @@ $specialties = [
             </form>
         </div>
 
-        <!-- Danh sách thuốc -->
+        
         <?php if (empty($medicines)): ?>
             <div class="empty-state">
                 <i class="fas fa-inbox"></i>
@@ -883,7 +883,7 @@ $specialties = [
                 </div>
             <?php endforeach; ?>
 
-            <!-- Pagination -->
+            
             <?php if ($total_pages > 1): ?>
                 <nav class="mt-4">
                     <ul class="pagination">

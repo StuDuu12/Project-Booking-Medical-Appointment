@@ -4,7 +4,7 @@
 session_start();
 $base_path = '../';
 require_once('../config.php');
-// Function to get doctors with ratings
+
 function getDoctors($pdo)
 {
     $stmt = $pdo->prepare("
@@ -17,11 +17,11 @@ function getDoctors($pdo)
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Function to get specializations with aggregated ratings
+
 function getSpecializations($pdo)
 {
-    // Calculate average rating for each specialization based on its doctors
-    // Fetches specializations with their direct ratings
+    
+    
     $stmt = $pdo->prepare("
         SELECT s.*, 
                s.average_rating,
@@ -234,7 +234,7 @@ $specializations = getSpecializations($pdo);
 
 <body>
 
-    <!-- Include Navbar -->
+    
     <?php include('../includes/navbar.php'); ?>
 
     <div class="hero-section">
@@ -245,7 +245,7 @@ $specializations = getSpecializations($pdo);
     </div>
 
     <div class="container pb-5">
-        <!-- Tabs -->
+        
         <ul class="nav nav-pills justify-content-center mb-5" id="pills-tab" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="pills-doctors-tab" data-toggle="pill" href="#pills-doctors" role="tab">
@@ -260,9 +260,9 @@ $specializations = getSpecializations($pdo);
         </ul>
 
         <div class="tab-content" id="pills-tabContent">
-            <!-- DOCTORS TAB -->
+            
             <div class="tab-pane fade show active" id="pills-doctors" role="tabpanel">
-                <!-- Filter Section for Doctors -->
+                
                 <div class="filter-section">
                     <div class="row align-items-end">
                         <div class="col-md-4 mb-3 mb-md-0">
@@ -340,7 +340,7 @@ $specializations = getSpecializations($pdo);
                     <?php endforeach; ?>
                 </div>
 
-                <!-- No results message -->
+                
                 <div id="noDoctorsFound" class="no-results" style="display: none;">
                     <i class="fas fa-user-md"></i>
                     <h4>Không tìm thấy bác sĩ</h4>
@@ -348,9 +348,9 @@ $specializations = getSpecializations($pdo);
                 </div>
             </div>
 
-            <!-- SERVICES TAB -->
+            
             <div class="tab-pane fade" id="pills-services" role="tabpanel">
-                <!-- Filter Section for Services -->
+                
                 <div class="filter-section">
                     <div class="row align-items-end">
                         <div class="col-md-5 mb-3 mb-md-0">
@@ -396,7 +396,7 @@ $specializations = getSpecializations($pdo);
                                     <div class="ml-3 flex-grow-1 d-flex flex-column">
                                         <h5 class="font-weight-bold"><?php echo htmlspecialchars($spec['name_vi']); ?></h5>
 
-                                        <!-- Use line-clamp instead of truncate for better text display -->
+                                        
                                         <p class="text-muted small mb-2 text-clamp-2" title="<?php echo htmlspecialchars($spec['description'] ?? $spec['name']); ?>">
                                             <?php echo htmlspecialchars($spec['description'] ?? $spec['name']); ?>
                                         </p>
@@ -418,7 +418,7 @@ $specializations = getSpecializations($pdo);
                     <?php endforeach; ?>
                 </div>
 
-                <!-- No results message -->
+                
                 <div id="noServicesFound" class="no-results" style="display: none;">
                     <i class="fas fa-briefcase-medical"></i>
                     <h4>Không tìm thấy dịch vụ</h4>
@@ -428,7 +428,7 @@ $specializations = getSpecializations($pdo);
         </div>
     </div>
 
-    <!-- Scripts -->
+    
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -571,7 +571,7 @@ $specializations = getSpecializations($pdo);
         });
     </script>
 
-    <!-- Hiệu ứng hoa đào rơi -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -628,7 +628,7 @@ $specializations = getSpecializations($pdo);
         })();
     </script>
 
-    <!-- Footer -->
+    
     <footer class="footer">
         <div class="container">
             <div class="row">
@@ -662,7 +662,7 @@ $specializations = getSpecializations($pdo);
         </div>
     </footer>
 
-    <!-- Lunar New Year Lanterns -->
+    
     <div class="medical-lantern-container left-side">
         <div class="medical-string"></div>
         <div class="medical-lantern">

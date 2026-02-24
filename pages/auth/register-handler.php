@@ -12,7 +12,7 @@ if (isset($_POST['patsub1'])) {
     $password = $_POST['password'];
     $cpassword = $_POST['cpassword'];
 
-    // Store form data for repopulation
+    
     $_SESSION['form_data'] = [
         'fname' => $fname,
         'lname' => $lname,
@@ -23,7 +23,7 @@ if (isset($_POST['patsub1'])) {
 
     $errors = [];
 
-    // Validate required fields
+    
     if (empty($fname)) {
         $errors['fname'] = 'Vui lòng nhập họ';
     }
@@ -32,21 +32,21 @@ if (isset($_POST['patsub1'])) {
         $errors['lname'] = 'Vui lòng nhập tên';
     }
 
-    // Validate email
+    
     if (empty($email)) {
         $errors['email'] = 'Vui lòng nhập email';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Địa chỉ email không hợp lệ';
     }
 
-    // Validate contact
+    
     if (empty($contact)) {
         $errors['contact'] = 'Vui lòng nhập số điện thoại';
     } elseif (!preg_match('/^[0-9]{10}$/', $contact)) {
         $errors['contact'] = 'Số điện thoại phải có 10 chữ số';
     }
 
-    // Validate passwords
+    
     if (empty($password)) {
         $errors['password'] = 'Vui lòng nhập mật khẩu';
     } elseif (strlen($password) < 3) {
@@ -59,7 +59,7 @@ if (isset($_POST['patsub1'])) {
         $errors['cpassword'] = 'Mật khẩu xác nhận không khớp';
     }
 
-    // If there are validation errors, redirect back
+    
     if (!empty($errors)) {
         $_SESSION['form_errors'] = $errors;
         header('Location: register.php');
@@ -67,7 +67,7 @@ if (isset($_POST['patsub1'])) {
     }
 
     try {
-        // Check if email already exists
+        
         $stmt = $pdo->prepare("SELECT email FROM patreg WHERE email = :email");
         $stmt->execute([':email' => $email]);
 
@@ -77,10 +77,10 @@ if (isset($_POST['patsub1'])) {
             exit();
         }
 
-        // Hash password
+        
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Insert new patient
+        
         $stmt = $pdo->prepare("INSERT INTO patreg (fname, lname, gender, email, contact, password, cpassword) 
                               VALUES (:fname, :lname, :gender, :email, :contact, :password, :cpassword)");
 
@@ -95,13 +95,13 @@ if (isset($_POST['patsub1'])) {
         ]);
 
         if ($result) {
-            // Get the newly created patient ID
+            
             $pid = $pdo->lastInsertId();
 
-            // Clear form data
+            
             unset($_SESSION['form_data']);
 
-            // Set session variables
+            
             $_SESSION['pid'] = $pid;
             $_SESSION['username'] = $fname . " " . $lname;
             $_SESSION['fname'] = $fname;

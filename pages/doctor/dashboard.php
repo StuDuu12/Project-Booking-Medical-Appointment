@@ -13,21 +13,21 @@ if (!$doctor) {
     exit();
 }
 
-// Get doctor ID and Full Name
+
 $stmt = $pdo->prepare("SELECT id, fullname FROM doctb WHERE username = :doctor");
 $stmt->execute([':doctor' => $doctor]);
 $doc_info = $stmt->fetch(PDO::FETCH_ASSOC);
 $doctor_id = $doc_info['id'] ?? 0;
 $doctor_fullname = $doc_info['fullname'] ?? $doctor;
 
-// Handle page parameter
+
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 $allowed_pages = array('dashboard', 'appointments', 'schedule');
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
 
-// Xử lý Hủy lịch hẹn
+
 if (isset($_GET['cancel'])) {
     try {
         $stmt = $pdo->prepare("UPDATE appointmenttb SET doctorStatus='0' WHERE ID = :id");
@@ -40,7 +40,7 @@ if (isset($_GET['cancel'])) {
 
 ?>
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -717,14 +717,14 @@ if (isset($_GET['cancel'])) {
         }
     </style>
 
-    <!-- jQuery and Bootstrap JS for dropdown functionality -->
+    
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-    <!-- Container cho hoa đào rơi -->
+    
     <div class="petals-container" id="petals"></div>
 
     <script>
@@ -906,7 +906,7 @@ if (isset($_GET['cancel'])) {
                                     <div class="stat-label">Bệnh nhân hôm nay</div>
                                     <div class="stat-value">
                                         <?php
-                                        // Đếm bệnh nhân có lịch hẹn HÔM NAY và đang hoạt động
+                                        
                                         $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM appointmenttb WHERE TRIM(doctor) = TRIM(:doctor) AND appdate = CURDATE() AND userStatus = '1' AND doctorStatus = '1'");
                                         $stmt->execute([':doctor' => $doctor_fullname]);
                                         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -982,33 +982,34 @@ if (isset($_GET['cancel'])) {
                 <?php } ?>
 
                 <?php if ($page === 'schedule') {
-                    // Code to fetch schedule data
+                    
                     $stmt = $pdo->prepare("
                     SELECT day_of_week, start_time, end_time
                     FROM doctor_schedules
                     WHERE doctor_id = ?
-                    ORDER BY start_time ASC
+                    ORDER BY id DESC
                 ");
                     $stmt->execute([$doctor_id]);
                     $rawData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                    // 2. Gom nhóm dữ liệu theo ngày (Key sẽ là 0, 1, 2... 6)
-                    // Ví dụ: $grouped_schedule[1] = ['08:00 - 12:00', '13:00 - 17:00'];
+                    
                     $grouped_schedule = [];
                     if (count($rawData) > 0) {
                         foreach ($rawData as $row) {
                             $day = $row['day_of_week'];
                             $time_str = date('H:i', strtotime($row['start_time'])) . ' - ' . date('H:i', strtotime($row['end_time']));
 
-                            // Thêm vào mảng con của thứ đó
-                            $grouped_schedule[$day][] = $time_str;
+                            
+                            if (!isset($grouped_schedule[$day])) {
+                                $grouped_schedule[$day] = $time_str;
+                            }
                         }
                     }
 
-                    // Mảng tuần tự để lặp hiển thị (Thứ 2 -> CN)
+                    
                     $daysLoop = [1, 2, 3, 4, 5, 6, 0];
 
-                    // Tạo mảng tên ngày tiếng Việt
+                    
                     $vnDays = [
                         0 => 'Chủ Nhật',
                         1 => 'Thứ 2',
@@ -1035,7 +1036,7 @@ if (isset($_GET['cancel'])) {
                                         <h5><i class="fas fa-clock mr-2"></i>Thời gian biểu chi tiết</h5>
                                     </div>
                                     <div class="schedule-table-container">
-                                        <!-- Desktop Table View -->
+                                        
                                         <div class="table-responsive">
                                             <table class="table table-schedule mb-0">
                                                 <thead>
@@ -1059,10 +1060,9 @@ if (isset($_GET['cancel'])) {
 
                                                             <td>
                                                                 <?php
-                                                                if (isset($grouped_schedule[$dayNum]) && count($grouped_schedule[$dayNum]) > 0) {
-                                                                    foreach ($grouped_schedule[$dayNum] as $timeSlot) {
-                                                                        echo '<span class="time-pill"><i class="far fa-clock mr-2"></i>' . $timeSlot . '</span>';
-                                                                    }
+                                                                
+                                                                if (isset($grouped_schedule[$dayNum])) {
+                                                                    echo '<span class="time-pill"><i class="far fa-clock mr-2"></i>' . $grouped_schedule[$dayNum] . '</span>';
                                                                 } else {
                                                                     echo '<span class="off-day"><i class="fas fa-moon mr-2"></i>Ngày nghỉ</span>';
                                                                 }
@@ -1082,7 +1082,7 @@ if (isset($_GET['cancel'])) {
                                             </table>
                                         </div>
 
-                                        <!-- Mobile Card View -->
+                                        
                                         <div class="schedule-mobile-card">
                                             <?php foreach ($daysLoop as $dayNum):
                                                 $isToday = (date('w') == $dayNum);
@@ -1102,10 +1102,9 @@ if (isset($_GET['cancel'])) {
                                                         </div>
                                                         <div class="mobile-time-content">
                                                             <?php
-                                                            if (isset($grouped_schedule[$dayNum]) && count($grouped_schedule[$dayNum]) > 0) {
-                                                                foreach ($grouped_schedule[$dayNum] as $timeSlot) {
-                                                                    echo '<span class="mobile-time-pill"><i class="far fa-clock mr-1"></i>' . $timeSlot . '</span>';
-                                                                }
+                                                            
+                                                            if (isset($grouped_schedule[$dayNum])) {
+                                                                echo '<span class="mobile-time-pill"><i class="far fa-clock mr-1"></i>' . $grouped_schedule[$dayNum] . '</span>';
                                                             } else {
                                                                 echo '<span class="mobile-off-day"><i class="fas fa-moon mr-2"></i>Ngày nghỉ</span>';
                                                             }
@@ -1164,7 +1163,7 @@ if (isset($_GET['cancel'])) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    // JOIN với patreg để lấy tên bệnh nhân chính xác
+                                    
                                     $stmt = $pdo->prepare("
                                         SELECT a.pid, a.ID, a.appdate, a.apptime, a.userStatus, a.doctorStatus,
                                                CONCAT(p.fname, ' ', p.lname) as patient_name,
@@ -1229,8 +1228,8 @@ if (isset($_GET['cancel'])) {
                                         </thead>
                                 <tbody>
                                     <?php
-                                        // Modified query to support enhanced prestb
-                                        // We select pres_id as ID for view/export links
+                                        
+                                        
                                         $stmt = $pdo->prepare("
                                         SELECT p.pres_id, p.ID as app_id, p.pid, p.disease, p.treatment_duration, p.created_at, p.appdate,
                                                p.fname, p.lname,
@@ -1243,9 +1242,9 @@ if (isset($_GET['cancel'])) {
 
                                         if ($stmt->rowCount() > 0) {
                                             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                                // Handle cases where pres_id might be null (old records before migration)
-                                                // If pres_id is missing, we can't easily view details or export PDF for old records unless we backfill.
-                                                // But new records will have it.
+                                                
+                                                
+                                                
                                                 $view_id = $row['pres_id'];
                                     ?>
                                             <tr>
@@ -1295,7 +1294,7 @@ if (isset($_GET['cancel'])) {
         </section>
     <?php } ?>
 
-    <!-- Documents Section -->
+    
     <?php if ($page === 'documents') { ?>
         <section class="content-section">
             <div class="section-header">
@@ -1416,7 +1415,7 @@ if (isset($_GET['cancel'])) {
         </section>
     <?php } ?>
 
-    <!-- Patient History Section -->
+    
     <?php if ($page === 'patient_history') { ?>
         <section class="content-section">
             <div class="section-header">
@@ -1460,7 +1459,7 @@ if (isset($_GET['cancel'])) {
             <?php if (isset($_GET['search_pid']) && !empty($_GET['search_pid'])) {
                             $search_pid = $_GET['search_pid'];
 
-                            // Get patient info
+                            
                             $stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
                             $stmt->execute([':pid' => $search_pid]);
                             $patient_info = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1637,7 +1636,7 @@ if (isset($_GET['cancel'])) {
         </section>
     <?php } ?>
 
-    <!-- Medicine Inventory Section -->
+    
     <?php if ($page === 'medicine_inventory') { ?>
         <section class="content-section">
             <div class="section-header">
@@ -1716,7 +1715,7 @@ if (isset($_GET['cancel'])) {
         document.querySelector('.sidebar-overlay').addEventListener('click', toggleSidebar);
     </script>
 
-    <!-- Add Medicine Modal -->
+    
     <div class="modal fade" id="addMedicineModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -1808,7 +1807,7 @@ if (isset($_GET['cancel'])) {
         </div>
     </div>
 
-    <!-- Edit Medicine Modal -->
+    
     <div class="modal fade" id="editMedicineModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -1901,7 +1900,7 @@ if (isset($_GET['cancel'])) {
         </div>
     </div>
 
-    <!-- Update Stock Modal -->
+    
     <div class="modal fade" id="updateStockModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -1972,7 +1971,7 @@ if (isset($_GET['cancel'])) {
         }
     </script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;
@@ -2057,5 +2056,5 @@ if (isset($_GET['cancel'])) {
     </body>
 
 </html>
-<?php } // Closing brace for unknown unclosed block 
+<?php } 
 ?>

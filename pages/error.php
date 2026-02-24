@@ -174,7 +174,7 @@
 <body>
     <div class="error-container">
         <?php
-        // Determine error type from URL parameter
+        
         $errorType = $_GET['type'] ?? 'error';
         $errorMessage = $_GET['message'] ?? 'Đã xảy ra lỗi không xác định';
         $errorCode = $_GET['code'] ?? 'ERROR';

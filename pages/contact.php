@@ -1,13 +1,12 @@
 <?php
 
-/**
- * Trang Liên hệ - Bệnh viện Global
- */
+
+
 session_start();
 require_once '../includes/messages.php';
 require_once '../config.php';
 
-// Xử lý form liên hệ
+
 if (isset($_POST['btnSubmit'])) {
 	try {
 		$name = htmlspecialchars(trim($_POST['txtName']));
@@ -43,7 +42,7 @@ $base_path = '../';
 	<link rel="shortcut icon" type="image/x-icon" href="../images/favicon.png" />
 	<title>Liên hệ - Bệnh viện Global</title>
 
-	<!-- CSS -->
+	
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -258,7 +257,7 @@ $base_path = '../';
 <body>
 	<?php include($base_path . 'includes/navbar.php'); ?>
 
-	<!-- Contact Section -->
+	
 	<div class="contact-container">
 		<div class="contact-header">
 			<h1><i class="fas fa-phone-alt"></i> Liên hệ với chúng tôi</h1>
@@ -320,7 +319,7 @@ $base_path = '../';
 				</div>
 			</div>
 
-			<!-- Form liên hệ -->
+			
 			<div class="contact-form">
 				<h2><i class="fas fa-paper-plane"></i> Gửi tin nhắn</h2>
 
@@ -352,7 +351,7 @@ $base_path = '../';
 			</div>
 		</div>
 
-		<!-- Bản đồ -->
+		
 		<div class="map-container">
 			<h2><i class="fas fa-map"></i> Vị trí trên bản đồ</h2>
 			<iframe
@@ -363,12 +362,12 @@ $base_path = '../';
 		</div>
 	</div>
 
-	<!-- Scripts -->
+	
 	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-	<!-- Hiệu ứng hoa đào rơi -->
+	
 	<script type="text/javascript">
 		(function() {
 			const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -424,7 +423,7 @@ $base_path = '../';
 			animate();
 		})();
 	</script>
-	<!-- Footer -->
+	
 	<footer class="footer">
 		<div class="container">
 			<div class="row">
@@ -458,7 +457,7 @@ $base_path = '../';
 		</div>
 	</footer>
 
-	<!-- Lunar New Year Lanterns -->
+	
 	<div class="medical-lantern-container left-side">
 		<div class="medical-string"></div>
 		<div class="medical-lantern">

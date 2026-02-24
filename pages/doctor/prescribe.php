@@ -1,9 +1,26 @@
 ﻿<?php
 ob_start();
 session_start();
-require_once('../../config.php');
-require_once('../../includes/messages.php');
-require_once('../../includes/functions.php');
+
+set_exception_handler(function ($e) {
+    error_log("Doctor prescribe uncaught: " . $e->getMessage());
+    while (ob_get_level()) ob_end_clean();
+    http_response_code(500);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi</h4><p>' . htmlspecialchars($e->getMessage()) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    exit;
+});
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level()) ob_end_clean();
+        http_response_code(500);
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi Server</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi Server</h4><p>' . htmlspecialchars($err['message']) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    }
+});
+
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/messages.php';
+require_once __DIR__ . '/../../includes/functions.php';
 
 $doctor = $_SESSION['dname'] ?? null;
 
@@ -12,7 +29,7 @@ if (!$doctor) {
     exit();
 }
 
-// Get doctor info
+
 $doctor_username = $_SESSION['dname'];
 $doctor_id = null;
 $doctor_info = null;
@@ -27,7 +44,7 @@ if ($doctor_info) {
     error_log("Warning: Doctor with username '$doctor_username' not found in doctb.");
 }
 
-// Initialize variables
+
 $pid = '';
 $ID = '';
 $appdate = '';
@@ -35,7 +52,7 @@ $apptime = '';
 $fname = '';
 $lname = '';
 
-// Check if parameters are passed via GET (from Appointments list)
+
 if (isset($_GET['pid']) && isset($_GET['ID'])) {
     $pid = $_GET['pid'];
     $ID = $_GET['ID'];
@@ -45,12 +62,12 @@ if (isset($_GET['pid']) && isset($_GET['ID'])) {
     $apptime = $_GET['apptime'] ?? '';
 }
 
-// Handle form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
     try {
         $pdo->beginTransaction();
 
-        // Get POST data
+        
         $pid = $_POST['pid'];
         $ID = $_POST['ID'] ?? null;
         $disease = $_POST['disease'];
@@ -63,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
         $appdate = $_POST['appdate'] ?? date('Y-m-d');
         $apptime = $_POST['apptime'] ?? date('H:i:s');
 
-        // Use a summary of medications for the old 'prescription' column
+        
         $med_summary = "";
         if (isset($_POST['medications']) && is_array($_POST['medications'])) {
             foreach ($_POST['medications'] as $med) {
@@ -104,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
 
         $prescription_id = $pdo->lastInsertId();
 
-        // Insert medications
+        
         if (isset($_POST['medications']) && is_array($_POST['medications'])) {
             $stmt = $pdo->prepare("
                 INSERT INTO prescription_medications (prescription_id, medication_name, dosage, frequency, duration, special_notes)
@@ -495,7 +512,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
             <input type="hidden" name="appdate" value="<?php echo htmlspecialchars($appdate); ?>">
             <input type="hidden" name="apptime" value="<?php echo htmlspecialchars($apptime); ?>">
 
-            <!-- Diagnosis Section -->
+            
             <div class="form-card">
                 <h5 class="section-title"><i class="fas fa-stethoscope mr-2"></i>Chẩn đoán & Điều trị</h5>
                 <div class="row">
@@ -518,7 +535,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
                 </div>
             </div>
 
-            <!-- Medications Section -->
+            
             <div class="form-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="section-title mb-0"><i class="fas fa-pills mr-2"></i>Danh sách thuốc</h5>
@@ -528,11 +545,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
                 </div>
 
                 <div id="medications-container">
-                    <!-- Medications added via JS -->
+                    
                 </div>
             </div>
 
-            <!-- General Notes Section -->
+            
             <div class="form-card">
                 <h5 class="section-title"><i class="fas fa-comment-medical mr-2"></i>Hướng dẫn chung</h5>
                 <div class="form-group">
@@ -618,7 +635,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prescribe'])) {
         });
     </script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

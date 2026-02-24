@@ -11,7 +11,7 @@ if (!$doc_id) {
     exit();
 }
 
-// Get doctor details
+
 $stmt = $pdo->prepare("
     SELECT d.*, s.name_vi as spec_name 
     FROM doctb d 
@@ -25,7 +25,7 @@ if (!$doctor) {
     die("Bác sĩ không tồn tại");
 }
 
-// Get reviews
+
 $stmt = $pdo->prepare("
     SELECT r.*, p.fname, p.lname 
     FROM doctor_ratings r
@@ -36,16 +36,16 @@ $stmt = $pdo->prepare("
 $stmt->execute([$doc_id]);
 $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Handle Review Submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     if (!isset($_SESSION['pid'])) {
         $error = "Vui lòng đăng nhập để đánh giá!";
     } else {
         $rating = $_POST['rating'];
         $review_text = $_POST['review'];
-        $patient_id = $_SESSION['pid']; // Assuming patient ID is storing in session pid or id
+        $patient_id = $_SESSION['pid']; 
 
-        // Simple insert (In real app, verify appointment)
+        
         try {
             $stmt = $pdo->prepare("
                 INSERT INTO doctor_ratings (doctor_id, patient_id, rating, review, created_at)
@@ -53,18 +53,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
             ");
             $stmt->execute([$doc_id, $patient_id, $rating, $review_text]);
 
-            // Validate: check 'total_ratings' column existence before using it, assuming it exists per user prompt
-            // Calculate new average
+            
+            
             $stmt = $pdo->prepare("SELECT AVG(rating) as avg_rate, COUNT(*) as total FROM doctor_ratings WHERE doctor_id = ?");
             $stmt->execute([$doc_id]);
             $stats = $stmt->fetch();
 
-            // Update doctor table
+            
             $update = $pdo->prepare("UPDATE doctb SET average_rating = ?, total_ratings = ? WHERE id = ?");
             $update->execute([$stats['avg_rate'], $stats['total'], $doc_id]);
 
             $success = "Cảm ơn bạn đã đánh giá!";
-            // Reload reviews
+            
             $stmt = $pdo->prepare("
                 SELECT r.*, p.fname, p.lname 
                 FROM doctor_ratings r
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
             $stmt->execute([$doc_id]);
             $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Refresh doctor info for updated stars
+            
             $stmt = $pdo->prepare("SELECT * FROM doctb WHERE id = ?");
             $stmt->execute([$doc_id]);
             $doc_refreshed = $stmt->fetch();
@@ -216,13 +216,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
                     <div class="card-body">
                         <h5 class="card-title font-weight-bold mb-3">Viết đánh giá</h5>
                         <?php
-                        // Determine user role and permission
+                        
                         $can_rate = false;
                         $role_message = "";
 
                         if (isset($_SESSION['patientSession'])) {
-                            // Verify if pid is set, if not try to get it (assuming basic session setup)
-                            // In this system, pid seems to be standalone or part of patient session.
+                            
+                            
                             if (isset($_SESSION['pid'])) {
                                 $can_rate = true;
                             } else {
@@ -273,7 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
         </div>
     </div>
 
-    <!-- Script for rating hover cosmetic if needed, or rely on CSS -->
+    
 </body>
 
 </html>

@@ -1,14 +1,14 @@
 <?php
-// Tắt hiển thị lỗi để không làm hỏng JSON response
+
 error_reporting(0);
 ini_set('display_errors', 0);
 
 session_start();
 
-// Xử lý AJAX request trước để tránh output HTML
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'])) {
     header('Content-Type: application/json');
-    ob_clean(); // Xóa bất kỳ output nào trước đó
+    ob_clean(); 
 
     try {
         require_once('../../config.php');
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'
             throw new Exception("Không thể kết nối database");
         }
 
-        // Lấy thông tin bệnh nhân
+        
         $patientStmt = $pdo->prepare("SELECT fname, lname, email FROM patreg WHERE pid = :pid");
         $patientStmt->execute([':pid' => $pid]);
         $patient = $patientStmt->fetch(PDO::FETCH_ASSOC);
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'
             exit();
         }
 
-        // Lấy danh sách hồ sơ bệnh án từ bảng medical_records
+        
         $stmt = $pdo->prepare("
             SELECT mr.*, 
                    d.fullname as doctor_name,
@@ -66,11 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'
                 $html .= '<td style="color: #1f2937; font-weight: 500;">' . htmlspecialchars($rec['doctor_name'] ?: 'N/A') . '</td>';
                 $html .= '<td><span class="badge badge-info" style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 0.4rem 0.8rem; font-weight: 600;">' . htmlspecialchars($rec['doctor_specialty_vi'] ?: 'N/A') . '</span></td>';
 
-                // Triệu chứng
+                
                 $symptoms = $rec['symptoms'] ?: $rec['chief_complaint'] ?: 'Không ghi nhận';
                 $html .= '<td><small>' . htmlspecialchars(substr($symptoms, 0, 150)) . '</small></td>';
 
-                // Chẩn đoán & điều trị
+                
                 $treatment = '';
                 if (!empty($rec['diagnosis'])) {
                     $treatment .= '<strong>Chẩn đoán:</strong> ' . htmlspecialchars(substr($rec['diagnosis'], 0, 100)) . '<br>';
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'
     exit();
 }
 
-// Load các file cần thiết cho trang thường
+
 require_once('../../config.php');
 require_once('../../includes/messages.php');
 require_once('../../includes/functions.php');
@@ -108,16 +108,16 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['user_type']) || $_SESSION
     exit();
 }
 
-// Handle page parameter
+
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 $allowed_pages = array('dashboard', 'doctors', 'patients', 'appointments', 'prescriptions', 'queries', 'medical-records', 'manage_schedule');
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
 
-// Thống kê cho dashboard
+
 if ($page === 'dashboard') {
-    // Lấy dữ liệu bệnh nhân mới 12 tháng gần nhất (đếm từ lịch hẹn đầu tiên của mỗi bệnh nhân)
+    
     $patientsMonthlyQuery = "SELECT 
         DATE_FORMAT(first_appointment, '%Y-%m') as month,
         COUNT(*) as count
@@ -132,7 +132,7 @@ if ($page === 'dashboard') {
     $patientsMonthlyStmt = $pdo->query($patientsMonthlyQuery);
     $patientsMonthlyData = $patientsMonthlyStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Lấy dữ liệu doanh thu 12 tháng gần nhất
+    
     $revenueMonthlyQuery = "SELECT 
         DATE_FORMAT(a.appdate, '%Y-%m') as month,
         SUM(CAST(d.docFees AS DECIMAL(10,2))) as revenue
@@ -145,7 +145,7 @@ if ($page === 'dashboard') {
     $revenueMonthlyStmt = $pdo->query($revenueMonthlyQuery);
     $revenueMonthlyData = $revenueMonthlyStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Tỷ lệ lịch khám thành công/hủy
+    
     $appointmentStatsQuery = "SELECT 
         SUM(CASE WHEN userStatus = 1 AND doctorStatus = 1 THEN 1 ELSE 0 END) as success,
         SUM(CASE WHEN userStatus = 0 OR doctorStatus = 0 THEN 1 ELSE 0 END) as cancelled,
@@ -154,7 +154,7 @@ if ($page === 'dashboard') {
     $appointmentStatsStmt = $pdo->query($appointmentStatsQuery);
     $appointmentStats = $appointmentStatsStmt->fetch(PDO::FETCH_ASSOC);
 
-    // Top 5 bác sĩ có nhiều lịch khám nhất
+    
     $topDoctorsQuery = "SELECT 
         d.fullname,
         COALESCE(s.name_vi, d.spec) as spec,
@@ -171,7 +171,7 @@ if ($page === 'dashboard') {
     $topDoctors = $topDoctorsStmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// --- LOGIC CŨ: THÊM BÁC SĨ ---
+
 if (isset($_POST['docsub'])) {
     try {
         $fullname = $_POST['fullname'];
@@ -181,7 +181,7 @@ if (isset($_POST['docsub'])) {
         $spec_id = $_POST['special_id'];
         $docFees = $_POST['docFees'];
 
-        // Get Spec Name for legacy compatibility
+        
         $stmt_spec = $pdo->prepare("SELECT name FROM specializations WHERE id = ?");
         $stmt_spec->execute([$spec_id]);
         $spec_row = $stmt_spec->fetch();
@@ -210,7 +210,7 @@ if (isset($_POST['docsub'])) {
     }
 }
 
-// --- LOGIC CŨ: XÓA BÁC SĨ ---
+
 if (isset($_POST['docsub1'])) {
     try {
         $demail = $_POST['demail'];
@@ -223,7 +223,7 @@ if (isset($_POST['docsub1'])) {
     }
 }
 
-// --- LOGIC MỚI: QUẢN LÝ LỊCH ---
+
 if (isset($_POST['assign_schedule'])) {
     $doctor_id = $_POST['doctor_id'];
     $days = isset($_POST['day_of_week']) ? $_POST['day_of_week'] : [];
@@ -236,30 +236,41 @@ if (isset($_POST['assign_schedule'])) {
         redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'error', 'Giờ kết thúc phải sau giờ bắt đầu!');
     } else {
         $successCount = 0;
-        $duplicateCount = 0;
         foreach ($days as $day_num) {
-            // Kiểm tra trùng lặp đầy đủ: doctor_id, day_of_week, start_time, end_time
-            $check = $pdo->prepare("SELECT id FROM doctor_schedules WHERE doctor_id=? AND day_of_week=? AND start_time=? AND end_time=?");
-            $check->execute([$doctor_id, $day_num, $start, $end]);
-
-            if ($check->rowCount() == 0) {
-                // Không trùng -> Insert
-                $sql = "INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time) VALUES (?,?,?,?)";
-                $stmt = $pdo->prepare($sql);
-                if ($stmt->execute([$doctor_id, $day_num, $start, $end])) {
-                    $successCount++;
-                }
-            } else {
-                $duplicateCount++;
+            
+            $delete_stmt = $pdo->prepare("DELETE FROM doctor_schedules WHERE doctor_id = ? AND day_of_week = ?");
+            $delete_stmt->execute([$doctor_id, $day_num]);
+            
+            
+            $sql = "INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time) VALUES (?,?,?,?)";
+            $stmt = $pdo->prepare($sql);
+            if ($stmt->execute([$doctor_id, $day_num, $start, $end])) {
+                $successCount++;
             }
         }
 
-        if ($successCount > 0 && $duplicateCount > 0) {
-            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', "Đã thêm $successCount lịch mới. $duplicateCount lịch bị trùng không thêm.");
-        } elseif ($successCount > 0) {
-            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', "Đã thêm lịch thành công cho $successCount ngày.");
+        if ($successCount > 0) {
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', "Đã cập nhật lịch thành công cho $successCount ngày.");
         } else {
-            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'warning', "Tất cả lịch đã tồn tại. Không có lịch mới nào được thêm.");
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'error', "Không thể cập nhật lịch. Vui lòng thử lại.");
+        }
+    }
+}
+
+
+if (isset($_POST['edit_schedule'])) {
+    $schedule_id = $_POST['schedule_id'];
+    $new_start = $_POST['new_start_time'];
+    $new_end = $_POST['new_end_time'];
+    
+    if (strtotime($new_end) <= strtotime($new_start)) {
+        redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'error', 'Giờ kết thúc phải sau giờ bắt đầu!');
+    } else {
+        $stmt = $pdo->prepare("UPDATE doctor_schedules SET start_time = ?, end_time = ? WHERE id = ?");
+        if ($stmt->execute([$new_start, $new_end, $schedule_id])) {
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'success', 'Đã cập nhật khung giờ thành công.');
+        } else {
+            redirectWithMessage($_SERVER['PHP_SELF'] . '?page=manage_schedule', 'error', 'Không thể cập nhật khung giờ.');
         }
     }
 }
@@ -267,18 +278,18 @@ if (isset($_POST['assign_schedule'])) {
 if (isset($_GET['reset_schedule'])) {
     $doc_id = $_GET['reset_schedule'];
 
-    // Lấy fullname của bác sĩ này
+    
     $stmt_name = $pdo->prepare("SELECT fullname FROM doctb WHERE id = ?");
     $stmt_name->execute([$doc_id]);
     $doc_row = $stmt_name->fetch();
 
     if ($doc_row) {
-        // Lấy tất cả ID của bác sĩ có cùng fullname (xử lý trường hợp duplicate trong DB)
+        
         $stmt_ids = $pdo->prepare("SELECT id FROM doctb WHERE fullname = ?");
         $stmt_ids->execute([$doc_row['fullname']]);
         $all_ids = $stmt_ids->fetchAll(PDO::FETCH_COLUMN);
 
-        // Xóa lịch của tất cả ID này
+        
         if (!empty($all_ids)) {
             $placeholders = implode(',', array_fill(0, count($all_ids), '?'));
             $stmt = $pdo->prepare("DELETE FROM doctor_schedules WHERE doctor_id IN ($placeholders)");
@@ -1010,7 +1021,7 @@ if (isset($_GET['reset_schedule'])) {
 </head>
 
 <body class="page-medical-records">
-    <!-- Container cho hoa đào rơi -->
+    
     <div class="petals-container" id="petals"></div>
     <script>
         function createPetals() {
@@ -1158,9 +1169,9 @@ if (isset($_GET['reset_schedule'])) {
                         </div>
                     </div>
 
-                    <!-- Biểu đồ thống kê -->
+                    
                     <div class="row mt-4">
-                        <!-- Biểu đồ bệnh nhân mới theo tháng -->
+                        
                         <div class="col-lg-6 mb-4">
                             <div class="data-table-container">
                                 <div class="data-table-header">
@@ -1172,7 +1183,7 @@ if (isset($_GET['reset_schedule'])) {
                             </div>
                         </div>
 
-                        <!-- Biểu đồ doanh thu -->
+                        
                         <div class="col-lg-6 mb-4">
                             <div class="data-table-container">
                                 <div class="data-table-header">
@@ -1186,7 +1197,7 @@ if (isset($_GET['reset_schedule'])) {
                     </div>
 
                     <div class="row">
-                        <!-- Tỷ lệ lịch khám -->
+                        
                         <div class="col-lg-6 mb-4">
                             <div class="data-table-container">
                                 <div class="data-table-header">
@@ -1221,7 +1232,7 @@ if (isset($_GET['reset_schedule'])) {
                             </div>
                         </div>
 
-                        <!-- Top bác sĩ -->
+                        
                         <div class="col-lg-6 mb-4">
                             <div class="data-table-container">
                                 <div class="data-table-header">
@@ -1338,10 +1349,10 @@ if (isset($_GET['reset_schedule'])) {
                                 <select id="filter_spec" class="form-control custom-select-filter">
                                     <option value="">-- Tất cả chuyên khoa --</option>
                                     <?php
-                                    // Load tất cả chuyên khoa từ database
+                                    
                                     $specs_query = $pdo->query("SELECT name, name_vi FROM specializations WHERE status = 1 ORDER BY name_vi ASC");
                                     while ($spec_row = $specs_query->fetch(PDO::FETCH_ASSOC)) {
-                                        echo '<option value="' . htmlspecialchars($spec_row['name']) . '">' . htmlspecialchars($spec_row['name_vi']) . '</option>';
+                                        echo '<option value="' . htmlspecialchars($spec_row['name_vi']) . '">' . htmlspecialchars($spec_row['name_vi']) . '</option>';
                                     }
                                     ?>
                                 </select>
@@ -1369,7 +1380,7 @@ if (isset($_GET['reset_schedule'])) {
                             </thead>
                             <tbody id="doctor_table_body">
                                 <?php
-                                // Load dữ liệu ban đầu
+                                
                                 $query = "SELECT d.*, s.name_vi FROM doctb d LEFT JOIN specializations s ON d.spec_id = s.id ORDER BY d.fullname ASC";
                                 $result = $pdo->query($query);
                                 $serial = 1;
@@ -1464,10 +1475,10 @@ if (isset($_GET['reset_schedule'])) {
             <?php if ($page === 'manage_schedule') {
                 $is_saturday = (date('N') == 6);
 
-                // Lấy danh sách bác sĩ UNIQUE theo fullname (loại bỏ duplicate trong DB) - giữ ID nhỏ nhất
+                
                 $doctors = $pdo->query("SELECT MIN(id) as id, fullname FROM doctb GROUP BY fullname ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
 
-                // Lấy danh sách bác sĩ với chuyên khoa cho bảng - UNIQUE theo fullname
+                
                 $sql_docs = "SELECT MIN(d.id) as id, d.fullname, 
                              (SELECT COALESCE(s.name_vi, '---') FROM specializations s WHERE s.id = d.spec_id LIMIT 1) as spec_name 
                              FROM doctb d 
@@ -1475,38 +1486,49 @@ if (isset($_GET['reset_schedule'])) {
                              ORDER BY d.fullname";
                 $all_docs = $pdo->query($sql_docs)->fetchAll(PDO::FETCH_ASSOC);
 
-                // Lấy lịch làm việc - GROUP BY để tránh duplicate trong schedules
-                $sql_sch = "SELECT doctor_id, day_of_week, MIN(start_time) as start_time, MAX(end_time) as end_time 
+                
+                $sql_sch = "SELECT id as schedule_id, doctor_id, day_of_week, start_time, end_time 
                            FROM doctor_schedules 
-                           GROUP BY doctor_id, day_of_week";
+                           ORDER BY id DESC";
                 $all_schedules = $pdo->query($sql_sch)->fetchAll(PDO::FETCH_ASSOC);
 
-                // Tạo scheduleMap - gộp lịch của các bác sĩ trùng tên
+                
                 $scheduleMap = [];
-                // Map doctor_id -> fullname
+                
                 $doctorNameMap = [];
                 foreach ($doctors as $doc) {
                     $doctorNameMap[$doc['id']] = $doc['fullname'];
                 }
-                // Lấy tất cả ID của bác sĩ theo fullname (vì có thể trùng)
+                
                 $allDoctorIds = $pdo->query("SELECT id, fullname FROM doctb")->fetchAll(PDO::FETCH_ASSOC);
                 $fullnameToIds = [];
                 foreach ($allDoctorIds as $d) {
                     $fullnameToIds[$d['fullname']][] = $d['id'];
                 }
 
-                // Gộp lịch theo fullname
+                
                 foreach ($all_schedules as $sch) {
-                    // Tìm fullname của doctor_id này
+                    
                     foreach ($fullnameToIds as $fname => $ids) {
                         if (in_array($sch['doctor_id'], $ids)) {
-                            // Lấy ID chính (nhỏ nhất) của fullname này
+                            
                             $mainId = min($ids);
-                            $scheduleMap[$mainId][$sch['day_of_week']] = date('H:i', strtotime($sch['start_time'])) . ' - ' . date('H:i', strtotime($sch['end_time']));
+                            
+                            if (!isset($scheduleMap[$mainId][$sch['day_of_week']])) {
+                                $scheduleMap[$mainId][$sch['day_of_week']] = [
+                                    'time' => date('H:i', strtotime($sch['start_time'])) . ' - ' . date('H:i', strtotime($sch['end_time'])),
+                                    'schedule_id' => $sch['schedule_id'],
+                                    'start_time' => date('H:i', strtotime($sch['start_time'])),
+                                    'end_time' => date('H:i', strtotime($sch['end_time']))
+                                ];
+                            }
                             break;
                         }
                     }
                 }
+                
+                
+                $specs_for_filter = $pdo->query("SELECT name, name_vi FROM specializations WHERE status = 1 ORDER BY name_vi ASC")->fetchAll(PDO::FETCH_ASSOC);
 
                 $daysOfWeek = [1 => 'Thứ 2', 2 => 'Thứ 3', 3 => 'Thứ 4', 4 => 'Thứ 5', 5 => 'Thứ 6', 6 => 'Thứ 7', 0 => 'CN'];
             ?>
@@ -1580,7 +1602,7 @@ if (isset($_GET['reset_schedule'])) {
                         </div>
                     </div>
 
-                    <!-- Tìm kiếm và lọc -->
+                    
                     <div class="search-card">
                         <div class="row align-items-center">
                             <div class="col-md-6 mb-2 mb-md-0">
@@ -1592,31 +1614,9 @@ if (isset($_GET['reset_schedule'])) {
                             <div class="col-md-4 mb-2 mb-md-0">
                                 <select id="matrix_spec" class="form-control custom-select-filter">
                                     <option value="">-- Tất cả chuyên khoa --</option>
-                                    <option value="Pediatrics">Nhi khoa</option>
-                                    <option value="Obstetrics_Gynecology">Sản phụ khoa</option>
-                                    <option value="Dermatology">Da liễu</option>
-                                    <option value="Gastroenterology">Tiêu hóa</option>
-                                    <option value="Rheumatology">Cơ xương khớp</option>
-                                    <option value="Allergy_Immunology">Dị ứng - Miễn dịch</option>
-                                    <option value="Anesthesiology">Gây mê hồi sức</option>
-                                    <option value="ENT">Tai - Mũi - Họng</option>
-                                    <option value="Oncology">Ung bướu</option>
-                                    <option value="Cardiology">Tim mạch</option>
-                                    <option value="Geriatrics">Lão khoa</option>
-                                    <option value="Orthopedics">Chấn thương chỉnh hình</option>
-                                    <option value="Emergency_Medicine">Hồi sức cấp cứu</option>
-                                    <option value="General_Surgery">Ngoại tổng quát</option>
-                                    <option value="Preventive_Medicine">Y học dự phòng</option>
-                                    <option value="Dentistry">Răng - Hàm - Mặt</option>
-                                    <option value="Infectious_Disease">Truyền nhiễm</option>
-                                    <option value="Nephrology">Nội thận</option>
-                                    <option value="Endocrinology">Nội tiết</option>
-                                    <option value="Psychiatry">Tâm thần</option>
-                                    <option value="Pulmonology">Hô hấp</option>
-                                    <option value="Laboratory">Xét nghiệm</option>
-                                    <option value="Hematology">Huyết học</option>
-                                    <option value="Psychology">Tâm lý</option>
-                                    <option value="Neurology">Nội thần kinh</option>
+                                    <?php foreach ($specs_for_filter as $spec_row): ?>
+                                        <option value="<?php echo htmlspecialchars($spec_row['name_vi']); ?>"><?php echo htmlspecialchars($spec_row['name_vi']); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-md-2 text-right">
@@ -1646,8 +1646,20 @@ if (isset($_GET['reset_schedule'])) {
                                             <td class="spec-col"><?php echo $doc['spec_name'] ?? '---'; ?></td>
                                             <?php foreach ($daysOfWeek as $dayKey => $dayLabel): ?>
                                                 <td>
-                                                    <?php if (isset($scheduleMap[$docId][$dayKey])): ?>
-                                                        <i class="fas fa-check-circle check-icon" title="<?php echo $scheduleMap[$docId][$dayKey]; ?>"></i><br><small class="text-success font-weight-bold"><?php echo $scheduleMap[$docId][$dayKey]; ?></small>
+                                                    <?php if (isset($scheduleMap[$docId][$dayKey])): 
+                                                        $schData = $scheduleMap[$docId][$dayKey];
+                                                    ?>
+                                                        <i class="fas fa-check-circle check-icon" title="<?php echo $schData['time']; ?>"></i>
+                                                        <br><small class="text-success font-weight-bold"><?php echo $schData['time']; ?></small>
+                                                        <br><button type="button" class="btn btn-outline-primary btn-sm mt-1 btn-edit-schedule" 
+                                                            data-schedule-id="<?php echo $schData['schedule_id']; ?>"
+                                                            data-start-time="<?php echo $schData['start_time']; ?>"
+                                                            data-end-time="<?php echo $schData['end_time']; ?>"
+                                                            data-day="<?php echo $dayLabel; ?>"
+                                                            data-doctor="<?php echo htmlspecialchars($doc['fullname']); ?>"
+                                                            style="font-size: 0.65rem; padding: 2px 6px;">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
                                                     <?php else: ?><i class="fas fa-times cross-icon"></i><?php endif; ?>
                                                 </td>
                                             <?php endforeach; ?>
@@ -1659,6 +1671,53 @@ if (isset($_GET['reset_schedule'])) {
                         </div>
                     </div>
                 </section>
+
+                
+                <div class="modal fade" id="editScheduleModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);">
+                                <h5 class="modal-title text-white"><i class="fas fa-clock"></i> Chỉnh sửa khung giờ</h5>
+                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form method="POST">
+                                <div class="modal-body" style="background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(254, 215, 170, 0.9) 100%);">
+                                    <input type="hidden" name="schedule_id" id="edit_schedule_id">
+                                    <div class="form-group">
+                                        <label style="color: #000;"><strong>Bác sĩ:</strong></label>
+                                        <p id="edit_doctor_name" class="font-weight-bold" style="color: #d2302c;"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: #000;"><strong>Ngày:</strong></label>
+                                        <p id="edit_day_label" class="font-weight-bold" style="color: #d2302c;"></p>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label style="color: #000;"><i class="fas fa-play" style="color: #10b981;"></i> Giờ bắt đầu</label>
+                                                <input type="time" name="new_start_time" id="edit_start_time" class="form-control" required style="border: 2px solid #d2302c;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label style="color: #000;"><i class="fas fa-stop" style="color: #ef4444;"></i> Giờ kết thúc</label>
+                                                <input type="time" name="new_end_time" id="edit_end_time" class="form-control" required style="border: 2px solid #d2302c;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                    <button type="submit" name="edit_schedule" class="btn btn-primary" style="background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%); border: none;">
+                                        <i class="fas fa-save"></i> Lưu thay đổi
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
 
                 <script>
                     // Xử lý tìm kiếm và lọc bằng JavaScript phía client
@@ -1692,6 +1751,18 @@ if (isset($_GET['reset_schedule'])) {
                         if (mSpec) {
                             mSpec.addEventListener('change', filterTable);
                         }
+                        
+                        // Xử lý nút chỉnh sửa khung giờ
+                        document.querySelectorAll('.btn-edit-schedule').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                document.getElementById('edit_schedule_id').value = this.dataset.scheduleId;
+                                document.getElementById('edit_start_time').value = this.dataset.startTime;
+                                document.getElementById('edit_end_time').value = this.dataset.endTime;
+                                document.getElementById('edit_doctor_name').textContent = 'BS. ' + this.dataset.doctor;
+                                document.getElementById('edit_day_label').textContent = this.dataset.day;
+                                $('#editScheduleModal').modal('show');
+                            });
+                        });
                     });
                 </script>
             <?php } ?>
@@ -1746,7 +1817,7 @@ if (isset($_GET['reset_schedule'])) {
                                 </tr>
                             </thead>
                             <tbody><?php
-                                    // JOIN với patreg để lấy tên bệnh nhân chính xác
+                                    
                                     $query = "SELECT a.*, 
                                               CONCAT(p.fname, ' ', p.lname) as patient_fullname,
                                               p.contact as patient_contact
@@ -1829,15 +1900,15 @@ if (isset($_GET['reset_schedule'])) {
             <?php } ?>
 
             <?php if ($page === 'medical-records') {
-                // Lấy danh sách chuyên khoa
+                
                 $specs = $pdo->query("SELECT * FROM specializations ORDER BY name_vi")->fetchAll(PDO::FETCH_ASSOC);
-                // Lấy danh sách bác sĩ - loại bỏ duplicate theo fullname
+                
                 $doctors = $pdo->query("SELECT MIN(id) as id, fullname, spec_id FROM doctb GROUP BY fullname, spec_id")->fetchAll(PDO::FETCH_ASSOC);
 
-                // Xử lý lọc
+                
                 $filter_spec_id = isset($_POST['filter_spec_id']) ? $_POST['filter_spec_id'] : '';
 
-                // Logic: Lọc bệnh nhân đã từng khám ở khoa đó
+                
                 $sql_pat = "SELECT p.pid, p.fname, p.lname, p.contact, p.email, p.gender, p.date_of_birth,
                             (SELECT COUNT(*) FROM medical_records m WHERE m.patient_id = p.pid) as total_records,
                             (SELECT MAX(record_date) FROM medical_records m WHERE m.patient_id = p.pid) as last_visit
@@ -1845,7 +1916,7 @@ if (isset($_GET['reset_schedule'])) {
                 $params = [];
 
                 if (!empty($filter_spec_id)) {
-                    // Lọc theo chuyên khoa - xử lý bác sĩ trùng tên bằng cách lấy tất cả ID có cùng fullname
+                    
                     $sql_pat .= " WHERE p.pid IN (
                                       SELECT DISTINCT mr.patient_id 
                                       FROM medical_records mr
@@ -2096,14 +2167,14 @@ if (isset($_GET['reset_schedule'])) {
                 $monthLabels = [];
                 $patientCounts = [];
 
-                // Tạo mảng 12 tháng với giá trị 0
+                
                 for ($i = 11; $i >= 0; $i--) {
                     $date = date('Y-m', strtotime("-$i months"));
                     $monthLabels[$date] = date('m/Y', strtotime("-$i months"));
                     $patientCounts[$date] = 0;
                 }
 
-                // Điền dữ liệu thực tế
+                
                 foreach ($patientsMonthlyData as $row) {
                     if (isset($monthLabels[$row['month']])) {
                         $patientCounts[$row['month']] = (int)$row['count'];
@@ -2196,14 +2267,14 @@ if (isset($_GET['reset_schedule'])) {
                 $revenueLabels = [];
                 $revenueCounts = [];
 
-                // Tạo mảng 12 tháng với giá trị 0
+                
                 for ($i = 11; $i >= 0; $i--) {
                     $date = date('Y-m', strtotime("-$i months"));
                     $revenueLabels[$date] = date('m/Y', strtotime("-$i months"));
                     $revenueCounts[$date] = 0;
                 }
 
-                // Điền dữ liệu thực tế
+                
                 foreach ($revenueMonthlyData as $row) {
                     if (isset($revenueLabels[$row['month']])) {
                         $revenueCounts[$row['month']] = (float)$row['revenue'];
@@ -2498,7 +2569,7 @@ if (isset($_GET['reset_schedule'])) {
         });
     </script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

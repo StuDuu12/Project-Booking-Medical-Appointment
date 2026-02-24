@@ -3,13 +3,13 @@ session_start();
 require_once '../../config.php';
 require_once '../../includes/forum_functions.php';
 
-// Check if admin
+
 if (!isset($_SESSION['username']) || !isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
     header("Location: ../auth/login.php");
     exit();
 }
 
-// Handle post approval/rejection
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'approve_post' && isset($_POST['post_id'])) {
         $stmt = $pdo->prepare("UPDATE forum_posts SET is_approved = 1 WHERE id = ?");
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Get pending posts
+
 $stmt = $pdo->query("
     SELECT fp.*,
         CASE 
@@ -295,7 +295,7 @@ $pending_posts = $stmt->fetchAll();
         window.addEventListener('load', createPetals);
     </script>
     <div class="dashboard-container">
-        <!-- Sidebar -->
+        
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
@@ -335,7 +335,7 @@ $pending_posts = $stmt->fetchAll();
             </div>
         </aside>
 
-        <!-- Main Content -->
+        
         <main class="main-content">
             <nav class="top-navbar">
                 <div class="navbar-left">
@@ -417,7 +417,7 @@ $pending_posts = $stmt->fetchAll();
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

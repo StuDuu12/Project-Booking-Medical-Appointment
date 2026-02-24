@@ -1,7 +1,7 @@
 <?php
 require_once(__DIR__ . '/../TCPDF/tcpdf.php');
 
-// Custom PDF class with header/footer
+
 class CustomPDF extends TCPDF
 {
     public function Header()
@@ -19,7 +19,7 @@ class CustomPDF extends TCPDF
     }
 }
 
-// Export Patients List
+
 function exportPatientsList($pdo)
 {
     $pdf = new CustomPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -70,7 +70,7 @@ function exportPatientsList($pdo)
     $pdf->Output('danh-sach-benh-nhan.pdf', 'I');
 }
 
-// Export Doctors List
+
 function exportDoctorsList($pdo)
 {
     $pdf = new CustomPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -122,7 +122,7 @@ function exportDoctorsList($pdo)
     $pdf->Output('danh-sach-bac-si.pdf', 'I');
 }
 
-// Export Revenue Report
+
 function exportRevenueReport($pdo)
 {
     $pdf = new CustomPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -142,7 +142,7 @@ function exportRevenueReport($pdo)
     $html = '<h2 style="text-align:center; color:#0891b2;">Báo cáo Doanh thu</h2>';
     $html .= '<p style="text-align:center; font-size:10px;">Ngày xuất: ' . date('d/m/Y H:i') . '</p><br>';
 
-    // Monthly revenue
+    
     $html .= '<h3 style="color:#0891b2;">Doanh thu theo tháng</h3>';
     $html .= '<table border="1" cellpadding="5" style="border-collapse: collapse; width: 100%;">
         <thead>
@@ -184,7 +184,7 @@ function exportRevenueReport($pdo)
     $pdf->Output('bao-cao-doanh-thu.pdf', 'I');
 }
 
-// Export Appointment Schedule
+
 function exportAppointmentSchedule($pdo)
 {
     $pdf = new CustomPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -252,7 +252,7 @@ function exportAppointmentSchedule($pdo)
     $pdf->Output('lich-hen.pdf', 'I');
 }
 
-// Export Appointments List (alias for exportAppointmentSchedule)
+
 function exportAppointmentsList($pdo)
 {
     exportAppointmentSchedule($pdo);

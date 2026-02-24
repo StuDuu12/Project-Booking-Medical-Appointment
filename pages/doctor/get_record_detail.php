@@ -9,7 +9,7 @@ if (!$doctor) {
     exit();
 }
 
-// Get doctor ID
+
 $stmt = $pdo->prepare("SELECT id FROM doctb WHERE username = :username");
 $stmt->execute([':username' => $doctor]);
 $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -24,7 +24,7 @@ $record_id = intval($_GET['id']);
 $mode = $_GET['mode'] ?? 'view';
 
 try {
-    // Fetch record details
+    
     $stmt = $pdo->prepare("
         SELECT mr.*, 
                p.fname, p.lname, p.contact, p.email, p.gender, p.date_of_birth, p.blood_group,
@@ -45,10 +45,10 @@ try {
     }
 
     if ($mode === 'edit') {
-        // Return JSON for edit mode
+        
         echo json_encode(['success' => true, 'record' => $record]);
     } else {
-        // Return HTML for view mode
+        
 ?>
         <div class="record-detail-view">
             <div class="row mb-4">

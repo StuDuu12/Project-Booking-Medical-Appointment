@@ -4,13 +4,13 @@ $base_path = '../../';
 require_once '../../config.php';
 require_once '../../includes/forum_functions.php';
 
-// Check if user is logged in
+
 if (!isset($_SESSION['patientSession']) && !isset($_SESSION['doctorSession']) && !isset($_SESSION['adminSession'])) {
     header('Location: ../auth/login.php');
     exit;
 }
 
-// Determine user type and ID
+
 if (isset($_SESSION['patientSession'])) {
     $user_type = 'patient';
     $user_id = $_SESSION['patientSession'];
@@ -25,7 +25,7 @@ if (isset($_SESSION['patientSession'])) {
 $success = '';
 $error = '';
 
-// Handle form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $content = trim($_POST['content'] ?? '');
@@ -287,7 +287,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Hiệu ứng hoa đào rơi -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 767px)').matches;

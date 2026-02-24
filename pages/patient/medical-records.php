@@ -1,9 +1,26 @@
 ﻿<?php
 ob_start();
 session_start();
-require_once('../../config.php');
-require_once('../../includes/messages.php');
-require_once('../../includes/functions.php');
+
+set_exception_handler(function ($e) {
+    error_log("Patient medical-records uncaught: " . $e->getMessage());
+    while (ob_get_level()) ob_end_clean();
+    http_response_code(500);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi</h4><p>' . htmlspecialchars($e->getMessage()) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    exit;
+});
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level()) ob_end_clean();
+        http_response_code(500);
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi Server</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi Server</h4><p>' . htmlspecialchars($err['message']) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    }
+});
+
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/messages.php';
+require_once __DIR__ . '/../../includes/functions.php';
 
 $pid = $_SESSION['pid'] ?? null;
 $fname = $_SESSION['fname'] ?? '';
@@ -14,7 +31,7 @@ if (!$pid) {
     exit();
 }
 
-// Fetch medical records for patient
+
 $medical_records = [];
 try {
     $stmt = $pdo->prepare("
@@ -35,7 +52,7 @@ try {
     error_log("Fetch medical records error: " . $e->getMessage());
 }
 
-// Fetch patient profile
+
 $patient_profile = [];
 try {
     $stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
@@ -54,7 +71,7 @@ try {
     <link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.png" />
     <title>Lịch sử bệnh án - Bệnh viện Global</title>
 
-    <!-- CSS -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -444,13 +461,13 @@ try {
             Quay lại bảng điều khiển
         </a>
 
-        <!-- Page Header -->
+        
         <div class="page-header">
             <h1><i class="fas fa-file-medical-alt"></i> Lịch sử bệnh án</h1>
             <p>Xem và quản lý hồ sơ bệnh án của bạn</p>
         </div>
 
-        <!-- Patient Info Card -->
+        
         <?php if ($patient_profile) { ?>
             <div class="patient-info-card">
                 <h5 class="mb-3" style="color: #d2302c; font-weight: 700;">
@@ -477,7 +494,7 @@ try {
             </div>
         <?php } ?>
 
-        <!-- Filter Section -->
+        
         <div class="filter-section">
             <div class="filter-group">
                 <input type="text" id="searchInput" class="filter-input" placeholder="Tìm kiếm bác sĩ, chẩn đoán...">
@@ -490,7 +507,7 @@ try {
             </div>
         </div>
 
-        <!-- Medical Records -->
+        
         <div id="recordsContainer">
             <?php if (empty($medical_records)) { ?>
                 <div class="records-empty">
@@ -551,7 +568,7 @@ try {
                             <?php } ?>
                         </div>
 
-                        <!-- Vitals Section -->
+                        
                         <?php if ($record['height'] || $record['weight'] || $record['blood_pressure'] || $record['heart_rate'] || $record['temperature']) { ?>
                             <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
                                 <h6 style="color: #d2302c; font-weight: 700; margin-bottom: 15px;">
@@ -596,7 +613,7 @@ try {
                             </div>
                         <?php } ?>
 
-                        <!-- Additional Notes -->
+                        
                         <?php if ($record['notes']) { ?>
                             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
                                 <h6 style="color: #d2302c; font-weight: 700; margin-bottom: 10px;">
@@ -639,7 +656,7 @@ try {
         document.getElementById('searchInput').addEventListener('keyup', filterRecords);
     </script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

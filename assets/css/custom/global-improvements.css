@@ -1,20 +1,11 @@
-/* ============================================
-   GLOBAL IMPROVEMENTS - Cải tiến toàn cục
-   Tăng tính nhất quán và đẹp mắt cho toàn bộ hệ thống
-   ============================================ */
 
-/* Smooth scrolling cho toàn bộ trang */
+
+
 html {
     scroll-behavior: smooth;
 }
 
-/* ============================================
-   FIX: Browser autofill (autocomplete) turns
-   input background white, hiding the text.
-   Use a very long transition to "lock" the
-   browser-set background and keep the text
-   colour readable at all times.
-   ============================================ */
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -32,7 +23,7 @@ select:-webkit-autofill:focus {
     caret-color: #d2302c;
 }
 
-/* Ensure all form-control inputs/selects always show dark text */
+
 .form-control,
 .form-control:hover,
 .form-control:focus,
@@ -41,25 +32,20 @@ select:-webkit-autofill:focus {
     background-color: #ffffff;
 }
 
-/* =====================================================
-   Placeholder text - always visible, never dimmed
-   Use a mid-dark gray so the hint is readable on all
-   background colours used in the project.
-   ===================================================== */
+
 input::placeholder,
 textarea::placeholder,
 .form-control::placeholder,
 .custom-search-input::placeholder,
 [class*="form-control"]::placeholder {
     color: #64748b !important;
-    /* Prevent autofill -webkit-text-fill-color from bleeding
-       into the placeholder pseudo-element */
+    
     -webkit-text-fill-color: #64748b !important;
     opacity: 1 !important;
     font-style: normal;
 }
 
-/* Firefox uses :-moz-placeholder */
+
 input::-moz-placeholder,
 textarea::-moz-placeholder,
 .form-control::-moz-placeholder {
@@ -67,12 +53,7 @@ textarea::-moz-placeholder,
     opacity: 1 !important;
 }
 
-/* =====================================================
-   FIX: select text dim/faded khi không focus
-   Browsers (Chrome/Safari) apply system opacity or
-   a lighter color to the native select in blur state.
-   Force full opacity + dark text at every state.
-   ===================================================== */
+
 select,
 select.form-control,
 select.custom-select,
@@ -80,9 +61,9 @@ select.custom-select-filter {
     color: #1e293b !important;
     background-color: #ffffff !important;
     opacity: 1 !important;
-    /* Prevents Safari/Chrome from fading text when blurred */
+    
     -webkit-text-fill-color: #1e293b !important;
-    /* Keeps the text fill locked even after OS-level rendering */
+    
     -webkit-opacity: 1 !important;
 }
 
@@ -106,7 +87,7 @@ select.custom-select-filter:not(:focus) {
     background-color: #ffffff !important;
 }
 
-/* Options inside the dropdown */
+
 select option,
 select.form-control option,
 select.custom-select option {
@@ -115,13 +96,13 @@ select.custom-select option {
     opacity: 1;
 }
 
-/* Placeholder option (value rỗng) - still show hint text */
+
 select option[value=""],
 select.form-control option[value=""] {
     color: #94a3b8 !important;
 }
 
-/* Cải thiện button focus state */
+
 .btn:focus,
 button:focus,
 input:focus,
@@ -132,7 +113,7 @@ textarea:focus {
     box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
 }
 
-/* Card shadows nhất quán */
+
 .card,
 .feature-card,
 .stat-card,
@@ -148,7 +129,7 @@ textarea:focus {
     box-shadow: 0 12px 28px rgba(210, 48, 44, 0.15);
 }
 
-/* Loading animation nhất quán */
+
 .loading-spinner {
     display: inline-block;
     width: 20px;
@@ -163,7 +144,7 @@ textarea:focus {
     to { transform: rotate(360deg); }
 }
 
-/* Form validation states */
+
 .form-control.is-valid {
     border-color: #10b981;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310b981' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
@@ -180,7 +161,7 @@ textarea:focus {
     background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
 
-/* Toast/Alert improvements */
+
 .alert {
     border-radius: 12px;
     border-left: 4px solid;
@@ -212,7 +193,7 @@ textarea:focus {
     color: #1e40af;
 }
 
-/* Table improvements */
+
 .table {
     border-collapse: separate;
     border-spacing: 0;
@@ -246,7 +227,7 @@ textarea:focus {
     border-bottom: 1px solid rgba(210, 48, 44, 0.1);
 }
 
-/* Badge improvements */
+
 .badge {
     padding: 0.4rem 0.8rem;
     border-radius: 8px;
@@ -275,7 +256,7 @@ textarea:focus {
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
-/* Modal improvements */
+
 .modal-content {
     border-radius: 16px;
     border: none;
@@ -309,7 +290,7 @@ textarea:focus {
     padding: 1rem 1.5rem;
 }
 
-/* Dropdown improvements */
+
 .dropdown-menu {
     border-radius: 12px;
     border: none;
@@ -336,7 +317,7 @@ textarea:focus {
     border-color: rgba(210, 48, 44, 0.1);
 }
 
-/* Pagination improvements */
+
 .pagination {
     gap: 0.5rem;
 }
@@ -363,7 +344,7 @@ textarea:focus {
     box-shadow: 0 4px 12px rgba(210, 48, 44, 0.3);
 }
 
-/* Tooltip improvements */
+
 .tooltip-inner {
     background-color: #1f2937;
     border-radius: 8px;
@@ -380,7 +361,7 @@ textarea:focus {
     border-bottom-color: #1f2937;
 }
 
-/* Progress bar improvements */
+
 .progress {
     height: 8px;
     border-radius: 50px;
@@ -399,7 +380,7 @@ textarea:focus {
     100% { background-position: -100% 0; }
 }
 
-/* Scrollbar improvements */
+
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -420,7 +401,7 @@ textarea:focus {
     background: linear-gradient(135deg, #d2302c, #8b0000);
 }
 
-/* Selection color */
+
 ::selection {
     background-color: rgba(255, 215, 0, 0.3);
     color: #8b0000;
@@ -431,7 +412,7 @@ textarea:focus {
     color: #8b0000;
 }
 
-/* Print styles */
+
 @media print {
     body {
         background: white;
@@ -452,7 +433,7 @@ textarea:focus {
     }
 }
 
-/* Accessibility improvements */
+
 .sr-only {
     position: absolute;
     width: 1px;
@@ -465,7 +446,7 @@ textarea:focus {
     border-width: 0;
 }
 
-/* Skip to content link */
+
 .skip-to-content {
     position: absolute;
     top: -40px;
@@ -482,7 +463,7 @@ textarea:focus {
     top: 0;
 }
 
-/* Reduced motion for accessibility */
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -494,13 +475,13 @@ textarea:focus {
     }
 }
 
-/* Dark text on light backgrounds for better readability */
+
 .text-contrast {
     color: #1f2937;
     font-weight: 500;
 }
 
-/* Focus visible for keyboard navigation */
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -510,7 +491,7 @@ textarea:focus-visible {
     outline-offset: 2px;
 }
 
-/* Empty state illustrations */
+
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;

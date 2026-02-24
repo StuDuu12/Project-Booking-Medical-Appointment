@@ -7,11 +7,11 @@ if (isset($_POST['login_submit'])) {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    // Store form data
+    
     $_SESSION['login_data'] = ['username' => $username];
     $errors = [];
 
-    // Validate inputs
+    
     if (empty($username)) {
         $errors['username'] = 'Vui lòng nhập tên đăng nhập hoặc email';
     }
@@ -29,12 +29,12 @@ if (isset($_POST['login_submit'])) {
     try {
         $login_success = false;
 
-        // 1. Kiểm tra trong bảng bệnh nhân (patreg) - có thể dùng email
+        
         $stmt = $pdo->prepare("SELECT * FROM patreg WHERE email = :username");
         $stmt->execute([':username' => $username]);
 
         if ($row = $stmt->fetch()) {
-            // Support both hashed and plain passwords for backward compatibility
+            
             if (password_verify($password, $row['password']) || $row['password'] === $password) {
                 unset($_SESSION['login_data'], $_SESSION['login_errors']);
                 $_SESSION['pid'] = $row['pid'];
@@ -52,7 +52,7 @@ if (isset($_POST['login_submit'])) {
             }
         }
 
-        // 2. Kiểm tra trong bảng bác sĩ (doctb)
+        
         if (!$login_success) {
             $stmt = $pdo->prepare("SELECT * FROM doctb WHERE username = :username");
             $stmt->execute([':username' => $username]);
@@ -72,7 +72,7 @@ if (isset($_POST['login_submit'])) {
             }
         }
 
-        // 3. Kiểm tra trong bảng admin (admintb)
+        
         if (!$login_success) {
             $stmt = $pdo->prepare("SELECT * FROM admintb WHERE username = :username");
             $stmt->execute([':username' => $username]);
@@ -90,7 +90,7 @@ if (isset($_POST['login_submit'])) {
             }
         }
 
-        // Nếu không tìm thấy trong cả 3 bảng
+        
         if (!$login_success) {
             $_SESSION['login_errors'] = [
                 'username' => 'Tên đăng nhập hoặc mật khẩu không đúng',

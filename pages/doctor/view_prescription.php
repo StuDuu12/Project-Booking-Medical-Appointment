@@ -1,9 +1,26 @@
 ﻿<?php
 ob_start();
 session_start();
-require_once('../../config.php');
 
-// Check if prescription ID is provided
+set_exception_handler(function ($e) {
+    error_log("Doctor view_prescription uncaught: " . $e->getMessage());
+    while (ob_get_level()) ob_end_clean();
+    http_response_code(500);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi</h4><p>' . htmlspecialchars($e->getMessage()) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    exit;
+});
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level()) ob_end_clean();
+        http_response_code(500);
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi Server</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi Server</h4><p>' . htmlspecialchars($err['message']) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    }
+});
+
+require_once __DIR__ . '/../../config.php';
+
+
 if (!isset($_GET['id'])) {
     header("Location: prescriptions.php");
     exit();
@@ -11,7 +28,7 @@ if (!isset($_GET['id'])) {
 
 $prescription_id = $_GET['id'];
 
-// Get prescription details
+
 $stmt = $pdo->prepare("
     SELECT p.*, 
            p.fname, p.lname, p.ID as app_id,
@@ -30,7 +47,7 @@ if (!$prescription) {
     exit();
 }
 
-// Get medications
+
 $med_stmt = $pdo->prepare("
     SELECT * FROM prescription_medications 
     WHERE prescription_id = ?
@@ -306,7 +323,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
 
             <div class="prescription-body">
-                <!-- Action Buttons -->
+                
                 <div class="text-right mb-4">
                     <a href="export_prescription_pdf.php?id=<?php echo $prescription_id; ?>" class="btn-action btn-pdf" target="_blank">
                         <i class="fas fa-file-pdf mr-2"></i>Tải PDF
@@ -316,7 +333,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </a>
                 </div>
 
-                <!-- Doctor Information -->
+                
                 <div class="info-section">
                     <h3><i class="fas fa-user-md mr-2"></i>Thông tin bác sĩ</h3>
                     <div class="info-row">
@@ -333,7 +350,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
 
-                <!-- Patient Information -->
+                
                 <div class="info-section">
                     <h3><i class="fas fa-user-injured mr-2"></i>Thông tin bệnh nhân</h3>
                     <div class="info-row">
@@ -354,7 +371,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
 
-                <!-- Diagnosis -->
+                
                 <div class="info-section">
                     <h3><i class="fas fa-stethoscope mr-2"></i>Chẩn đoán</h3>
                     <div class="info-row">
@@ -373,7 +390,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
 
-                <!-- Medications -->
+                
                 <div class="info-section">
                     <h3><i class="fas fa-pills mr-2"></i>Danh sách thuốc</h3>
                     <?php if (count($medications) > 0): ?>
@@ -409,7 +426,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php endif; ?>
                 </div>
 
-                <!-- General Instructions -->
+                
                 <?php if (!empty($prescription['general_notes'])): ?>
                     <div class="info-section">
                         <h3><i class="fas fa-notes-medical mr-2"></i>Lời dặn dò</h3>
@@ -417,7 +434,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 <?php endif; ?>
 
-                <!-- Footer -->
+                
                 <div class="text-center mt-4 pt-4 border-top">
                     <p class="text-muted mb-1"><small>Đơn thuốc được tạo tự động bởi hệ thống</small></p>
                     <p class="text-muted mb-0"><small>Bệnh viện Global | Hotline: (84) 123-456-789 | Email: info@globalhospitals.com</small></p>
@@ -429,7 +446,7 @@ $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

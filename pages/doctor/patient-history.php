@@ -1,8 +1,26 @@
 <?php
+ob_start();
 session_start();
-require_once('../../config.php');
-require_once('../../includes/messages.php');
-require_once('../../includes/functions.php');
+
+set_exception_handler(function ($e) {
+    error_log("Doctor patient-history uncaught: " . $e->getMessage());
+    while (ob_get_level()) ob_end_clean();
+    http_response_code(500);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi</h4><p>' . htmlspecialchars($e->getMessage()) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    exit;
+});
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level()) ob_end_clean();
+        http_response_code(500);
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi Server</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi Server</h4><p>' . htmlspecialchars($err['message']) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    }
+});
+
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/messages.php';
+require_once __DIR__ . '/../../includes/functions.php';
 
 $doctor = $_SESSION['dname'] ?? null;
 
@@ -11,13 +29,13 @@ if (!$doctor) {
     exit();
 }
 
-// Get doctor info
+
 $stmt = $pdo->prepare("SELECT id, fullname FROM doctb WHERE username = :doctor");
 $stmt->execute([':doctor' => $doctor]);
 $doc_info = $stmt->fetch(PDO::FETCH_ASSOC);
 $doctor_id = $doc_info['id'] ?? 0;
 
-// Xem chi tiết bệnh án
+
 $view_record_id = isset($_GET['view']) ? intval($_GET['view']) : 0;
 $record_detail = null;
 
@@ -35,7 +53,7 @@ if ($view_record_id > 0) {
     $record_detail = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// Tìm kiếm và phân trang
+
 $search_query = '';
 $search_condition = '';
 if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
@@ -47,7 +65,7 @@ $page_num = isset($_GET['page_num']) ? max(1, intval($_GET['page_num'])) : 1;
 $records_per_page = 10;
 $offset = ($page_num - 1) * $records_per_page;
 
-// Đếm tổng số bệnh án
+
 $count_sql = "SELECT COUNT(*) FROM medical_records mr 
               INNER JOIN patreg p ON mr.patient_id = p.pid 
               WHERE mr.doctor_id = :doctor_id $search_condition";
@@ -60,7 +78,7 @@ $count_stmt->execute();
 $total_records = $count_stmt->fetchColumn();
 $total_pages = ceil($total_records / $records_per_page);
 
-// Lấy danh sách bệnh án
+
 $sql = "SELECT mr.*, 
                p.fname, p.lname, p.contact, p.gender, p.date_of_birth
         FROM medical_records mr
@@ -78,7 +96,7 @@ $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Tính tuổi
+
 function calculateAge($dob)
 {
     if (!$dob) return 'N/A';
@@ -438,7 +456,7 @@ function calculateAge($dob)
             Quay lại bảng điều khiển
         </a>
 
-        <!-- Header -->
+        
         <div class="page-header">
             <h1><i class="fas fa-notes-medical mr-3"></i>Lịch sử Bệnh án</h1>
             <p class="mb-0 mt-2">Quản lý và theo dõi hồ sơ bệnh án của bệnh nhân</p>
@@ -446,7 +464,7 @@ function calculateAge($dob)
 
         <?php displayMessage(); ?>
 
-        <!-- Records List -->
+        
         <div class="records-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="mb-0"><i class="fas fa-folder-open mr-2" style="color: #d2302c;"></i>Danh sách Bệnh án</h5>
@@ -539,7 +557,7 @@ function calculateAge($dob)
                     </div>
                 <?php endforeach; ?>
 
-                <!-- Pagination -->
+                
                 <?php if ($total_pages > 1): ?>
                     <nav class="mt-4">
                         <ul class="pagination justify-content-center">
@@ -573,7 +591,7 @@ function calculateAge($dob)
         </div>
     </div>
 
-    <!-- Modal chi tiết -->
+    
     <?php if ($record_detail): ?>
         <div class="modal-overlay active" onclick="window.location.href='patient-history.php'"></div>
         <div class="modal-content-detail">
@@ -650,7 +668,7 @@ function calculateAge($dob)
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

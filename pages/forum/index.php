@@ -4,10 +4,10 @@ $base_path = '../../';
 require_once '../../config.php';
 require_once '../../includes/forum_functions.php';
 
-// Check if user is logged in
+
 $isLoggedIn = isset($_SESSION['patientSession']) || isset($_SESSION['doctorSession']) || isset($_SESSION['adminSession']);
 
-// Determine user type and ID
+
 $user_id = null;
 $user_type = null;
 $user_name = '';
@@ -32,7 +32,7 @@ if (isset($_SESSION['patientSession'])) {
     $user_name = 'Admin';
 }
 
-// Handle POST actions
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $isLoggedIn) {
     if ($_POST['action'] === 'toggle_like' && isset($_POST['post_id'])) {
         toggleForumLike($pdo, $user_id, $user_type, $_POST['post_id'], 'post');
@@ -41,14 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $isLogge
     }
 }
 
-// Get filters
+
 $filters = [];
 if (isset($_GET['search'])) $filters['search'] = trim($_GET['search']);
 if (isset($_GET['category'])) $filters['category'] = $_GET['category'];
 if (isset($_GET['status'])) $filters['status'] = $_GET['status'];
 if (isset($_GET['sort'])) $filters['sort'] = $_GET['sort'];
 
-// Get posts
+
 $posts = getForumPosts($pdo, $filters, $user_id, $user_type);
 ?>
 <!DOCTYPE html>
@@ -330,7 +330,7 @@ $posts = getForumPosts($pdo, $filters, $user_id, $user_type);
             <h1><i class="fas fa-comments mr-3"></i>Diễn đàn Y tế</h1>
             <p class="lead mb-0">Cộng đồng chia sẻ kiến thức, kinh nghiệm và hỏi đáp về sức khỏe</p>
             <?php
-            // Get forum stats
+            
             $total_posts_stmt = $pdo->query("SELECT COUNT(*) as total FROM forum_posts");
             $total_posts = $total_posts_stmt->fetch()['total'] ?? 0;
 
@@ -358,7 +358,7 @@ $posts = getForumPosts($pdo, $filters, $user_id, $user_type);
     </div>
 
     <div class="container pb-5">
-        <!-- Search and Filter -->
+        
         <div class="search-filter-bar">
             <form method="GET" class="row align-items-end">
                 <div class="col-md-4 mb-3 mb-md-0">
@@ -432,7 +432,7 @@ $posts = getForumPosts($pdo, $filters, $user_id, $user_type);
                                 <div class="post-tags">
                                     <?php foreach (explode(',', $post['tags']) as $tag):
                                         $tag = trim($tag);
-                                        $tag = ltrim($tag, '#'); // Remove leading # if exists
+                                        $tag = ltrim($tag, '#'); 
                                     ?>
                                         <span class="tag">#<?php echo htmlspecialchars($tag); ?></span>
                                     <?php endforeach; ?>
@@ -516,7 +516,7 @@ $posts = getForumPosts($pdo, $filters, $user_id, $user_type);
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Hiệu ứng hoa đào rơi -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -573,7 +573,7 @@ $posts = getForumPosts($pdo, $filters, $user_id, $user_type);
         })();
     </script>
 
-    <!-- Footer -->
+    
     <footer class="footer">
         <div class="container">
             <div class="row">
@@ -607,7 +607,7 @@ $posts = getForumPosts($pdo, $filters, $user_id, $user_type);
         </div>
     </footer>
 
-    <!-- Lunar New Year Lanterns -->
+    
     <div class="medical-lantern-container left-side">
         <div class="medical-string"></div>
         <div class="medical-lantern">

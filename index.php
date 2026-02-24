@@ -16,10 +16,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-	<!-- Font Awesome -->
+	
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-	<!-- Global Improvements CSS -->
+	
 	<link rel="stylesheet" href="assets/css/custom/global-improvements.css">
 
 	<style>
@@ -586,23 +586,23 @@ if (session_status() === PHP_SESSION_NONE) {
 		}
 	</style>
 
-	<!-- Load jQuery FIRST in head -->
+	
 	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-	<!-- Navbar -->
+	
 	<?php include('includes/navbar.php'); ?>
 
-	<!-- Hero Section -->
+	
 	<section class="hero-section" id="home">
 		<div class="container">
 			<div class="row align-items-center">
 				<div class="col-lg-6 hero-content">
 					<?php
-					// Get user info for personalized welcome message
+					
 					$welcomeName = '';
 					$isUserLoggedIn = false;
 
@@ -697,7 +697,7 @@ if (session_status() === PHP_SESSION_NONE) {
 					<img src="images/ngo.png" alt="Global Hospitals" style="max-width: 100%; height: auto; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));">
 	</section>
 
-	<!-- Features Section -->
+	
 	<section class="features-section" id="features">
 		<div class="container">
 			<div class="section-title">
@@ -763,7 +763,7 @@ if (session_status() === PHP_SESSION_NONE) {
 		</div>
 	</section>
 
-	<!-- Specializations Section - Tet Theme -->
+	
 	<section class="specializations-section" style="padding: 5rem 0; background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 50%, #fff0f0 100%);">
 		<div class="container">
 			<div class="section-title" style="text-align: center; margin-bottom: 3rem;">
@@ -838,7 +838,7 @@ if (session_status() === PHP_SESSION_NONE) {
 				}
 				?>
 
-				<!-- Card +31 Chuyên khoa -->
+				
 				<div class="col-md-4 col-lg-3 mb-4">
 					<div class="spec-card" style="
 						background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
@@ -890,7 +890,7 @@ if (session_status() === PHP_SESSION_NONE) {
 		</div>
 	</section>
 
-	<!-- Stats Section -->
+	
 	<section class="stats-section">
 		<div class="container">
 			<div class="row">
@@ -922,7 +922,7 @@ if (session_status() === PHP_SESSION_NONE) {
 		</div>
 	</section>
 
-	<!-- CTA Section -->
+	
 	<section class="cta-section">
 		<div class="container">
 			<div class="cta-content">
@@ -935,7 +935,7 @@ if (session_status() === PHP_SESSION_NONE) {
 		</div>
 	</section>
 
-	<!-- Footer -->
+	
 	<footer class="footer">
 		<div class="container">
 			<div class="row">
@@ -969,7 +969,7 @@ if (session_status() === PHP_SESSION_NONE) {
 		</div>
 	</footer>
 
-	<!-- Lunar New Year Lanterns -->
+	
 	<div class="medical-lantern-container left-side">
 		<div class="medical-string"></div>
 		<div class="medical-lantern">
@@ -1260,7 +1260,7 @@ if (session_status() === PHP_SESSION_NONE) {
 		}
 	</style>
 
-	<!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+	
 	<script type="text/javascript">
 		(function() {
 			const isMobile = window.matchMedia('(max-width: 576px)').matches;

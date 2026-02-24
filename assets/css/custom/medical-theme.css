@@ -1,24 +1,21 @@
-/* ============================================
-   MEDICAL THEME - Global Hospital 2026
-   Professional Healthcare Design System
-   ============================================ */
+
 
 :root {
-    /* Medical Primary Colors - Tet Theme */
+    
     --medical-blue: #d2302c;
     --medical-blue-light: #ff4d4d;
     --medical-blue-dark: #8b0000;
     --medical-teal: #d2302c;
     --medical-cyan: #ff6b6b;
 
-    /* Healthcare Accent Colors - Tet Theme */
+    
     --health-green: #ffd700;
     --health-green-light: #ffed4e;
     --vital-red: #d2302c;
     --vital-orange: #ff6b6b;
     --calm-purple: #ffd700;
 
-    /* Neutral Medical Palette */
+    
     --white: #ffffff;
     --ice-white: #f0fdfa;
     --clinical-gray: #f1f5f9;
@@ -26,40 +23,38 @@
     --charcoal: #475569;
     --medical-dark: #1e293b;
 
-    /* Gradients - Tet Theme */
+    
     --gradient-medical: linear-gradient(135deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
     --gradient-health: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
     --gradient-vital: linear-gradient(135deg, #ff6b6b 0%, #d2302c 100%);
     --gradient-calm: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
 
-    /* Sidebar - Tet Theme */
+    
     --sidebar-width: 280px;
     --sidebar-bg: linear-gradient(180deg, #8b0000 0%, #d2302c 50%, #ff4d4d 100%);
 
-    /* Shadows - Medical Soft */
+    
     --shadow-soft: 0 2px 8px rgba(8, 145, 178, 0.08);
     --shadow-medical: 0 4px 12px rgba(8, 145, 178, 0.12);
     --shadow-card: 0 8px 24px rgba(8, 145, 178, 0.15);
     --shadow-float: 0 12px 32px rgba(8, 145, 178, 0.2);
 
-    /* Border Radius - Smooth Medical */
+    
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 24px;
     --radius-pill: 50px;
 
-    /* Typography */
+    
     --font-sans: 'Inter', 'Segoe UI', -apple-system, system-ui, sans-serif;
 
-    /* Animation */
+    
     --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-smooth: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ============================================
-   GLOBAL STYLES
-   ============================================ */
+
 
 * {
     margin: 0;
@@ -75,9 +70,7 @@ body {
     min-height: 100vh;
 }
 
-/* ============================================
-   DASHBOARD LAYOUT
-   ============================================ */
+
 
 .dashboard-container {
     display: flex;
@@ -85,7 +78,7 @@ body {
     position: relative;
 }
 
-/* Medical Pattern Background */
+
 .dashboard-container::before {
     content: '';
     position: fixed;
@@ -101,9 +94,7 @@ body {
     z-index: 0;
 }
 
-/* ============================================
-   SIDEBAR - MEDICAL PROFESSIONAL
-   ============================================ */
+
 
 .sidebar {
     width: var(--sidebar-width);
@@ -241,9 +232,7 @@ body {
     background: rgba(0, 0, 0, 0.1);
 }
 
-/* ============================================
-   MAIN CONTENT AREA
-   ============================================ */
+
 
 .main-content {
     flex: 1;
@@ -253,9 +242,7 @@ body {
     z-index: 1;
 }
 
-/* ============================================
-   TOP NAVBAR - MEDICAL CLEAN
-   ============================================ */
+
 
 .top-navbar {
     background: white;
@@ -322,9 +309,7 @@ body {
     font-weight: 500;
 }
 
-/* ============================================
-   CONTENT SECTIONS
-   ============================================ */
+
 
 .content-section {
     padding: 2rem;
@@ -353,9 +338,7 @@ body {
     font-size: 1rem;
 }
 
-/* ============================================
-   STAT CARDS - MEDICAL VITALS STYLE
-   ============================================ */
+
 
 .stats-grid {
     display: grid;
@@ -444,9 +427,7 @@ body {
     line-height: 1;
 }
 
-/* ============================================
-   STAT MINI - COMPACT STATISTICS
-   ============================================ */
+
 
 .stat-mini {
     background: white;
@@ -506,9 +487,7 @@ body {
     letter-spacing: 0.05em;
 }
 
-/* ============================================
-   TOP DOCTORS LIST
-   ============================================ */
+
 
 .top-doctors-list {
     display: flex;
@@ -642,9 +621,7 @@ body {
     color: #10b981;
 }
 
-/* ============================================
-   DATA TABLES - CLINICAL RECORDS STYLE
-   ============================================ */
+
 
 .data-table-container {
     background: white;
@@ -715,9 +692,7 @@ body {
     font-size: 0.95rem;
 }
 
-/* ============================================
-   FORMS - MEDICAL INPUT STYLE
-   ============================================ */
+
 
 .form-group {
     margin-bottom: 1.5rem;
@@ -731,9 +706,7 @@ body {
     font-size: 0.9rem;
 }
 
-/* ============================================
-   FORMS - MEDICAL INPUT STYLING
-   ============================================ */
+
 
 .form-group {
     margin-bottom: 1.5rem;
@@ -810,9 +783,7 @@ textarea.form-control {
     resize: vertical;
 }
 
-/* ============================================
-   BUTTONS - MEDICAL ACTION STYLE
-   ============================================ */
+
 
 .btn {
     padding: 0.875rem 1.75rem !important;
@@ -941,9 +912,7 @@ textarea.form-control {
     width: 100% !important;
 }
 
-/* ============================================
-   BADGES - MEDICAL STATUS INDICATORS
-   ============================================ */
+
 
 .badge {
     display: inline-flex;
@@ -986,9 +955,7 @@ textarea.form-control {
     border: 1px solid var(--medical-cyan);
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
+
 
 @media (max-width: 768px) {
     .sidebar {
@@ -1004,9 +971,7 @@ textarea.form-control {
     }
 }
 
-/* ============================================
-   ANIMATIONS & MICRO-INTERACTIONS
-   ============================================ */
+
 
 @keyframes pulse-medical {
     0%,
@@ -1028,7 +993,7 @@ textarea.form-control {
     }
 }
 
-/* Scrollbar Medical Theme */
+
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -1047,11 +1012,9 @@ textarea.form-control {
     background: var(--medical-blue-dark);
 }
 
-/* ============================================
-   BOOTSTRAP OVERRIDES - CRITICAL FIXES
-   ============================================ */
 
-/* Force Bootstrap form-control to use medical theme */
+
+
 input.form-control,
 select.form-control,
 textarea.form-control,
@@ -1072,7 +1035,7 @@ textarea.form-control,
     min-height: calc(1.5em + 1.75rem + 4px) !important;
 }
 
-/* Force Bootstrap buttons to use medical theme */
+
 button.btn,
 a.btn,
 input[type='submit'].btn,
@@ -1140,7 +1103,7 @@ a.btn-secondary,
     border: none !important;
 }
 
-/* Form validation states */
+
 .form-control.is-valid,
 .was-validated .form-control:valid {
     border-color: var(--health-green) !important;
@@ -1153,7 +1116,7 @@ a.btn-secondary,
     padding-right: 1.25rem !important;
 }
 
-/* Bootstrap alert overrides */
+
 .alert {
     border-radius: var(--radius-md) !important;
     border: none !important;

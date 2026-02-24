@@ -3,14 +3,14 @@ session_start();
 require_once('../../config.php');
 require_once('../../TCPDF/tcpdf.php');
 
-// Check if prescription ID is provided
+
 if (!isset($_GET['id'])) {
     die('Prescription ID not provided');
 }
 
 $prescription_id = $_GET['id'];
 
-// Get prescription details
+
 $stmt = $pdo->prepare("
     SELECT p.*, 
            p.fname, p.lname,
@@ -58,7 +58,7 @@ if (!$prescription) {
     die('Prescription not found');
 }
 
-// Get medications
+
 $med_stmt = $pdo->prepare("
     SELECT * FROM prescription_medications 
     WHERE prescription_id = ?
@@ -67,30 +67,30 @@ $med_stmt = $pdo->prepare("
 $med_stmt->execute([$prescription_id]);
 $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Create new PDF document
+
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-// Set document information
+
 $pdf->SetCreator('Bệnh viện D.B.D');
 $pdf->SetAuthor($prescription['doctor_name']);
 $pdf->SetTitle('Medical Prescription');
 $pdf->SetSubject('Prescription for ' . $prescription['fname'] . ' ' . $prescription['lname']);
 
-// Remove default header/footer
+
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 
-// Set margins
+
 $pdf->SetMargins(15, 15, 15);
 $pdf->SetAutoPageBreak(TRUE, 15);
 
-// Add a page
+
 $pdf->AddPage();
 
-// Set font
+
 $pdf->SetFont('dejavusans', '', 10);
 
-// Hospital Header
+
 $pdf->SetFillColor(8, 145, 178);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('dejavusans', 'B', 18);
@@ -103,18 +103,18 @@ $pdf->Cell(0, 6, 'Address: Hanoi, Vietnam | Phone: (84) 123-456-789', 0, 1, 'C',
 
 $pdf->Ln(10);
 
-// Title
+
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('dejavusans', 'B', 16);
 $pdf->Cell(0, 10, 'ĐƠN THUỐC Y TẾ', 0, 1, 'C');
 $pdf->Ln(5);
 
-// Date
+
 $pdf->SetFont('dejavusans', '', 10);
 $pdf->Cell(0, 6, 'Ngày: ' . date('d/m/Y', strtotime($prescription['created_at'])), 0, 1, 'R');
 $pdf->Ln(3);
 
-// Doctor Information
+
 $pdf->SetFillColor(240, 249, 255);
 $pdf->SetFont('dejavusans', 'B', 11);
 $pdf->Cell(0, 8, 'Thông tin Bác sĩ', 0, 1, 'L', true);
@@ -125,7 +125,7 @@ $pdf->Cell(50, 6, 'Chuyên khoa:', 0, 0);
 $pdf->Cell(0, 6, $prescription['doctor_spec'], 0, 1);
 $pdf->Ln(5);
 
-// Patient Information
+
 $pdf->SetFillColor(240, 249, 255);
 $pdf->SetFont('dejavusans', 'B', 11);
 $pdf->Cell(0, 8, 'Thông tin Bệnh nhân', 0, 1, 'L', true);
@@ -138,7 +138,7 @@ $pdf->Cell(50, 6, 'Liên hệ:', 0, 0);
 $pdf->Cell(0, 6, $prescription['contact'], 0, 1);
 $pdf->Ln(5);
 
-// Diagnosis
+
 $pdf->SetFillColor(240, 249, 255);
 $pdf->SetFont('dejavusans', 'B', 11);
 $pdf->Cell(0, 8, 'Chẩn đoán', 0, 1, 'L', true);
@@ -157,14 +157,14 @@ $pdf->Cell(50, 6, 'Thời gian điều trị:', 0, 0);
 $pdf->Cell(0, 6, $prescription['treatment_duration'], 0, 1);
 $pdf->Ln(5);
 
-// Medications Table
+
 $pdf->SetFillColor(8, 145, 178);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('dejavusans', 'B', 11);
 $pdf->Cell(0, 8, 'Danh sách Thuốc được Kê đơn', 0, 1, 'L', true);
 $pdf->Ln(2);
 
-// Table Header
+
 $pdf->SetFillColor(14, 116, 144);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('dejavusans', 'B', 9);
@@ -175,7 +175,7 @@ $pdf->Cell(40, 8, 'Tần suất', 1, 0, 'C', true);
 $pdf->Cell(25, 8, 'Thời gian', 1, 0, 'C', true);
 $pdf->Cell(25, 8, 'Ghi chú', 1, 1, 'C', true);
 
-// Table Body
+
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('dejavusans', '', 9);
 foreach ($medications as $index => $med) {
@@ -186,7 +186,7 @@ foreach ($medications as $index => $med) {
     $pdf->Cell(25, 8, $med['duration'], 1, 0, 'C');
     $pdf->Cell(25, 8, !empty($med['special_notes']) ? 'Có' : '-', 1, 1, 'C');
 
-    // Special notes on new line if exists
+    
     if (!empty($med['special_notes'])) {
         $pdf->SetFont('dejavusans', 'I', 8);
         $pdf->SetTextColor(100, 100, 100);
@@ -199,7 +199,7 @@ foreach ($medications as $index => $med) {
 
 $pdf->Ln(5);
 
-// General Instructions
+
 if (!empty($prescription['general_notes'])) {
     $pdf->SetFillColor(240, 249, 255);
     $pdf->SetFont('dejavusans', 'B', 11);
@@ -209,7 +209,7 @@ if (!empty($prescription['general_notes'])) {
     $pdf->Ln(5);
 }
 
-// Signature Section
+
 $pdf->Ln(10);
 $pdf->Cell(0, 6, '___________________________', 0, 1, 'R');
 $pdf->SetFont('dejavusans', 'B', 10);
@@ -217,13 +217,13 @@ $pdf->Cell(0, 6, $prescription['doctor_name'], 0, 1, 'R');
 $pdf->SetFont('dejavusans', '', 9);
 $pdf->Cell(0, 6, $prescription['doctor_spec'], 0, 1, 'R');
 
-// Footer
+
 $pdf->SetY(-20);
 $pdf->SetFont('dejavusans', 'I', 8);
 $pdf->SetTextColor(128, 128, 128);
 $pdf->Cell(0, 6, 'Đây là đơn thuốc được tạo bằng máy tính và có hiệu lực mà không cần chữ ký.', 0, 1, 'C');
 $pdf->Cell(0, 6, 'Bệnh viện Toàn cầu | Email: info@globalhospitals.com | Cấp cứu: (84) 123-456-789', 0, 1, 'C');
 
-// Output PDF
+
 $filename = 'Prescription_' . $prescription['fname'] . '_' . $prescription['lname'] . '_' . date('Ymd') . '.pdf';
-$pdf->Output($filename, 'I'); // 'I' for inline display, 'D' for download
+$pdf->Output($filename, 'I'); 

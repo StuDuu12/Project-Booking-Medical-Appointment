@@ -1,4 +1,4 @@
-/* Modern Authentication Styles - Medical Theme */
+
 :root {
     --primary-color: #d2302c;
     --primary-dark: #8b0000;
@@ -46,7 +46,7 @@ body::before {
     pointer-events: none;
 }
 
-/* Navbar Styles */
+
 .modern-navbar {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -100,7 +100,7 @@ body::before {
     color: var(--primary-color) !important;
 }
 
-/* Navbar Custom Links */
+
 .nav-link-custom {
     color: var(--text-dark) !important;
     font-weight: 500;
@@ -114,7 +114,7 @@ body::before {
     color: var(--primary-color) !important;
 }
 
-/* Navbar Buttons */
+
 .btn-nav {
     padding: 0.4rem 1rem;
     border-radius: 8px;
@@ -173,7 +173,7 @@ body::before {
     text-decoration: none !important;
 }
 
-/* Auth Container */
+
 .auth-container {
     width: 100%;
     max-width: 1200px;
@@ -187,7 +187,7 @@ body::before {
     min-height: calc(100vh - 140px);
 }
 
-/* Card Design */
+
 .auth-card {
     background: white;
     border-radius: 24px;
@@ -196,7 +196,7 @@ body::before {
     padding: 2.5rem;
 }
 
-/* Old auth-card layout (for backwards compatibility) */
+
 .auth-card.old-layout {
     display: flex;
     flex-direction: row;
@@ -288,7 +288,7 @@ body::before {
     }
 }
 
-/* Auth Right */
+
 .auth-right {
     flex: 1.5;
     padding: 60px 50px;
@@ -297,7 +297,7 @@ body::before {
     justify-content: center;
 }
 
-/* Tabs */
+
 .auth-tabs {
     display: flex;
     gap: 10px;
@@ -343,7 +343,7 @@ body::before {
     color: var(--primary-color);
 }
 
-/* Tab Content */
+
 .tab-content-wrapper {
     position: relative;
 }
@@ -375,7 +375,7 @@ body::before {
     margin-bottom: 30px;
 }
 
-/* Form Styles */
+
 .form-group-modern {
     margin-bottom: 25px;
 }
@@ -423,7 +423,7 @@ body::before {
     font-weight: 400;
 }
 
-/* Override Bootstrap input styles */
+
 .form-control-modern[type='text'],
 .form-control-modern[type='password'],
 .form-control-modern[type='email'],
@@ -443,7 +443,7 @@ body::before {
     box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.12) !important;
 }
 
-/* Select Dropdown */
+
 .form-select-custom {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%230891b2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
@@ -459,7 +459,7 @@ body::before {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%230891b2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
 }
 
-/* Radio Buttons */
+
 .radio-group {
     display: flex;
     gap: 20px;
@@ -482,7 +482,7 @@ body::before {
     accent-color: var(--primary-color);
 }
 
-/* Password Match Message */
+
 #message {
     display: inline-block;
     margin-left: 10px;
@@ -490,7 +490,7 @@ body::before {
     font-weight: 600;
 }
 
-/* Buttons */
+
 .btn-modern {
     width: 100% !important;
     padding: 14px 24px !important;
@@ -542,7 +542,7 @@ body::before {
     transform: translateY(0) !important;
 }
 
-/* Links */
+
 .auth-link {
     display: block;
     margin-top: 15px;
@@ -557,7 +557,7 @@ body::before {
     text-decoration: underline;
 }
 
-/* Alert Messages */
+
 .alert-modern {
     padding: 12px 16px;
     border-radius: 10px;
@@ -580,7 +580,7 @@ body::before {
     border: 1px solid #ef4444;
 }
 
-/* Two Column Form Layout */
+
 .form-row-modern {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -591,7 +591,7 @@ body::before {
     margin-bottom: 0;
 }
 
-/* Responsive Design */
+
 @media (max-width: 992px) {
     .auth-card {
         flex-direction: column;
@@ -669,7 +669,7 @@ body::before {
     }
 }
 
-/* Loading Spinner */
+
 .spinner {
     width: 20px;
     height: 20px;
@@ -687,7 +687,7 @@ body::before {
     }
 }
 
-/* Input Icons */
+
 .input-with-icon {
     position: relative;
 }
@@ -704,13 +704,13 @@ body::before {
     padding-left: 50px;
 }
 
-/* Focus Visible for Accessibility */
+
 *:focus-visible {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
 
-/* Additional Login/Register Page Styles */
+
 .auth-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -801,7 +801,7 @@ body::before {
     font-weight: 700;
 }
 
-/* Register Card Styles */
+
 .main-container {
     flex: 1;
     display: flex;
@@ -1029,7 +1029,7 @@ select.form-input {
     text-decoration: none;
 }
 
-/* Register Form Submit Button */
+
 .btn-register {
     width: 100% !important;
     padding: 1rem !important;
@@ -1099,7 +1099,7 @@ select.form-input {
     }
 
     .info-card {
-        display: none; /* Hide info card on mobile */
+        display: none; 
     }
 
     .form-row-custom {
@@ -1125,15 +1125,13 @@ select.form-input {
     }
 
     .info-card {
-        display: none; /* Hide info card on tablet */
+        display: none; 
     }
 }
 
-/* ============================================
-   BOOTSTRAP OVERRIDES - AUTH PAGES
-   ============================================ */
 
-/* Force Bootstrap navbar to use medical theme */
+
+
 .navbar {
     background: white !important;
     box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08) !important;
@@ -1150,7 +1148,7 @@ select.form-input {
     color: var(--primary-dark) !important;
 }
 
-/* Force Bootstrap form controls in auth pages */
+
 input.form-control,
 select.form-control,
 textarea.form-control {
@@ -1174,7 +1172,7 @@ textarea.form-control:focus {
     box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.12) !important;
 }
 
-/* Bootstrap alert overrides */
+
 .alert {
     border-radius: 12px !important;
     border: none !important;

@@ -1,8 +1,6 @@
 <?php
-/**
- * Charts API for Dashboard Statistics
- * Provides JSON data for various charts
- */
+
+
 
 header('Content-Type: application/json');
 require_once '../config.php';
@@ -35,7 +33,7 @@ switch ($action) {
         echo json_encode(['error' => 'Invalid action']);
 }
 
-// New patients by month (last 12 months)
+
 function getPatientsByMonth($pdo) {
     $sql = "
         SELECT 
@@ -57,7 +55,7 @@ function getPatientsByMonth($pdo) {
     ];
 }
 
-// Revenue statistics by month
+
 function getRevenueStats($pdo) {
     $sql = "
         SELECT 
@@ -80,7 +78,7 @@ function getRevenueStats($pdo) {
     ];
 }
 
-// Appointment success/cancellation ratios
+
 function getAppointmentRatios($pdo) {
     $sql = "
         SELECT 
@@ -99,7 +97,7 @@ function getAppointmentRatios($pdo) {
     ];
 }
 
-// Top doctors by appointment count
+
 function getTopDoctors($pdo) {
     $sql = "
         SELECT 
@@ -122,9 +120,9 @@ function getTopDoctors($pdo) {
     ];
 }
 
-// Doctor personal statistics
+
 function getDoctorPersonalStats($pdo, $doctor_id) {
-    // Get doctor username
+    
     $doctorStmt = $pdo->prepare("SELECT username FROM doctb WHERE id = ?");
     $doctorStmt->execute([$doctor_id]);
     $doctor = $doctorStmt->fetch();
@@ -133,7 +131,7 @@ function getDoctorPersonalStats($pdo, $doctor_id) {
         return ['error' => 'Doctor not found'];
     }
     
-    // Monthly appointments
+    
     $sql = "
         SELECT 
             DATE_FORMAT(appdate, '%Y-%m') as month,
@@ -149,7 +147,7 @@ function getDoctorPersonalStats($pdo, $doctor_id) {
     $stmt->execute([$doctor['username']]);
     $monthly = $stmt->fetchAll();
     
-    // Revenue
+    
     $revenueSql = "
         SELECT 
             DATE_FORMAT(appdate, '%Y-%m') as month,

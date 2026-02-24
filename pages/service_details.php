@@ -11,7 +11,7 @@ if (!$spec_id) {
     exit();
 }
 
-// Get specialization details
+
 $stmt = $pdo->prepare("SELECT * FROM specializations WHERE id = ?");
 $stmt->execute([$spec_id]);
 $service = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -20,7 +20,7 @@ if (!$service) {
     die("Dịch vụ không tồn tại");
 }
 
-// Get reviews
+
 $stmt = $pdo->prepare("
     SELECT r.*, p.fname, p.lname 
     FROM service_ratings r
@@ -31,7 +31,7 @@ $stmt = $pdo->prepare("
 $stmt->execute([$spec_id]);
 $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Handle Review Submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     if (!isset($_SESSION['pid'])) {
         $error = "Vui lòng đăng nhập để đánh giá!";
@@ -47,18 +47,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
             ");
             $stmt->execute([$spec_id, $patient_id, $rating, $review_text]);
 
-            // Calculate new average
+            
             $stmt = $pdo->prepare("SELECT AVG(rating) as avg_rate, COUNT(*) as total FROM service_ratings WHERE spec_id = ?");
             $stmt->execute([$spec_id]);
             $stats = $stmt->fetch();
 
-            // Update specializations table
-            // Note: Ensure migration script ran to add these columns
+            
+            
             $update = $pdo->prepare("UPDATE specializations SET average_rating = ?, total_ratings = ? WHERE id = ?");
             $update->execute([$stats['avg_rate'], $stats['total'], $spec_id]);
 
             $success = "Cảm ơn bạn đã đánh giá dịch vụ!";
-            // Reload reviews
+            
             $stmt = $pdo->prepare("
                 SELECT r.*, p.fname, p.lname 
                 FROM service_ratings r
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
             $stmt->execute([$spec_id]);
             $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Refresh service info
+            
             $stmt = $pdo->prepare("SELECT * FROM specializations WHERE id = ?");
             $stmt->execute([$spec_id]);
             $service = $stmt->fetch();
@@ -216,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
                     <div class="card-body">
                         <h5 class="card-title font-weight-bold mb-3">Viết đánh giá</h5>
                         <?php
-                        // Determine user role and permission (Same logic as doctor_details)
+                        
                         $can_rate = false;
                         $role_message = "";
 

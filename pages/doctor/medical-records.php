@@ -1,9 +1,26 @@
 ﻿<?php
 ob_start();
 session_start();
-require_once('../../config.php');
-require_once('../../includes/messages.php');
-require_once('../../includes/functions.php');
+
+set_exception_handler(function ($e) {
+    error_log("Doctor medical-records uncaught: " . $e->getMessage());
+    while (ob_get_level()) ob_end_clean();
+    http_response_code(500);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi</h4><p>' . htmlspecialchars($e->getMessage()) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    exit;
+});
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level()) ob_end_clean();
+        http_response_code(500);
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi Server</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi Server</h4><p>' . htmlspecialchars($err['message']) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    }
+});
+
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/messages.php';
+require_once __DIR__ . '/../../includes/functions.php';
 
 $doctor = $_SESSION['dname'] ?? null;
 
@@ -12,14 +29,14 @@ if (!$doctor) {
     exit();
 }
 
-// Handle page parameter
+
 $page = isset($_GET['page']) ? $_GET['page'] : 'view';
 $allowed_pages = array('view', 'add', 'search');
 if (!in_array($page, $allowed_pages)) {
     $page = 'view';
 }
 
-// Handle add medical record form
+
 if (isset($_POST['add_medical_record'])) {
     try {
         $patient_id = $_POST['patient_id'];
@@ -34,7 +51,7 @@ if (isset($_POST['add_medical_record'])) {
         $heart_rate = isset($_POST['heart_rate']) && $_POST['heart_rate'] !== '' ? intval($_POST['heart_rate']) : null;
         $temperature = isset($_POST['temperature']) && $_POST['temperature'] !== '' ? floatval($_POST['temperature']) : null;
 
-        // Get doctor ID
+        
         $stmt = $pdo->prepare("SELECT id FROM doctb WHERE username = :username");
         $stmt->execute([':username' => $doctor]);
         $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -70,18 +87,18 @@ if (isset($_POST['add_medical_record'])) {
     }
 }
 
-// Handle delete medical record
+
 if (isset($_POST['delete_record_id'])) {
     try {
         $record_id = intval($_POST['delete_record_id']);
 
-        // Get doctor ID to verify ownership
+        
         $stmt = $pdo->prepare("SELECT id FROM doctb WHERE username = :username");
         $stmt->execute([':username' => $doctor]);
         $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $current_doctor_id = $doctor_result['id'] ?? null;
 
-        // Verify that this record belongs to the current doctor before deleting
+        
         $stmt = $pdo->prepare("DELETE FROM medical_records WHERE id = :id AND doctor_id = :doctor_id");
         $stmt->execute([':id' => $record_id, ':doctor_id' => $current_doctor_id]);
 
@@ -96,7 +113,7 @@ if (isset($_POST['delete_record_id'])) {
     }
 }
 
-// Get doctor ID and fullname for queries
+
 $doctor_id = null;
 $doctor_fullname = null;
 try {
@@ -109,7 +126,7 @@ try {
     error_log("Get doctor info error: " . $e->getMessage());
 }
 
-// Fetch patients for this doctor
+
 $doctor_patients = [];
 if ($doctor_id && $doctor_fullname) {
     try {
@@ -127,9 +144,9 @@ if ($doctor_id && $doctor_fullname) {
     }
 }
 
-// Fetch all medical records for this doctor
+
 $all_medical_records = [];
-$grouped_records = []; // Group by patient_id
+$grouped_records = []; 
 if ($doctor_id) {
     try {
         $stmt = $pdo->prepare("
@@ -146,7 +163,7 @@ if ($doctor_id) {
         $stmt->execute([':doctor_id' => $doctor_id]);
         $all_medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Group records by patient
+        
         foreach ($all_medical_records as $record) {
             $patient_id = $record['patient_id'];
             if (!isset($grouped_records[$patient_id])) {
@@ -169,7 +186,7 @@ if ($doctor_id) {
     }
 }
 
-// Fetch patient's medical records if selected
+
 $selected_patient_id = isset($_GET['patient_id']) ? intval($_GET['patient_id']) : null;
 $patient_medical_records = [];
 $selected_patient_info = null;
@@ -198,7 +215,7 @@ if ($selected_patient_id && $doctor_id) {
 }
 ?>
 <!DOCTYPE html>
-="en">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -206,7 +223,7 @@ if ($selected_patient_id && $doctor_id) {
     <link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.png" />
     <title>Quản lý Hồ sơ bệnh án - Bệnh viện Global</title>
 
-    <!-- CSS -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -595,13 +612,13 @@ if ($selected_patient_id && $doctor_id) {
             Quay lại bảng điều khiển
         </a>
 
-        <!-- Page Header -->
+        
         <div class="page-header">
             <h1><i class="fas fa-file-medical"></i> Quản lý Hồ sơ bệnh án</h1>
             <p>Xem, thêm và quản lý hồ sơ bệnh án của bệnh nhân</p>
         </div>
 
-        <!-- Tabs Navigation -->
+        
         <ul class="nav nav-tabs" id="medicalTabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="view-tab" data-toggle="tab" href="#view-content" role="tab">
@@ -615,9 +632,9 @@ if ($selected_patient_id && $doctor_id) {
             </li>
         </ul>
 
-        <!-- Tabs Content -->
+        
         <div class="tab-content" id="medicalTabsContent">
-            <!-- View Tab -->
+            
             <div class="tab-pane fade show active" id="view-content" role="tabpanel">
                 <div>
                     <h5 class="mb-4" style="color: #1f2937; font-weight: 700;">
@@ -634,7 +651,7 @@ if ($selected_patient_id && $doctor_id) {
                         <div style="display: grid; gap: 12px;">
                             <?php foreach ($grouped_records as $patient_id => $group) { ?>
                                 <div class="patient-group" data-patient-id="<?php echo $patient_id; ?>" style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                    <!-- Patient Header (Always Visible) -->
+                                    
                                     <div class="patient-header" style="padding: 18px 20px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
                                         <div style="flex: 1;">
                                             <h6 style="margin: 0 0 8px 0; font-weight: 700; font-size: 16px;">
@@ -653,7 +670,7 @@ if ($selected_patient_id && $doctor_id) {
                                         </div>
                                     </div>
 
-                                    <!-- Patient Records (Expandable) -->
+                                    
                                     <div class="patient-records" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #f8fafc;">
                                         <div style="padding: 0;">
                                             <?php foreach ($group['records'] as $index => $record) { ?>
@@ -702,7 +719,7 @@ if ($selected_patient_id && $doctor_id) {
                 </div>
             </div>
 
-            <!-- Add Tab -->
+            
             <div class="tab-pane fade" id="add-content" role="tabpanel">
                 <h5 style="color: #1f2937; font-weight: 700; margin-bottom: 25px;">
                     <i class="fas fa-plus-circle"></i> Thêm hồ sơ bệnh án mới
@@ -830,7 +847,7 @@ if ($selected_patient_id && $doctor_id) {
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Modal Xem Chi Tiết -->
+    
     <div class="modal fade" id="viewDetailModal" tabindex="-1" role="dialog" aria-labelledby="viewDetailLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -847,7 +864,7 @@ if ($selected_patient_id && $doctor_id) {
         </div>
     </div>
 
-    <!-- Modal Chỉnh Sửa -->
+    
     <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -1155,7 +1172,7 @@ if ($selected_patient_id && $doctor_id) {
         });
     </script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

@@ -1,13 +1,10 @@
 <?php
 
-/**
- * Forum Helper Functions
- * Contains all helper functions for forum operations
- */
 
-/**
- * Get forum posts with optional filters
- */
+
+
+
+
 function getForumPosts($pdo, $filters = [], $current_user_id = null, $current_user_type = null)
 {
     $where = ["1=1"];
@@ -37,11 +34,11 @@ function getForumPosts($pdo, $filters = [], $current_user_id = null, $current_us
         $params[] = $filters['user_type'];
     }
 
-    // Filter by approval status (for non-admin users)
-    // Commented out until is_approved column is added to database
-    // if (isset($filters['approved_only']) && $filters['approved_only']) {
-    //     $where[] = "fp.is_approved = 1";
-    // }
+    
+    
+    
+    
+    
 
     $whereClause = implode(' AND ', $where);
 
@@ -60,7 +57,7 @@ function getForumPosts($pdo, $filters = [], $current_user_id = null, $current_us
         }
     }
 
-    // Build user_liked subquery
+    
     $userLikedSubquery = "0";
     if ($current_user_id && $current_user_type) {
         $userLikedSubquery = "(SELECT COUNT(*) FROM forum_likes WHERE target_id = fp.id AND target_type = 'post' AND user_id = " . intval($current_user_id) . " AND user_type = '" . addslashes($current_user_type) . "')";
@@ -93,9 +90,8 @@ function getForumPosts($pdo, $filters = [], $current_user_id = null, $current_us
     return $stmt->fetchAll();
 }
 
-/**
- * Get a single forum post by ID
- */
+
+
 function getForumPost($pdo, $post_id)
 {
     $sql = "
@@ -123,9 +119,8 @@ function getForumPost($pdo, $post_id)
     return $stmt->fetch();
 }
 
-/**
- * Create a new forum post
- */
+
+
 function createForumPost($pdo, $data)
 {
     $sql = "INSERT INTO forum_posts (user_id, user_type, title, content, tags, category, privacy) 
@@ -143,9 +138,8 @@ function createForumPost($pdo, $data)
     ]);
 }
 
-/**
- * Get comments for a post
- */
+
+
 function getForumComments($pdo, $post_id)
 {
     $sql = "
@@ -168,9 +162,8 @@ function getForumComments($pdo, $post_id)
     return $stmt->fetchAll();
 }
 
-/**
- * Add a comment to a post
- */
+
+
 function addForumComment($pdo, $data)
 {
     $sql = "INSERT INTO forum_comments (post_id, user_id, user_type, content, parent_id) 
@@ -186,31 +179,29 @@ function addForumComment($pdo, $data)
     ]);
 }
 
-/**
- * Toggle like on post or comment
- */
+
+
 function toggleForumLike($pdo, $user_id, $user_type, $target_id, $target_type)
 {
-    // Check if already liked
+    
     $check = $pdo->prepare("SELECT id FROM forum_likes WHERE user_id = ? AND user_type = ? AND target_id = ? AND target_type = ?");
     $check->execute([$user_id, $user_type, $target_id, $target_type]);
 
     if ($check->fetch()) {
-        // Unlike
+        
         $stmt = $pdo->prepare("DELETE FROM forum_likes WHERE user_id = ? AND user_type = ? AND target_id = ? AND target_type = ?");
         $stmt->execute([$user_id, $user_type, $target_id, $target_type]);
-        return false; // Unliked
+        return false; 
     } else {
-        // Like
+        
         $stmt = $pdo->prepare("INSERT INTO forum_likes (user_id, user_type, target_id, target_type) VALUES (?, ?, ?, ?)");
         $stmt->execute([$user_id, $user_type, $target_id, $target_type]);
-        return true; // Liked
+        return true; 
     }
 }
 
-/**
- * Check if user has liked a target
- */
+
+
 function hasForumLiked($pdo, $user_id, $user_type, $target_id, $target_type)
 {
     $stmt = $pdo->prepare("SELECT id FROM forum_likes WHERE user_id = ? AND user_type = ? AND target_id = ? AND target_type = ?");
@@ -218,18 +209,16 @@ function hasForumLiked($pdo, $user_id, $user_type, $target_id, $target_type)
     return $stmt->fetch() !== false;
 }
 
-/**
- * Increment post views
- */
+
+
 function incrementPostViews($pdo, $post_id)
 {
     $stmt = $pdo->prepare("UPDATE forum_posts SET views = views + 1 WHERE id = ?");
     return $stmt->execute([$post_id]);
 }
 
-/**
- * Get forum attachments for a post
- */
+
+
 function getForumAttachments($pdo, $post_id)
 {
     $stmt = $pdo->prepare("SELECT * FROM forum_attachments WHERE post_id = ? ORDER BY created_at ASC");
@@ -237,9 +226,8 @@ function getForumAttachments($pdo, $post_id)
     return $stmt->fetchAll();
 }
 
-/**
- * Add doctor rating
- */
+
+
 function addDoctorRating($pdo, $data)
 {
     $sql = "INSERT INTO doctor_ratings (doctor_id, patient_id, appointment_id, rating, review, professionalism, communication, environment, wait_time, is_verified) 
@@ -259,7 +247,7 @@ function addDoctorRating($pdo, $data)
         $data['is_verified'] ?? 0
     ]);
 
-    // Update doctor's average rating
+    
     if ($result) {
         updateDoctorAverageRating($pdo, $data['doctor_id']);
     }
@@ -267,9 +255,8 @@ function addDoctorRating($pdo, $data)
     return $result;
 }
 
-/**
- * Update doctor's average rating
- */
+
+
 function updateDoctorAverageRating($pdo, $doctor_id)
 {
     $sql = "SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM doctor_ratings WHERE doctor_id = ?";
@@ -286,9 +273,8 @@ function updateDoctorAverageRating($pdo, $doctor_id)
     ]);
 }
 
-/**
- * Get doctor ratings
- */
+
+
 function getDoctorRatings($pdo, $doctor_id, $limit = null)
 {
     $sql = "
@@ -310,9 +296,8 @@ function getDoctorRatings($pdo, $doctor_id, $limit = null)
     return $stmt->fetchAll();
 }
 
-/**
- * Get doctor rating statistics
- */
+
+
 function getDoctorRatingStats($pdo, $doctor_id)
 {
     $sql = "
@@ -337,9 +322,8 @@ function getDoctorRatingStats($pdo, $doctor_id)
     return $stmt->fetch();
 }
 
-/**
- * Time ago helper
- */
+
+
 function timeAgo($datetime)
 {
     $timestamp = strtotime($datetime);
@@ -361,9 +345,8 @@ function timeAgo($datetime)
     }
 }
 
-/**
- * HTML escape helper
- */
+
+
 function h($str)
 {
     return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');

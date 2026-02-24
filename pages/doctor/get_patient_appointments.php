@@ -20,7 +20,7 @@ $patient_id = intval($_GET['patient_id']);
 $doctor_id = intval($_GET['doctor_id']);
 
 try {
-    // Lấy fullname của bác sĩ được chọn
+    
     $stmt = $pdo->prepare("SELECT fullname FROM doctb WHERE id = :doctor_id");
     $stmt->execute([':doctor_id' => $doctor_id]);
     $doctor_info = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -32,7 +32,7 @@ try {
 
     $doctor_fullname = $doctor_info['fullname'];
 
-    // Lấy danh sách lịch hẹn của bệnh nhân với bác sĩ này
+    
     $stmt = $pdo->prepare("
         SELECT ID, appdate, apptime, userStatus, doctorStatus
         FROM appointmenttb
@@ -46,7 +46,7 @@ try {
     ]);
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Format lại dữ liệu
+    
     $formatted_appointments = [];
     foreach ($appointments as $apt) {
         $status = '';

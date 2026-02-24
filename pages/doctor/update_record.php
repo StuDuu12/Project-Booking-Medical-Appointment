@@ -11,7 +11,7 @@ if (!$doctor) {
     exit();
 }
 
-// Get doctor ID
+
 $stmt = $pdo->prepare("SELECT id FROM doctb WHERE username = :username");
 $stmt->execute([':username' => $doctor]);
 $doctor_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -34,7 +34,7 @@ $temperature = isset($_POST['temperature']) && $_POST['temperature'] !== '' ? fl
 $notes = $_POST['notes'] ?? null;
 
 try {
-    // Verify that this record belongs to the current doctor
+    
     $stmt = $pdo->prepare("
         UPDATE medical_records 
         SET symptoms = :symptoms,

@@ -3,7 +3,7 @@ session_start();
 require_once('../../includes/messages.php');
 $base_path = '../../';
 
-// Get form data if redirected with errors
+
 $form_data = $_SESSION['form_data'] ?? [];
 $errors = $_SESSION['form_errors'] ?? [];
 unset($_SESSION['form_data'], $_SESSION['form_errors']);
@@ -17,16 +17,16 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 	<title>Đăng ký - Bệnh viện Global</title>
 	<link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.png" />
 
-	<!-- Google Fonts -->
+	
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-	<!-- Bootstrap CSS -->
+	
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-	<!-- Font Awesome -->
+	
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-	<!-- Modern Auth CSS -->
+	
 	<link rel="stylesheet" href="../../assets/css/custom/modern-auth.css?v=2.2">
 	<link rel="stylesheet" href="../../assets/css/custom/global-improvements.css">
 
@@ -365,7 +365,7 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 </head>
 
 <body>
-	<!-- Container cho hoa đào rơi -->
+	
 	<div class="petals-container" id="petals"></div>
 	<script>
 		function createPetals() {
@@ -384,10 +384,10 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 	</script>
 	<?php include($base_path . 'includes/navbar.php'); ?>
 
-	<!-- Main Container -->
+	
 	<div class="main-container">
 		<div class="register-card">
-			<!-- Header -->
+			
 			<div class="register-header">
 				<div class="register-icon">
 					<i class="fas fa-user-plus"></i>
@@ -396,12 +396,12 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 				<p class="register-subtitle">Đăng ký để đặt lịch khám bệnh online</p>
 			</div>
 
-			<!-- Messages -->
+			
 			<?php displayMessage(); ?>
 
-			<!-- Form -->
+			
 			<form method="post" action="register-handler.php" id="registerForm" novalidate>
-				<!-- Họ & Tên -->
+				
 				<div class="form-row-custom">
 					<div class="form-group-custom">
 						<label class="form-label">Họ <span class="required">*</span></label>
@@ -423,7 +423,7 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 					</div>
 				</div>
 
-				<!-- Email & SĐT -->
+				
 				<div class="form-row-custom">
 					<div class="form-group-custom">
 						<label class="form-label">Email <span class="required">*</span></label>
@@ -444,7 +444,7 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 					</div>
 				</div>
 
-				<!-- Giới tính -->
+				
 				<div class="form-group-custom">
 					<label class="form-label">Giới tính <span class="required">*</span></label>
 					<div class="gender-group">
@@ -459,7 +459,7 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 					</div>
 				</div>
 
-				<!-- Mật khẩu -->
+				
 				<div class="form-row-custom">
 					<div class="form-group-custom">
 						<label class="form-label">Mật khẩu <span class="required">*</span></label>
@@ -486,12 +486,12 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 					</div>
 				</div>
 
-				<!-- Submit -->
+				
 				<button type="submit" class="btn-submit-register" name="patsub1" onclick="return validateForm();">
 					<i class="fas fa-user-plus"></i> Đăng ký ngay
 				</button>
 
-				<!-- Login Link -->
+				
 				<div class="login-link">
 					<span style="color: #718096;">Đã có tài khoản?</span>
 					<a href="login.php"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
@@ -500,7 +500,7 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 		</div>
 	</div>
 
-	<!-- Scripts -->
+	
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -663,7 +663,7 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 		}
 	</script>
 
-	<!-- Hiệu ứng hoa đào rơi -->
+	
 	<script type="text/javascript">
 		(function() {
 			const isMobile = window.matchMedia('(max-width: 767px)').matches;

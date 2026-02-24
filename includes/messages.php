@@ -1,15 +1,10 @@
 <?php
 
-/**
- * Session Message Helper Functions
- * Quản lý thông báo giữa các trang bằng session
- */
 
-/**
- * Set a flash message
- * @param string $type - success, error, warning, info
- * @param string $message - Nội dung thông báo
- */
+
+
+
+
 function setMessage($type, $message)
 {
     if (!isset($_SESSION)) {
@@ -21,10 +16,8 @@ function setMessage($type, $message)
     ];
 }
 
-/**
- * Get and clear flash message
- * @return array|null
- */
+
+
 function getMessage()
 {
     if (!isset($_SESSION)) {
@@ -39,9 +32,8 @@ function getMessage()
     return null;
 }
 
-/**
- * Display flash message HTML
- */
+
+
 function displayMessage()
 {
     $message = getMessage();
@@ -90,12 +82,8 @@ function displayMessage()
     }
 }
 
-/**
- * Redirect with message
- * @param string $url - URL to redirect to
- * @param string $type - Message type
- * @param string $message - Message content
- */
+
+
 function redirectWithMessage($url, $type, $message)
 {
     setMessage($type, $message);

@@ -1,9 +1,26 @@
 ﻿<?php
 ob_start();
 session_start();
-require_once('../../config.php');
-require_once('../../includes/messages.php');
-require_once('../../includes/functions.php');
+
+set_exception_handler(function ($e) {
+    error_log("Patient profile uncaught: " . $e->getMessage());
+    while (ob_get_level()) ob_end_clean();
+    http_response_code(500);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi</h4><p>' . htmlspecialchars($e->getMessage()) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    exit;
+});
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level()) ob_end_clean();
+        http_response_code(500);
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lỗi Server</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="bg-light"><div class="container mt-5"><div class="alert alert-danger"><h4>Lỗi Server</h4><p>' . htmlspecialchars($err['message']) . '</p><a href="dashboard.php" class="btn btn-sm btn-outline-danger">Quay lại</a></div></div></body></html>';
+    }
+});
+
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/messages.php';
+require_once __DIR__ . '/../../includes/functions.php';
 
 $pid = $_SESSION['pid'] ?? null;
 $username = $_SESSION['username'] ?? '';
@@ -18,13 +35,13 @@ if (!$pid) {
     exit();
 }
 
-// Get patient full profile
+
 $stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
 $stmt->execute([':pid' => $pid]);
 $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
-="vi">
+<html lang="vi">
 
 <head>
     <meta charset="utf-8">
@@ -32,7 +49,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
     <link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.png" />
     <title>Hồ sơ cá nhân - Bệnh viện Global</title>
 
-    <!-- CSS -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -238,7 +255,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
     </script>
     <?php displayMessage(); ?>
 
-    <!-- Profile Header -->
+    
     <div class="profile-header">
         <div class="container">
             <div class="profile-avatar-section" style="position: relative;">
@@ -256,7 +273,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 
     <div class="container pb-5">
         <div class="profile-tabs">
-            <!-- Nav Tabs -->
+            
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" data-toggle="tab" href="#info-tab">
@@ -280,9 +297,9 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                 </li>
             </ul>
 
-            <!-- Tab Content -->
+            
             <div class="tab-content">
-                <!-- Thông tin cá nhân Tab -->
+                
                 <div id="info-tab" class="tab-pane fade show active">
                     <h3 class="form-section-title">Thông tin cá nhân</h3>
 
@@ -358,7 +375,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                     </div>
                 </div>
 
-                <!-- Chỉnh sửa hồ sơ Tab -->
+                
                 <div id="edit-tab" class="tab-pane fade">
                     <h3 class="form-section-title">Chỉnh sửa thông tin</h3>
 
@@ -460,7 +477,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                     </form>
                 </div>
 
-                <!-- Đổi mật khẩu Tab -->
+                
                 <div id="password-tab" class="tab-pane fade">
                     <h3 class="form-section-title">Đổi mật khẩu</h3>
 
@@ -500,7 +517,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
                     </form>
                 </div>
 
-                <!-- Upload Avatar Tab -->
+                
                 <div id="avatar-tab" class="tab-pane fade">
                     <h3 class="form-section-title">Ảnh đại diện</h3>
 
@@ -530,7 +547,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <!-- Scripts -->
+    
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -576,7 +593,7 @@ $patient = $stmt->fetch(PDO::FETCH_ASSOC);
         }
     </script>
 
-    <!-- Hiệu ứng hoa đào rơi tráng lệ & quý phái - Premium Edition -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 576px)').matches;

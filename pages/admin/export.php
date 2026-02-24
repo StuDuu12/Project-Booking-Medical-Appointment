@@ -1,9 +1,9 @@
 <?php
-// Suppress deprecation warnings from TCPDF
+
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 ini_set('display_errors', '0');
 
-// Start output buffering to prevent any output before PDF
+
 ob_start();
 
 session_start();
@@ -19,7 +19,7 @@ $type = $_GET['type'] ?? '';
 
 switch ($type) {
     case 'patients':
-        // Clean any output before PDF
+        
         ob_end_clean();
         exportPatientsList($pdo);
         break;

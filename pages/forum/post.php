@@ -4,10 +4,10 @@ $base_path = '../../';
 require_once '../../config.php';
 require_once '../../includes/forum_functions.php';
 
-// Get post ID
+
 $post_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get post details
+
 $post = getForumPost($pdo, $post_id);
 
 if (!$post) {
@@ -15,13 +15,13 @@ if (!$post) {
     exit;
 }
 
-// Get comments
+
 $comments = getForumComments($pdo, $post_id);
 
-// Check if user is logged in
+
 $is_logged_in = isset($_SESSION['patientSession']) || isset($_SESSION['doctorSession']) || isset($_SESSION['adminSession']);
 
-// Determine user type and ID
+
 $user_type = null;
 $user_id = null;
 if (isset($_SESSION['patientSession'])) {
@@ -35,14 +35,14 @@ if (isset($_SESSION['patientSession'])) {
     $user_id = 1;
 }
 
-// Handle like action
+
 if (isset($_POST['like_action']) && $is_logged_in) {
     toggleForumLike($pdo, $user_id, $user_type, $post_id, 'post');
     header('Location: post.php?id=' . $post_id);
     exit;
 }
 
-// Handle like comment action
+
 if (isset($_POST['action']) && $_POST['action'] === 'like_comment' && $is_logged_in) {
     $comment_id = intval($_POST['comment_id']);
     toggleForumLike($pdo, $user_id, $user_type, $comment_id, 'comment');
@@ -50,7 +50,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'like_comment' && $is_logged
     exit;
 }
 
-// Handle comment submission
+
 if (isset($_POST['submit_comment']) && $is_logged_in) {
     $comment = trim($_POST['comment'] ?? '');
     $parent_id = isset($_POST['parent_id']) ? intval($_POST['parent_id']) : null;
@@ -70,10 +70,10 @@ if (isset($_POST['submit_comment']) && $is_logged_in) {
     }
 }
 
-// Increment view count
+
 incrementPostViews($pdo, $post_id);
 
-// Get author info
+
 $author_name = '';
 $author_email = '';
 if ($post['user_type'] == 'doctor') {
@@ -580,7 +580,7 @@ $author_avatar = !empty($author_email) ? 'https://www.gravatar.com/avatar/' . md
                         <div class="post-tags">
                             <?php foreach (explode(',', $post['tags']) as $tag):
                                 $tag = trim($tag);
-                                $tag = ltrim($tag, '#'); // Remove leading # if exists
+                                $tag = ltrim($tag, '#'); 
                             ?>
                                 <span class="post-tag">#<?= htmlspecialchars($tag) ?></span>
                             <?php endforeach; ?>
@@ -625,7 +625,7 @@ $author_avatar = !empty($author_email) ? 'https://www.gravatar.com/avatar/' . md
                     <?php if (count($comments) > 0): ?>
                         <div class="comment-list">
                             <?php foreach ($comments as $comment):
-                                // Get commenter info
+                                
                                 $commenter_name = '';
                                 $commenter_email = '';
                                 if ($comment['user_type'] == 'doctor') {
@@ -748,7 +748,7 @@ $author_avatar = !empty($author_email) ? 'https://www.gravatar.com/avatar/' . md
         }
     </script>
 
-    <!-- Hiệu ứng hoa đào rơi -->
+    
     <script type="text/javascript">
         (function() {
             const isMobile = window.matchMedia('(max-width: 767px)').matches;
