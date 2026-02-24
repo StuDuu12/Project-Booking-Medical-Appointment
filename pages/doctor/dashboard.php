@@ -1379,8 +1379,8 @@ if (isset($_GET['cancel'])) {
                         <tbody>
                             <?php
                             $filter_appointment = isset($_GET['appointment']) ? $_GET['appointment'] : '';
-                            $query = "SELECT md.*, p.fname, p.lname FROM medical_documents md 
-                                              LEFT JOIN patreg p ON md.pid = p.pid 
+                            $query = "SELECT md.*, p.fname, p.lname FROM medical_documents md
+                                              LEFT JOIN patreg p ON md.pid = p.pid
                                               WHERE md.doctor = :doctor";
                             if ($filter_appointment) {
                                 $query .= " AND md.appointment_id = :appointment_id";
@@ -2063,5 +2063,5 @@ if (isset($_GET['cancel'])) {
     </body>
 
 </html>
-<?php } // Closing brace for unknown unclosed block 
+<?php } // Closing brace for unknown unclosed block
 ?>

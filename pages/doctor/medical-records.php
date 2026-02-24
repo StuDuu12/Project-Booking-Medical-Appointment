@@ -1089,7 +1089,7 @@ if ($selected_patient_id && $doctor_id) {
             });
         });
 
-        // Handle Edit Record Button  
+        // Handle Edit Record Button
         document.querySelectorAll('.edit-record').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation(); // Prevent triggering parent collapse
