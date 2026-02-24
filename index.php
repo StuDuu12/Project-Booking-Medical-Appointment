@@ -19,6 +19,9 @@ if (session_status() === PHP_SESSION_NONE) {
 	<!-- Font Awesome -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+	<!-- Global Improvements CSS -->
+	<link rel="stylesheet" href="assets/css/custom/global-improvements.css">
+
 	<style>
 		:root {
 			--primary-gradient: linear-gradient(135deg, #d2302c 0%, #ff4d4d 50%, #ff6b6b 100%);

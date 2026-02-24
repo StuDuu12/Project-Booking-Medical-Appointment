@@ -581,14 +581,22 @@ $specialties = [
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #065f46;
+            color: #ffffff;
             font-weight: 600;
             text-decoration: none;
             margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: rgba(6, 95, 70, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
         }
 
         .back-link:hover {
-            color: #059669;
+            color: #ffffff;
+            background: rgba(5, 150, 105, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(6, 95, 70, 0.4);
         }
     </style>
 </head>

@@ -28,6 +28,7 @@ unset($_SESSION['form_data'], $_SESSION['form_errors']);
 
 	<!-- Modern Auth CSS -->
 	<link rel="stylesheet" href="../../assets/css/custom/modern-auth.css?v=2.2">
+	<link rel="stylesheet" href="../../assets/css/custom/global-improvements.css">
 
 	<style>
 		body {

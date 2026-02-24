@@ -93,12 +93,12 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .page-header {
-            background: linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #ea580c 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
             padding: 32px;
             border-radius: 20px;
             color: white;
             margin-bottom: 24px;
-            box-shadow: 0 20px 60px rgba(124, 45, 18, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(210, 48, 44, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
         }
@@ -152,8 +152,8 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .prescription-item {
-            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-            border: 2px solid #fed7aa;
+            background: linear-gradient(135deg, #fde2e4 0%, #fee2e2 100%);
+            border: 2px solid #f8d7da;
             border-radius: 14px;
             padding: 12px;
             margin-bottom: 10px;
@@ -168,7 +168,7 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .patient-info {
-            background: linear-gradient(135deg, #7c2d12 0%, #9a3412 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 10px;
@@ -183,44 +183,44 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .patient-info i {
-            color: #fed7aa !important;
+            color: #ffb3b3 !important;
         }
 
         .prescription-detail {
             background: rgba(255, 247, 237, 0.8);
             padding: 10px;
             border-radius: 10px;
-            border-left: 4px solid #fb923c;
+            border-left: 4px solid #d2302c;
             backdrop-filter: blur(10px);
             font-size: 12px;
         }
 
         .btn-medical {
-            background: linear-gradient(135deg, #c2410c 0%, #ea580c 50%, #f97316 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
             color: white;
             border: none;
             padding: 6px 14px;
             border-radius: 8px;
             font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 16px rgba(234, 88, 12, 0.3);
+            box-shadow: 0 4px 16px rgba(210, 48, 44, 0.3);
             text-transform: uppercase;
             font-size: 11px;
             letter-spacing: 0.5px;
         }
 
         .btn-medical:hover {
-            background: linear-gradient(135deg, #9a3412 0%, #c2410c 50%, #ea580c 100%);
+            background: linear-gradient(135deg, #8b0000 0%, #6b0000 100%);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(234, 88, 12, 0.4);
+            box-shadow: 0 8px 24px rgba(210, 48, 44, 0.4);
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #7c2d12;
+            color: #d2302c;
             background: white;
             padding: 10px 20px;
             border-radius: 10px;
@@ -232,15 +232,15 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .back-link:hover {
-            color: #7c2d12;
+            color: #8b0000;
             text-decoration: none;
             transform: translateX(-8px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .form-control:focus {
-            border-color: #fb923c;
-            box-shadow: 0 0 0 0.2rem rgba(251, 146, 60, 0.25);
+            border-color: #d2302c;
+            box-shadow: 0 0 0 0.2rem rgba(210, 48, 44, 0.25);
         }
 
         .badge {
@@ -252,19 +252,19 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .pagination .page-link {
             border-radius: 8px;
             margin: 0 4px;
-            border: 2px solid #fed7aa;
-            color: #c2410c;
+            border: 2px solid #f8d7da;
+            color: #d2302c;
             font-weight: 600;
         }
 
         .pagination .page-item.active .page-link {
-            background: linear-gradient(135deg, #c2410c, #ea580c);
-            border-color: #c2410c;
+            background: linear-gradient(135deg, #d2302c, #8b0000);
+            border-color: #d2302c;
         }
 
         .pagination .page-link:hover {
-            background-color: #ffedd5;
-            border-color: #fb923c;
+            background-color: #fde2e4;
+            border-color: #d2302c;
         }
 
         .petals-container {
@@ -417,7 +417,7 @@ $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </p>
                                     <?php if ($pres['allergy']): ?>
                                         <p class="mb-2">
-                                            <i class="fas fa-allergies mr-1" style="color: #ea580c;"></i>
+                                            <i class="fas fa-allergies mr-1" style="color: #d2302c;"></i>
                                             <strong>Dị ứng:</strong> <?php echo htmlspecialchars($pres['allergy']); ?>
                                         </p>
                                     <?php endif; ?>

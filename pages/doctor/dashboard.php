@@ -52,6 +52,7 @@ if (isset($_GET['cancel'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
+    <link rel="stylesheet" href="../../assets/css/custom/global-improvements.css">
     <style>
         /* CSS Tùy chỉnh */
         .navbar-user.dropdown .dropdown-toggle::after {

@@ -116,12 +116,12 @@ function calculateAge($dob)
         }
 
         .page-header {
-            background: linear-gradient(135deg, #581c87 0%, #6b21a8 50%, #7c3aed 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
             padding: 32px;
             border-radius: 20px;
             color: white;
             margin-bottom: 24px;
-            box-shadow: 0 20px 60px rgba(88, 28, 135, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(210, 48, 44, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
         }
@@ -174,31 +174,19 @@ function calculateAge($dob)
         }
 
         .record-item {
-            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
-            border: 2px solid #e9d5ff;
+            background: linear-gradient(135deg, #fde2e4 0%, #fee2e2 100%);
+            border: 2px solid #f8d7da;
             border-radius: 14px;
             padding: 12px;
             margin-bottom: 10px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
         }
 
-        .record-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg, #7c3aed, #a78bfa);
-            transition: width 0.3s ease;
-        }
-
         .record-item:hover {
-            box-shadow: 0 12px 48px rgba(124, 58, 237, 0.25);
+            box-shadow: 0 12px 48px rgba(210, 48, 44, 0.25);
             transform: translateY(-4px) scale(1.01);
-            border-color: #d8b4fe;
+            border-color: #f8d7da;
         }
 
         .record-item:hover::before {
@@ -207,7 +195,7 @@ function calculateAge($dob)
         }
 
         .vital-signs {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            background: linear-gradient(135deg, #fde2e4 0%, #fee2e2 100%);
             padding: 10px;
             border-radius: 10px;
             margin: 10px 0;
@@ -225,24 +213,24 @@ function calculateAge($dob)
         }
 
         .btn-medical {
-            background: linear-gradient(135deg, #6b21a8 0%, #7c3aed 50%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
             color: white;
             border: none;
             padding: 6px 14px;
             border-radius: 8px;
             font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 4px 16px rgba(210, 48, 44, 0.3);
             text-transform: uppercase;
             font-size: 11px;
             letter-spacing: 0.5px;
         }
 
         .btn-medical:hover {
-            background: linear-gradient(135deg, #581c87 0%, #6b21a8 50%, #7c3aed 100%);
+            background: linear-gradient(135deg, #8b0000 0%, #6b0000 100%);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 8px 24px rgba(210, 48, 44, 0.4);
         }
 
         .modal-overlay {
@@ -302,18 +290,18 @@ function calculateAge($dob)
         }
 
         .patient-info-box {
-            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            background: linear-gradient(135deg, #fde2e4 0%, #fee2e2 100%);
             padding: 24px;
             border-radius: 16px;
             margin-bottom: 24px;
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+            box-shadow: 0 4px 16px rgba(210, 48, 44, 0.2);
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            color: #581c87;
+            color: #d2302c;
             background: white;
             padding: 12px 24px;
             border-radius: 12px;
@@ -325,15 +313,15 @@ function calculateAge($dob)
         }
 
         .back-link:hover {
-            color: #581c87;
+            color: #8b0000;
             text-decoration: none;
             transform: translateX(-8px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .form-control:focus {
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
+            border-color: #d2302c;
+            box-shadow: 0 0 0 0.2rem rgba(210, 48, 44, 0.25);
         }
 
         .badge {
@@ -345,19 +333,19 @@ function calculateAge($dob)
         .pagination .page-link {
             border-radius: 8px;
             margin: 0 4px;
-            border: 2px solid #e9d5ff;
-            color: #6b21a8;
+            border: 2px solid #f8d7da;
+            color: #d2302c;
             font-weight: 600;
         }
 
         .pagination .page-item.active .page-link {
-            background: linear-gradient(135deg, #6b21a8, #7c3aed);
-            border-color: #6b21a8;
+            background: linear-gradient(135deg, #d2302c, #8b0000);
+            border-color: #d2302c;
         }
 
         .pagination .page-link:hover {
-            background-color: #f3e8ff;
-            border-color: #8b5cf6;
+            background-color: #fde2e4;
+            border-color: #d2302c;
         }
 
         .petals-container {

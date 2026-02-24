@@ -133,6 +133,148 @@ $pending_posts = $stmt->fetchAll();
             height: 18px;
             opacity: 0.6;
         }
+
+        /* Enhanced White Text Contrast for Better Readability */
+        body {
+            color: #ffffff !important;
+        }
+
+        .sidebar-title,
+        .sidebar-subtitle,
+        .sidebar-menu-link,
+        .sidebar-menu-link span,
+        .sidebar-menu-icon {
+            color: #ffffff !important;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-title {
+            color: #ffffff !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+            font-weight: 700;
+        }
+
+        .data-table-title,
+        .data-table-header h3 {
+            color: #ffffff !important;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+        }
+
+        .alert {
+            color: #155724 !important;
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            font-weight: 600;
+        }
+
+        /* Card styling - keep dark text on white background */
+        .card {
+            background: rgba(255, 255, 255, 0.98) !important;
+            color: #333333 !important;
+        }
+
+        .card-title {
+            color: #1a1a1a !important;
+            font-weight: 700 !important;
+        }
+
+        .card-text,
+        .card-body p {
+            color: #333333 !important;
+        }
+
+        .text-muted {
+            color: #666666 !important;
+        }
+
+        .text-center.text-muted i {
+            color: #999999 !important;
+        }
+
+        .badge {
+            font-weight: 600 !important;
+            padding: 0.4em 0.8em !important;
+            text-shadow: none !important;
+        }
+
+        .badge-info {
+            background: linear-gradient(135deg, #17a2b8, #138496) !important;
+            color: #ffffff !important;
+        }
+
+        /* Button styling */
+        .btn {
+            font-weight: 600 !important;
+            text-shadow: none !important;
+            border: none !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #218838) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.4) !important;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.5) !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4) !important;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333, #bd2130) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.5) !important;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8, #138496) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(23, 162, 184, 0.4) !important;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #138496, #117a8b) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.5) !important;
+        }
+
+        /* Empty state styling */
+        .p-5.text-center {
+            color: #ffffff !important;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+        }
+
+        .p-5.text-center i {
+            color: #ffffff !important;
+            opacity: 0.8;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .p-5.text-center p {
+            color: #ffffff !important;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Data table container */
+        .data-table-container {
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .data-table-header {
+            background: rgba(210, 48, 44, 0.3) !important;
+            padding: 20px;
+        }
     </style>
 </head>
 

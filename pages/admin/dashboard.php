@@ -33,9 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'
         $stmt = $pdo->prepare("
             SELECT mr.*, 
                    d.fullname as doctor_name,
-                   d.spec as doctor_specialty
+                   d.spec as doctor_specialty,
+                   COALESCE(s.name_vi, d.spec) as doctor_specialty_vi
             FROM medical_records mr
             LEFT JOIN doctb d ON mr.doctor_id = d.id
+            LEFT JOIN specializations s ON d.spec_id = s.id
             WHERE mr.patient_id = :pid
             ORDER BY mr.record_date DESC, mr.created_at DESC
         ");
@@ -60,9 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'
 
             foreach ($records as $rec) {
                 $html .= '<tr>';
-                $html .= '<td>' . date('d/m/Y', strtotime($rec['record_date'])) . '</td>';
-                $html .= '<td>' . htmlspecialchars($rec['doctor_name'] ?: 'N/A') . '</td>';
-                $html .= '<td><span class="badge badge-info">' . htmlspecialchars($rec['doctor_specialty'] ?: 'N/A') . '</span></td>';
+                $html .= '<td style="color: #1f2937; font-weight: 500;">' . date('d/m/Y', strtotime($rec['record_date'])) . '</td>';
+                $html .= '<td style="color: #1f2937; font-weight: 500;">' . htmlspecialchars($rec['doctor_name'] ?: 'N/A') . '</td>';
+                $html .= '<td><span class="badge badge-info" style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 0.4rem 0.8rem; font-weight: 600;">' . htmlspecialchars($rec['doctor_specialty_vi'] ?: 'N/A') . '</span></td>';
 
                 // Triệu chứng
                 $symptoms = $rec['symptoms'] ?: $rec['chief_complaint'] ?: 'Không ghi nhận';
@@ -303,7 +305,244 @@ if (isset($_GET['reset_schedule'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="../../assets/css/custom/medical-theme.css">
+    <link rel="stylesheet" href="../../assets/css/custom/global-improvements.css">
     <style>
+        /* ==============================================
+           ADMIN COLOR IMPROVEMENTS - Cải thiện màu chữ
+           Chủ đạo màu trắng, tương phản tốt, dễ đọc
+           ============================================== */
+        
+        /* Text colors - Màu chữ chính */
+        body, .content-section, .section-header, .section-title {
+            color: #ffffff !important;
+        }
+        
+        /* Headers và Titles */
+        h1, h2, h3, h4, h5, h6,
+        .section-title, .data-table-title, .modal-title {
+            color: #ffffff !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Stats cards với text trắng */
+        .stat-item .stat-label,
+        .stat-item .stat-number {
+            color: #ffffff !important;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Table headers - Bold white text */
+        .data-table thead th,
+        .table thead th {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%) !important;
+        }
+        
+        /* Table body - Dark text on light background */
+        .data-table tbody td,
+        .table tbody td {
+            color: #1f2937 !important;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        /* Table row hover */
+        .data-table tbody tr:hover td,
+        .table tbody tr:hover td {
+            background: rgba(255, 248, 220, 0.95) !important;
+            color: #111827 !important;
+        }
+        
+        /* Form labels - Black/Dark for maximum contrast */
+        label, .form-label {
+            color: #000000 !important;
+            font-weight: 700 !important;
+            font-size: 1rem !important;
+            display: block !important;
+            margin-bottom: 8px !important;
+            background: rgba(255, 255, 255, 0.25) !important;
+            padding: 6px 10px !important;
+            border-radius: 4px !important;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Form inputs - Dark text on white background */
+        .form-control, .custom-select, input, textarea, select {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            border: 3px solid #d2302c !important;
+            font-size: 1rem !important;
+            font-weight: 500;
+        }
+        
+        .form-control:focus, .custom-select:focus, input:focus, textarea:focus, select:focus {
+            color: #000000 !important;
+            background-color: #fffbeb !important;
+            border-color: #ffd700 !important;
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.4) !important;
+            font-weight: 600;
+        }
+        
+        /* Placeholder text - Darker gray */
+        .form-control::placeholder, input::placeholder, textarea::placeholder {
+            color: #374151 !important;
+            font-weight: 500;
+            opacity: 0.9 !important;
+        }
+        
+        /* Card content */
+        .card-body, .modal-body {
+            color: #1f2937 !important;
+        }
+        
+        /* Filter và Search bar */
+        .custom-search-input, .custom-select-filter {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            border: 2px solid rgba(210, 48, 44, 0.3);
+            font-weight: 500;
+        }
+        
+        /* Text muted - Light gray cho text phụ */
+        .text-muted, small.text-muted {
+            color: #e5e7eb !important;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Badges - Tương phản tốt */
+        .badge {
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            text-shadow: none;
+        }
+        
+        .badge-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        .badge-info {
+            background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);
+        }
+        
+        .badge-success {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        }
+        
+        .badge-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+        
+        /* Buttons - High contrast */
+        .btn {
+            font-weight: 600 !important;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #d2302c, #8b0000) !important;
+            border: none !important;
+            color: #ffffff !important;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #ff4d4d, #d2302c) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(210, 48, 44, 0.4);
+        }
+        
+        /* Section headers */
+        .section-header {
+            background: linear-gradient(135deg, rgba(210, 48, 44, 0.9), rgba(139, 0, 0, 0.9));
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Stats section - White text */
+        .quick-stats .stat-item {
+            background: linear-gradient(135deg, rgba(210, 48, 44, 0.85), rgba(139, 0, 0, 0.85));
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .quick-stats .stat-item:hover {
+            background: linear-gradient(135deg, rgba(255, 77, 77, 0.9), rgba(210, 48, 44, 0.9));
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(210, 48, 44, 0.3);
+        }
+        
+        /* Alert boxes */
+        .alert {
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            background: rgba(209, 250, 229, 0.95) !important;
+            color: #065f46 !important;
+            border-color: #10b981;
+        }
+        
+        .alert-danger {
+            background: rgba(254, 226, 226, 0.95) !important;
+            color: #991b1b !important;
+            border-color: #ef4444;
+        }
+        
+        .alert-info {
+            background: rgba(219, 234, 254, 0.95) !important;
+            color: #1e40af !important;
+            border-color: #3b82f6;
+        }
+        
+        /* Modal improvements */
+        .modal-header {
+            background: linear-gradient(135deg, #d2302c, #8b0000);
+            color: #ffffff !important;
+        }
+        
+        .modal-header .modal-title {
+            color: #ffffff !important;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header .close {
+            color: #ffffff !important;
+            opacity: 0.9;
+            text-shadow: none;
+        }
+        
+        /* Paragraph và text content */
+        p, span, div {
+            color: inherit;
+        }
+        
+        /* Links */
+        a {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        
+        a:hover {
+            color: #fcd34d;
+            text-decoration: underline;
+        }
+        
+        /* ============================================== */
+
         body {
             background-image:
                 linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(254, 215, 170, 0.85) 25%, rgba(253, 186, 116, 0.85) 50%, rgba(251, 146, 60, 0.85) 75%, rgba(249, 115, 22, 0.85) 100%),
@@ -391,10 +630,10 @@ if (isset($_GET['reset_schedule'])) {
         }
 
         .weekDays-selector input[type=checkbox]:checked+label {
-            background: #007bff;
+            background: #d2302c;
             color: #ffffff;
-            border-color: #007bff;
-            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+            border-color: #d2302c;
+            box-shadow: 0 2px 5px rgba(210, 48, 44, 0.3);
             transform: translateY(-1px);
         }
 
@@ -408,8 +647,8 @@ if (isset($_GET['reset_schedule'])) {
         }
 
         .table-schedule thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
+            box-shadow: 0 2px 10px rgba(210, 48, 44, 0.3);
         }
 
         .table-schedule th {
@@ -440,9 +679,9 @@ if (isset($_GET['reset_schedule'])) {
         }
 
         .table-schedule tbody tr:hover {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
-            border-left: 3px solid #667eea;
-            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.15);
+            background: linear-gradient(135deg, rgba(210, 48, 44, 0.05), rgba(139, 0, 0, 0.05));
+            border-left: 3px solid #d2302c;
+            box-shadow: 0 3px 12px rgba(210, 48, 44, 0.15);
             transform: translateX(2px);
         }
 
@@ -451,7 +690,7 @@ if (isset($_GET['reset_schedule'])) {
         }
 
         .table-schedule tbody tr:nth-child(even):hover {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+            background: linear-gradient(135deg, rgba(210, 48, 44, 0.08), rgba(139, 0, 0, 0.08));
         }
 
         .table-schedule td {
@@ -1026,37 +1265,38 @@ if (isset($_GET['reset_schedule'])) {
 
                     <div class="data-table-container mb-4">
                         <div class="data-table-header" style="background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);">
-                            <h3 class="data-table-title" style="color: white;"><i class="fas fa-user-plus"></i> Thêm bác sĩ mới</h3>
+                            <h3 class="data-table-title" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);"><i class="fas fa-user-plus"></i> Thêm bác sĩ mới</h3>
                         </div>
-                        <div class="p-4">
+                        <div class="p-4" style="background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(254, 215, 170, 0.9) 100%);">
                             <form method="post" action="?page=doctors">
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <div class="form-group"><label>Tên bác sĩ *</label><input type="text" class="form-control" name="doctor" required></div>
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-user-circle" style="color: #d2302c; margin-right: 5px;"></i>Tên bác sĩ *</label><input type="text" class="form-control" name="doctor" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;"></div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group"><label>Chuyên khoa *</label><select name="special" class="form-control" required>
-                                                <option value="General">Đa khoa</option>
-                                                <option value="Cardiologist">Tim mạch</option>
-                                                <option value="Neurologist">Thần kinh</option>
-                                                <option value="Pediatrician">Nhi khoa</option>
-                                                <option value="Dermatologist">Da liễu</option>
-                                                <option value="Orthopedic">Chỉnh hình</option>
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-stethoscope" style="color: #d2302c; margin-right: 5px;"></i>Chuyên khoa *</label><select name="special" class="form-control" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;">
+                                                <option value="">-- Chọn chuyên khoa --</option>
+                                                <?php
+                                                $specList = $pdo->query("SELECT id, name, name_vi FROM specializations WHERE status = 1 ORDER BY name_vi ASC")->fetchAll();
+                                                foreach ($specList as $spec) {
+                                                    echo '<option value="' . htmlspecialchars($spec['name']) . '">' . htmlspecialchars($spec['name_vi']) . '</option>';
+                                                }
+                                                ?>
                                             </select></div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group"><label>Email *</label><input type="email" class="form-control" name="demail" required></div>
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-envelope" style="color: #d2302c; margin-right: 5px;"></i>Email *</label><input type="email" class="form-control" name="demail" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;"></div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group"><label>Phí khám *</label><input type="number" class="form-control" name="docFees" min="0" required></div>
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-dollar-sign" style="color: #d2302c; margin-right: 5px;"></i>Phí khám *</label><input type="number" class="form-control" name="docFees" min="0" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;"></div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group"><label>Mật khẩu *</label><input type="password" class="form-control" name="dpassword" required></div>
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-lock" style="color: #d2302c; margin-right: 5px;"></i>Mật khẩu *</label><input type="password" class="form-control" name="dpassword" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;"></div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group"><label>Xác nhận mật khẩu *</label><input type="password" class="form-control" name="cdpassword" required></div>
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-lock" style="color: #d2302c; margin-right: 5px;"></i>Xác nhận mật khẩu *</label><input type="password" class="form-control" name="cdpassword" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;"></div>
                                     </div>
-                                    <div class="col-md-12"><button type="submit" name="docsub" class="btn btn-success btn-lg">Thêm bác sĩ</button></div>
+                                    <div class="col-md-12"><button type="submit" name="docsub" class="btn btn-lg" style="background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%); color: #ffffff; border: none; border-radius: 8px; padding: 14px 32px; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 15px rgba(210, 48, 44, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 25px rgba(210, 48, 44, 0.6)';"><i class="fas fa-check-circle"></i> Thêm bác sĩ</button></div>
                                 </div>
                             </form>
                         </div>
@@ -1073,31 +1313,13 @@ if (isset($_GET['reset_schedule'])) {
                             <div class="col-md-4 mb-2 mb-md-0">
                                 <select id="filter_spec" class="form-control custom-select-filter">
                                     <option value="">-- Tất cả chuyên khoa --</option>
-                                    <option value="Pediatrics">Nhi khoa</option>
-                                    <option value="Obstetrics_Gynecology">Sản phụ khoa</option>
-                                    <option value="Dermatology">Da liễu</option>
-                                    <option value="Gastroenterology">Tiêu hóa</option>
-                                    <option value="Rheumatology">Cơ xương khớp</option>
-                                    <option value="Allergy_Immunology">Dị ứng - Miễn dịch</option>
-                                    <option value="Anesthesiology">Gây mê hồi sức</option>
-                                    <option value="ENT">Tai - Mũi - Họng</option>
-                                    <option value="Oncology">Ung bướu</option>
-                                    <option value="Cardiology">Tim mạch</option>
-                                    <option value="Geriatrics">Lão khoa</option>
-                                    <option value="Orthopedics">Chấn thương chỉnh hình</option>
-                                    <option value="Emergency_Medicine">Hồi sức cấp cứu</option>
-                                    <option value="General_Surgery">Ngoại tổng quát</option>
-                                    <option value="Preventive_Medicine">Y học dự phòng</option>
-                                    <option value="Dentistry">Răng - Hàm - Mặt</option>
-                                    <option value="Infectious_Disease">Truyền nhiễm</option>
-                                    <option value="Nephrology">Nội thận</option>
-                                    <option value="Endocrinology">Nội tiết</option>
-                                    <option value="Psychiatry">Tâm thần</option>
-                                    <option value="Pulmonology">Hô hấp</option>
-                                    <option value="Laboratory">Xét nghiệm</option>
-                                    <option value="Hematology">Huyết học</option>
-                                    <option value="Psychology">Tâm lý</option>
-                                    <option value="Neurology">Nội thần kinh</option>
+                                    <?php
+                                    // Load tất cả chuyên khoa từ database
+                                    $specs_query = $pdo->query("SELECT name, name_vi FROM specializations WHERE status = 1 ORDER BY name_vi ASC");
+                                    while ($spec_row = $specs_query->fetch(PDO::FETCH_ASSOC)) {
+                                        echo '<option value="' . htmlspecialchars($spec_row['name']) . '">' . htmlspecialchars($spec_row['name_vi']) . '</option>';
+                                    }
+                                    ?>
                                 </select>
                             </div>
                             <div class="col-md-2 text-right">
@@ -1132,13 +1354,13 @@ if (isset($_GET['reset_schedule'])) {
                                         <tr>
                                             <td><?php echo $serial++; ?></td>
                                             <td><strong>BS. <?php echo htmlspecialchars($row['fullname'] ?? $row['username']); ?></strong></td>
-                                            <td><span class="badge badge-primary"><?php echo htmlspecialchars($row['name_vi'] ?? $row['spec']); ?></span></td>
+                                            <td><span class="badge" style="background: linear-gradient(135deg, #d2302c, #8b0000); color: #ffffff; padding: 0.5rem 0.8rem; font-weight: 700;"><?php echo htmlspecialchars($row['name_vi'] ?? $row['spec']); ?></span></td>
                                             <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                            <td>₹<?php echo htmlspecialchars($row['docFees']); ?></td>
+                                            <td><strong style="color: #d2302c;">₹<?php echo htmlspecialchars($row['docFees']); ?></strong></td>
                                             <td>
                                                 <form method="post" action="?page=doctors" style="display:inline" onsubmit="return confirm('Bạn có chắc muốn xóa?');">
                                                     <input type="hidden" name="demail" value="<?php echo htmlspecialchars($row['email']); ?>">
-                                                    <button type="submit" name="docsub1" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
+                                                    <button type="submit" name="docsub1" class="btn btn-sm" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 6px; padding: 8px 14px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.5)';"><i class="fas fa-trash-alt"></i> Xóa</button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -1282,16 +1504,16 @@ if (isset($_GET['reset_schedule'])) {
 
 
                     <div class="card shadow-sm mb-5 border-0" style="border-radius: 12px; overflow: hidden;">
-                        <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
-                            <h5 class="mb-0 text-white font-weight-bold"><i class="fas fa-calendar-plus"></i> Thêm lịch làm việc mới</h5>
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%); border: none;">
+                            <h5 class="mb-0 text-white font-weight-bold" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);"><i class="fas fa-calendar-plus"></i> Thêm lịch làm việc mới</h5>
                         </div>
-                        <div class="card-body" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                        <div class="card-body" style="background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(254, 215, 170, 0.9) 100%);">
                             <form method="POST" id="scheduleForm">
                                 <div class="row">
                                     <div class="col-lg-3 col-md-6 mb-3">
                                         <div class="form-group">
-                                            <label class="font-weight-bold text-dark"><i class="fas fa-user-md text-primary"></i> Chọn Bác sĩ</label>
-                                            <select name="doctor_id" class="form-control" required style="border-radius: 8px; border: 2px solid #667eea;">
+                                            <label class="font-weight-bold" style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px; display: block; margin-bottom: 10px;"><i class="fas fa-user-md" style="color: #d2302c;"></i> Chọn Bác sĩ</label>
+                                            <select name="doctor_id" class="form-control" required style="border-radius: 8px; border: 3px solid #d2302c; color: #000000; font-weight: 500;">
                                                 <option value="">-- Chọn bác sĩ --</option>
                                                 <?php foreach ($doctors as $doc): ?>
                                                     <option value="<?php echo $doc['id']; ?>">BS. <?php echo $doc['fullname']; ?></option>
@@ -1301,7 +1523,7 @@ if (isset($_GET['reset_schedule'])) {
                                     </div>
                                     <div class="col-lg-5 col-md-12 mb-3">
                                         <div class="form-group">
-                                            <label class="font-weight-bold text-dark"><i class="fas fa-calendar-week text-success"></i> Chọn ngày làm việc (có thể chọn nhiều)</label>
+                                            <label class="font-weight-bold" style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px; display: block; margin-bottom: 10px;"><i class="fas fa-calendar-week" style="color: #d2302c;"></i> Chọn ngày làm việc (có thể chọn nhiều)</label>
                                             <div class="weekDays-selector">
                                                 <input type="checkbox" id="weekday-1" name="day_of_week[]" value="1"><label for="weekday-1">Thứ 2</label>
                                                 <input type="checkbox" id="weekday-2" name="day_of_week[]" value="2"><label for="weekday-2">Thứ 3</label>
@@ -1314,18 +1536,18 @@ if (isset($_GET['reset_schedule'])) {
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-md-6 mb-3">
-                                        <label class="font-weight-bold text-dark"><i class="fas fa-clock text-warning"></i> Khung giờ làm việc</label>
+                                        <label class="font-weight-bold" style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px; display: block; margin-bottom: 10px;"><i class="fas fa-clock" style="color: #d2302c;"></i> Khung giờ làm việc</label>
                                         <div class="row mb-2">
                                             <div class="col-6">
-                                                <input type="time" name="start_time" class="form-control" required style="border-radius: 8px; border: 2px solid #48bb78;">
-                                                <small class="text-muted d-block mt-1"><i class="fas fa-arrow-right"></i> Giờ bắt đầu</small>
+                                                <input type="time" name="start_time" class="form-control" required style="border-radius: 8px; border: 3px solid #d2302c; color: #000000; font-weight: 500;">
+                                                <small class="d-block mt-1" style="color: #000000; font-weight: 600;"><i class="fas fa-arrow-right"></i> Giờ bắt đầu</small>
                                             </div>
                                             <div class="col-6">
-                                                <input type="time" name="end_time" class="form-control" required style="border-radius: 8px; border: 2px solid #ed8936;">
-                                                <small class="text-muted d-block mt-1"><i class="fas fa-arrow-left"></i> Giờ kết thúc</small>
+                                                <input type="time" name="end_time" class="form-control" required style="border-radius: 8px; border: 3px solid #d2302c; color: #000000; font-weight: 500;">
+                                                <small class="d-block mt-1" style="color: #000000; font-weight: 600;"><i class="fas fa-arrow-left"></i> Giờ kết thúc</small>
                                             </div>
                                         </div>
-                                        <button type="submit" name="assign_schedule" class="btn btn-block mt-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; padding: 10px; font-weight: bold; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';">
+                                        <button type="submit" name="assign_schedule" class="btn btn-block mt-2" style="background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%); color: white; border: none; border-radius: 8px; padding: 12px; font-weight: bold; box-shadow: 0 4px 15px rgba(210, 48, 44, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(210, 48, 44, 0.6)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(210, 48, 44, 0.4)';">
                                             <i class="fas fa-save"></i> Lưu lịch làm việc
                                         </button>
                                     </div>

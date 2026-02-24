@@ -195,12 +195,12 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .page-header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
             padding: 32px;
             border-radius: 20px;
             color: white;
             margin-bottom: 24px;
-            box-shadow: 0 20px 60px rgba(30, 58, 138, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(210, 48, 44, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
         }
@@ -246,12 +246,12 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .upload-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            background: linear-gradient(135deg, #fde2e4 0%, #fee2e2 100%);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 16px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
-            border-left: 6px solid #3b82f6;
+            border-left: 6px solid #d2302c;
         }
 
         .documents-card {
@@ -262,8 +262,8 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .doc-item {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            border: 2px solid #bfdbfe;
+            background: linear-gradient(135deg, #fde2e4 0%, #fee2e2 100%);
+            border: 2px solid #f8d7da;
             border-radius: 14px;
             padding: 12px;
             margin-bottom: 10px;
@@ -279,14 +279,14 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
             left: 0;
             width: 4px;
             height: 100%;
-            background: linear-gradient(180deg, #2563eb, #3b82f6);
+            background: linear-gradient(180deg, #d2302c, #8b0000);
             transition: width 0.3s ease;
         }
 
         .doc-item:hover {
-            box-shadow: 0 12px 48px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 12px 48px rgba(210, 48, 44, 0.25);
             transform: translateY(-4px) scale(1.01);
-            border-color: #60a5fa;
+            border-color: #f8d7da;
         }
 
         .doc-item:hover::before {
@@ -301,31 +301,31 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .btn-medical {
-            background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+            background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%);
             color: white;
             border: none;
             padding: 6px 14px;
             border-radius: 8px;
             font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 16px rgba(210, 48, 44, 0.3);
             text-transform: uppercase;
             font-size: 11px;
             letter-spacing: 0.5px;
         }
 
         .btn-medical:hover {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+            background: linear-gradient(135deg, #8b0000 0%, #6b0000 100%);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 8px 24px rgba(210, 48, 44, 0.4);
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #1e3a8a;
+            color: #d2302c;
             background: white;
             padding: 10px 20px;
             border-radius: 10px;
@@ -337,15 +337,15 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .back-link:hover {
-            color: #1e3a8a;
+            color: #8b0000;
             text-decoration: none;
             transform: translateX(-8px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .form-control:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+            border-color: #d2302c;
+            box-shadow: 0 0 0 0.2rem rgba(210, 48, 44, 0.25);
         }
 
         .form-control {
@@ -363,19 +363,19 @@ $patients = $patients_stmt->fetchAll(PDO::FETCH_ASSOC);
         .pagination .page-link {
             border-radius: 8px;
             margin: 0 4px;
-            border: 2px solid #bfdbfe;
-            color: #1e40af;
+            border: 2px solid #f8d7da;
+            color: #d2302c;
             font-weight: 600;
         }
 
         .pagination .page-item.active .page-link {
-            background: linear-gradient(135deg, #1e40af, #2563eb);
-            border-color: #1e40af;
+            background: linear-gradient(135deg, #d2302c, #8b0000);
+            border-color: #d2302c;
         }
 
         .pagination .page-link:hover {
-            background-color: #dbeafe;
-            border-color: #3b82f6;
+            background-color: #fde2e4;
+            border-color: #d2302c;
         }
 
         .petals-container {
