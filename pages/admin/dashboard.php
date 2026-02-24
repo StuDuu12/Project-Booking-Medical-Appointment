@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_patient_history'
 
         // Lấy danh sách hồ sơ bệnh án từ bảng medical_records
         $stmt = $pdo->prepare("
-            SELECT mr.*, 
+            SELECT mr.*,
                    d.fullname as doctor_name,
                    d.spec as doctor_specialty,
                    COALESCE(s.name_vi, d.spec) as doctor_specialty_vi
@@ -118,7 +118,7 @@ if (!in_array($page, $allowed_pages)) {
 // Thống kê cho dashboard
 if ($page === 'dashboard') {
     // Lấy dữ liệu bệnh nhân mới 12 tháng gần nhất (đếm từ lịch hẹn đầu tiên của mỗi bệnh nhân)
-    $patientsMonthlyQuery = "SELECT 
+    $patientsMonthlyQuery = "SELECT
         DATE_FORMAT(first_appointment, '%Y-%m') as month,
         COUNT(*) as count
         FROM (
@@ -133,7 +133,7 @@ if ($page === 'dashboard') {
     $patientsMonthlyData = $patientsMonthlyStmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Lấy dữ liệu doanh thu 12 tháng gần nhất
-    $revenueMonthlyQuery = "SELECT 
+    $revenueMonthlyQuery = "SELECT
         DATE_FORMAT(a.appdate, '%Y-%m') as month,
         SUM(CAST(d.docFees AS DECIMAL(10,2))) as revenue
         FROM appointmenttb a
@@ -146,7 +146,7 @@ if ($page === 'dashboard') {
     $revenueMonthlyData = $revenueMonthlyStmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Tỷ lệ lịch khám thành công/hủy
-    $appointmentStatsQuery = "SELECT 
+    $appointmentStatsQuery = "SELECT
         SUM(CASE WHEN userStatus = 1 AND doctorStatus = 1 THEN 1 ELSE 0 END) as success,
         SUM(CASE WHEN userStatus = 0 OR doctorStatus = 0 THEN 1 ELSE 0 END) as cancelled,
         COUNT(*) as total
@@ -155,7 +155,7 @@ if ($page === 'dashboard') {
     $appointmentStats = $appointmentStatsStmt->fetch(PDO::FETCH_ASSOC);
 
     // Top 5 bác sĩ có nhiều lịch khám nhất
-    $topDoctorsQuery = "SELECT 
+    $topDoctorsQuery = "SELECT
         d.fullname,
         COALESCE(s.name_vi, d.spec) as spec,
         COUNT(a.ID) as appointment_count,
@@ -311,26 +311,26 @@ if (isset($_GET['reset_schedule'])) {
            ADMIN COLOR IMPROVEMENTS - Cải thiện màu chữ
            Chủ đạo màu trắng, tương phản tốt, dễ đọc
            ============================================== */
-        
+
         /* Text colors - Màu chữ chính */
         body, .content-section, .section-header, .section-title {
             color: #ffffff !important;
         }
-        
+
         /* Headers và Titles */
         h1, h2, h3, h4, h5, h6,
         .section-title, .data-table-title, .modal-title {
             color: #ffffff !important;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-        
+
         /* Stats cards với text trắng */
         .stat-item .stat-label,
         .stat-item .stat-number {
             color: #ffffff !important;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
         }
-        
+
         /* Table headers - Bold white text */
         .data-table thead th,
         .table thead th {
@@ -338,7 +338,7 @@ if (isset($_GET['reset_schedule'])) {
             font-weight: 700 !important;
             background: linear-gradient(135deg, #d2302c 0%, #8b0000 100%) !important;
         }
-        
+
         /* Table body - Dark text on light background */
         .data-table tbody td,
         .table tbody td {
@@ -346,14 +346,14 @@ if (isset($_GET['reset_schedule'])) {
             font-weight: 500;
             background: rgba(255, 255, 255, 0.95);
         }
-        
+
         /* Table row hover */
         .data-table tbody tr:hover td,
         .table tbody tr:hover td {
             background: rgba(255, 248, 220, 0.95) !important;
             color: #111827 !important;
         }
-        
+
         /* Form labels - Black/Dark for maximum contrast */
         label, .form-label {
             color: #000000 !important;
@@ -366,8 +366,8 @@ if (isset($_GET['reset_schedule'])) {
             border-radius: 4px !important;
             letter-spacing: 0.3px;
         }
-        
-        /* Form inputs - Dark text on warm background matching admin theme */
+
+        /* Form inputs - Dark text on white background */
         .form-control, .custom-select, input, textarea, select {
             color: #000000 !important;
             background-color: #fffbeb !important;
@@ -376,7 +376,7 @@ if (isset($_GET['reset_schedule'])) {
             font-weight: 500;
             transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
         }
-        
+
         .form-control:focus, .custom-select:focus, input:focus, textarea:focus, select:focus {
             color: #000000 !important;
             background-color: #fffbeb !important;
@@ -385,38 +385,18 @@ if (isset($_GET['reset_schedule'])) {
             font-weight: 600;
         }
 
-        /* Lock autofill background to same warm tone so no white flash */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover,
-        input:-webkit-autofill:focus,
-        input:-webkit-autofill:blur {
-            -webkit-box-shadow: 0 0 0 1000px #fffbeb inset !important;
-            box-shadow: 0 0 0 1000px #fffbeb inset !important;
-            -webkit-text-fill-color: #000000 !important;
-            transition: background-color 99999s ease-in-out 0s !important;
+        /* Placeholder text - Darker gray */
+        .form-control::placeholder, input::placeholder, textarea::placeholder {
+            color: #374151 !important;
+            font-weight: 500;
+            opacity: 0.9 !important;
         }
-        
-        /* Placeholder text - clearly visible at rest, no need to click */
-        .form-control::placeholder,
-        input::placeholder,
-        textarea::placeholder {
-            color: #64748b !important;
-            -webkit-text-fill-color: #64748b !important;
-            opacity: 1 !important;
-            font-weight: 400;
-        }
-        .form-control::-moz-placeholder,
-        input::-moz-placeholder,
-        textarea::-moz-placeholder {
-            color: #64748b !important;
-            opacity: 1 !important;
-        }
-        
+
         /* Card content */
         .card-body, .modal-body {
             color: #1f2937 !important;
         }
-        
+
         /* Filter và Search bar */
         .custom-search-input, .custom-select-filter {
             background: #ffffff !important;
@@ -424,13 +404,13 @@ if (isset($_GET['reset_schedule'])) {
             border: 2px solid rgba(210, 48, 44, 0.3);
             font-weight: 500;
         }
-        
+
         /* Text muted - Light gray cho text phụ */
         .text-muted, small.text-muted {
             color: #e5e7eb !important;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
-        
+
         /* Badges - Tương phản tốt */
         .badge {
             font-weight: 700;
@@ -438,49 +418,49 @@ if (isset($_GET['reset_schedule'])) {
             font-size: 0.85rem;
             text-shadow: none;
         }
-        
+
         .badge-primary {
             background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
             color: #ffffff !important;
             box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
         }
-        
+
         .badge-info {
             background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
             color: #ffffff !important;
             box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);
         }
-        
+
         .badge-success {
             background: linear-gradient(135deg, #10b981, #059669) !important;
             color: #ffffff !important;
             box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
         }
-        
+
         .badge-danger {
             background: linear-gradient(135deg, #ef4444, #dc2626) !important;
             color: #ffffff !important;
             box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
         }
-        
+
         /* Buttons - High contrast */
         .btn {
             font-weight: 600 !important;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #d2302c, #8b0000) !important;
             border: none !important;
             color: #ffffff !important;
         }
-        
+
         .btn-primary:hover {
             background: linear-gradient(135deg, #ff4d4d, #d2302c) !important;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(210, 48, 44, 0.4);
         }
-        
+
         /* Section headers */
         .section-header {
             background: linear-gradient(135deg, rgba(210, 48, 44, 0.9), rgba(139, 0, 0, 0.9));
@@ -489,7 +469,7 @@ if (isset($_GET['reset_schedule'])) {
             margin-bottom: 1.5rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
-        
+
         /* Stats section - White text */
         .quick-stats .stat-item {
             background: linear-gradient(135deg, rgba(210, 48, 44, 0.85), rgba(139, 0, 0, 0.85));
@@ -498,70 +478,70 @@ if (isset($_GET['reset_schedule'])) {
             padding: 1.5rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
-        
+
         .quick-stats .stat-item:hover {
             background: linear-gradient(135deg, rgba(255, 77, 77, 0.9), rgba(210, 48, 44, 0.9));
             transform: translateY(-5px);
             box-shadow: 0 8px 24px rgba(210, 48, 44, 0.3);
         }
-        
+
         /* Alert boxes */
         .alert {
             font-weight: 500;
             border-left: 4px solid;
         }
-        
+
         .alert-success {
             background: rgba(209, 250, 229, 0.95) !important;
             color: #065f46 !important;
             border-color: #10b981;
         }
-        
+
         .alert-danger {
             background: rgba(254, 226, 226, 0.95) !important;
             color: #991b1b !important;
             border-color: #ef4444;
         }
-        
+
         .alert-info {
             background: rgba(219, 234, 254, 0.95) !important;
             color: #1e40af !important;
             border-color: #3b82f6;
         }
-        
+
         /* Modal improvements */
         .modal-header {
             background: linear-gradient(135deg, #d2302c, #8b0000);
             color: #ffffff !important;
         }
-        
+
         .modal-header .modal-title {
             color: #ffffff !important;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
         }
-        
+
         .modal-header .close {
             color: #ffffff !important;
             opacity: 0.9;
             text-shadow: none;
         }
-        
+
         /* Paragraph và text content */
         p, span, div {
             color: inherit;
         }
-        
+
         /* Links */
         a {
             color: #fbbf24;
             font-weight: 600;
         }
-        
+
         a:hover {
             color: #fcd34d;
             text-decoration: underline;
         }
-        
+
         /* ============================================== */
 
         body {
@@ -1468,17 +1448,22 @@ if (isset($_GET['reset_schedule'])) {
                 $doctors = $pdo->query("SELECT MIN(id) as id, fullname FROM doctb GROUP BY fullname ORDER BY fullname")->fetchAll(PDO::FETCH_ASSOC);
 
                 // Lấy danh sách bác sĩ với chuyên khoa cho bảng - UNIQUE theo fullname
-                $sql_docs = "SELECT MIN(d.id) as id, d.fullname, 
-                             (SELECT COALESCE(s.name_vi, '---') FROM specializations s WHERE s.id = d.spec_id LIMIT 1) as spec_name 
-                             FROM doctb d 
+                $sql_docs = "SELECT MIN(d.id) as id, d.fullname,
+                             (SELECT COALESCE(s.name_vi, '---') FROM specializations s WHERE s.id = d.spec_id LIMIT 1) as spec_name
+                             FROM doctb d
                              GROUP BY d.fullname, d.spec_id
                              ORDER BY d.fullname";
                 $all_docs = $pdo->query($sql_docs)->fetchAll(PDO::FETCH_ASSOC);
 
-                // Lấy lịch làm việc - GROUP BY để tránh duplicate trong schedules
-                $sql_sch = "SELECT doctor_id, day_of_week, MIN(start_time) as start_time, MAX(end_time) as end_time 
-                           FROM doctor_schedules 
-                           GROUP BY doctor_id, day_of_week";
+                // Lấy lịch làm việc - chọn bản ghi mới nhất cho mỗi doctor_id + day_of_week
+                // Dùng subquery lấy MAX(id) (gần như là bản ghi mới nhất) để lấy start/end mới nhất
+                $sql_sch = "SELECT ds.doctor_id, ds.day_of_week, ds.start_time, ds.end_time
+                           FROM doctor_schedules ds
+                           INNER JOIN (
+                               SELECT doctor_id, day_of_week, MAX(id) as max_id
+                               FROM doctor_schedules
+                               GROUP BY doctor_id, day_of_week
+                           ) latest ON ds.doctor_id = latest.doctor_id AND ds.day_of_week = latest.day_of_week AND ds.id = latest.max_id";
                 $all_schedules = $pdo->query($sql_sch)->fetchAll(PDO::FETCH_ASSOC);
 
                 // Tạo scheduleMap - gộp lịch của các bác sĩ trùng tên
@@ -1747,7 +1732,7 @@ if (isset($_GET['reset_schedule'])) {
                             </thead>
                             <tbody><?php
                                     // JOIN với patreg để lấy tên bệnh nhân chính xác
-                                    $query = "SELECT a.*, 
+                                    $query = "SELECT a.*,
                                               CONCAT(p.fname, ' ', p.lname) as patient_fullname,
                                               p.contact as patient_contact
                                               FROM appointmenttb a
@@ -1847,7 +1832,7 @@ if (isset($_GET['reset_schedule'])) {
                 if (!empty($filter_spec_id)) {
                     // Lọc theo chuyên khoa - xử lý bác sĩ trùng tên bằng cách lấy tất cả ID có cùng fullname
                     $sql_pat .= " WHERE p.pid IN (
-                                      SELECT DISTINCT mr.patient_id 
+                                      SELECT DISTINCT mr.patient_id
                                       FROM medical_records mr
                                       INNER JOIN doctb d ON mr.doctor_id = d.id
                                       WHERE d.spec_id = ?
