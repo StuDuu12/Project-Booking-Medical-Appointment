@@ -70,6 +70,14 @@ if (isset($_POST['add_medical_record'])) {
     }
 }
 
+// Search handling for medical records (search by patient name, diagnosis, symptoms)
+$search_query = '';
+$search_sql = '';
+if (isset($_GET['search']) && trim($_GET['search']) !== '') {
+    $search_query = trim($_GET['search']);
+    $search_sql = " AND (p.fname LIKE :s OR p.lname LIKE :s OR mr.diagnosis LIKE :s OR mr.symptoms LIKE :s)";
+}
+
 // Handle delete medical record
 if (isset($_POST['delete_record_id'])) {
     try {
@@ -132,7 +140,7 @@ $all_medical_records = [];
 $grouped_records = []; // Group by patient_id
 if ($doctor_id) {
     try {
-        $stmt = $pdo->prepare("
+        $sql = "
             SELECT mr.id, mr.patient_id, mr.doctor_id, mr.created_at, mr.symptoms, mr.diagnosis, mr.treatment_plan, mr.notes,
                    mr.height, mr.weight, mr.blood_pressure, mr.heart_rate, mr.temperature, mr.record_date,
                    p.fname, p.lname, p.contact, p.email, p.blood_group, p.pid,
@@ -140,10 +148,15 @@ if ($doctor_id) {
             FROM medical_records mr
             JOIN patreg p ON mr.patient_id = p.pid
             LEFT JOIN doctb d ON mr.doctor_id = d.id
-            WHERE mr.doctor_id = :doctor_id
+            WHERE mr.doctor_id = :doctor_id" . $search_sql . "
             ORDER BY p.fname, p.lname, mr.created_at DESC
-        ");
-        $stmt->execute([':doctor_id' => $doctor_id]);
+        ";
+        $stmt = $pdo->prepare($sql);
+        $params = [':doctor_id' => $doctor_id];
+        if ($search_sql !== '') {
+            $params[':s'] = "%{$search_query}%";
+        }
+        $stmt->execute($params);
         $all_medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Group records by patient
@@ -180,17 +193,22 @@ if ($selected_patient_id && $doctor_id) {
         $stmt->execute([':pid' => $selected_patient_id]);
         $selected_patient_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $stmt = $pdo->prepare("
+        $sql = "
             SELECT mr.*,
                    d.fullname as doctor_name,
                    a.appdate as appointmentDate, a.apptime as appointmentTime
             FROM medical_records mr
             LEFT JOIN doctb d ON mr.doctor_id = d.id
             LEFT JOIN appointmenttb a ON mr.appointment_id = a.ID
-            WHERE mr.patient_id = :patient_id AND mr.doctor_id = :doctor_id
+            WHERE mr.patient_id = :patient_id AND mr.doctor_id = :doctor_id" . $search_sql . "
             ORDER BY mr.created_at DESC
-        ");
-        $stmt->execute([':patient_id' => $selected_patient_id, ':doctor_id' => $doctor_id]);
+        ";
+        $stmt = $pdo->prepare($sql);
+        $params = [':patient_id' => $selected_patient_id, ':doctor_id' => $doctor_id];
+        if ($search_sql !== '') {
+            $params[':s'] = "%{$search_query}%";
+        }
+        $stmt->execute($params);
         $patient_medical_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Fetch patient records error: " . $e->getMessage());
@@ -622,6 +640,18 @@ if ($selected_patient_id && $doctor_id) {
                     <h5 class="mb-4" style="color: #1f2937; font-weight: 700;">
                         <i class="fas fa-list"></i> Danh sách bệnh án
                     </h5>
+
+                    <!-- Search form for medical records -->
+                    <form method="GET" class="form-inline mb-3">
+                        <input type="text" name="search" class="form-control mr-2" placeholder="Tìm theo tên bệnh nhân, chẩn đoán, triệu chứng..." value="<?php echo htmlspecialchars($search_query); ?>" style="width: 360px;">
+                        <?php if ($selected_patient_id): ?>
+                            <input type="hidden" name="patient_id" value="<?php echo $selected_patient_id; ?>">
+                        <?php endif; ?>
+                        <button type="submit" class="btn btn-primary btn-sm">Tìm</button>
+                        <?php if ($search_query): ?>
+                            <a href="<?php echo $_SERVER['PHP_SELF'] . ($selected_patient_id ? '?patient_id=' . $selected_patient_id : ''); ?>" class="btn btn-secondary btn-sm ml-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
 
                     <?php if (empty($grouped_records)) { ?>
                         <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 8px;">

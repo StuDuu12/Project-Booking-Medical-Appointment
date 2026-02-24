@@ -1451,10 +1451,15 @@ if (isset($_GET['reset_schedule'])) {
                              ORDER BY d.fullname";
                 $all_docs = $pdo->query($sql_docs)->fetchAll(PDO::FETCH_ASSOC);
 
-                // Lấy lịch làm việc - GROUP BY để tránh duplicate trong schedules
-                $sql_sch = "SELECT doctor_id, day_of_week, MIN(start_time) as start_time, MAX(end_time) as end_time 
-                           FROM doctor_schedules 
-                           GROUP BY doctor_id, day_of_week";
+                // Lấy lịch làm việc - chọn bản ghi mới nhất cho mỗi doctor_id + day_of_week
+                // Dùng subquery lấy MAX(id) (gần như là bản ghi mới nhất) để lấy start/end mới nhất
+                $sql_sch = "SELECT ds.doctor_id, ds.day_of_week, ds.start_time, ds.end_time
+                           FROM doctor_schedules ds
+                           INNER JOIN (
+                               SELECT doctor_id, day_of_week, MAX(id) as max_id
+                               FROM doctor_schedules
+                               GROUP BY doctor_id, day_of_week
+                           ) latest ON ds.doctor_id = latest.doctor_id AND ds.day_of_week = latest.day_of_week AND ds.id = latest.max_id";
                 $all_schedules = $pdo->query($sql_sch)->fetchAll(PDO::FETCH_ASSOC);
 
                 // Tạo scheduleMap - gộp lịch của các bác sĩ trùng tên

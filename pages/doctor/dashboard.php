@@ -982,13 +982,20 @@ if (isset($_GET['cancel'])) {
 
                 <?php if ($page === 'schedule') {
                     // Code to fetch schedule data
+                    // Lấy bản ghi lịch mới nhất cho mỗi ngày (nếu có nhiều bản ghi cùng ngày)
                     $stmt = $pdo->prepare("
-                    SELECT day_of_week, start_time, end_time
-                    FROM doctor_schedules
-                    WHERE doctor_id = ?
-                    ORDER BY start_time ASC
+                    SELECT ds.day_of_week, ds.start_time, ds.end_time
+                    FROM doctor_schedules ds
+                    INNER JOIN (
+                        SELECT day_of_week, MAX(id) as max_id
+                        FROM doctor_schedules
+                        WHERE doctor_id = :did_inner
+                        GROUP BY day_of_week
+                    ) latest ON ds.id = latest.max_id
+                    WHERE ds.doctor_id = :did_outer
+                    ORDER BY ds.start_time ASC
                 ");
-                    $stmt->execute([$doctor_id]);
+                    $stmt->execute([':did_inner' => $doctor_id, ':did_outer' => $doctor_id]);
                     $rawData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                     // 2. Gom nhóm dữ liệu theo ngày (Key sẽ là 0, 1, 2... 6)
