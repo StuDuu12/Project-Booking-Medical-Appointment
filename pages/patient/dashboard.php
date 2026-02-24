@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<?php
+﻿<?php
+ob_start();
 session_start();
 require_once('../../config.php');
 require_once('../../includes/messages.php');
@@ -314,6 +314,7 @@ if (isset($_GET["generate_bill"])) {
     $obj_pdf->Output("hoa-don-kham-benh.pdf", 'I');
 }
 ?>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>

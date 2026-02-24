@@ -1,7 +1,7 @@
-<!DOCTYPE html>
-<?php
+﻿<?php
+ob_start();
 session_start();
-require_once('../../config.php');
+require_once(__DIR__ . '/../../config.php');
 require_once('../../includes/messages.php');
 require_once('../../includes/functions.php');
 
@@ -39,6 +39,7 @@ if (isset($_GET['cancel'])) {
 }
 
 ?>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>

@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<?php
+﻿<?php
+ob_start();
 session_start();
 require_once('../../config.php');
 
@@ -40,7 +40,8 @@ $med_stmt->execute([$prescription_id]);
 $medications = $med_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<html lang="vi">
+<!DOCTYPE html>
+="vi">
 
 <head>
     <meta charset="UTF-8">
