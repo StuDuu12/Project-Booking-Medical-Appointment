@@ -370,10 +370,11 @@ if (isset($_GET['reset_schedule'])) {
         /* Form inputs - Dark text on white background */
         .form-control, .custom-select, input, textarea, select {
             color: #000000 !important;
-            background-color: #ffffff !important;
+            background-color: #fffbeb !important;
             border: 3px solid #d2302c !important;
             font-size: 1rem !important;
             font-weight: 500;
+            transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
         }
 
         .form-control:focus, .custom-select:focus, input:focus, textarea:focus, select:focus {
@@ -1271,15 +1272,18 @@ if (isset($_GET['reset_schedule'])) {
                             <form method="post" action="?page=doctors">
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-user-circle" style="color: #d2302c; margin-right: 5px;"></i>Tên bác sĩ *</label><input type="text" class="form-control" name="doctor" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;"></div>
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-user-circle" style="color: #d2302c; margin-right: 5px;"></i>Họ tên bác sĩ *</label><input type="text" class="form-control" name="fullname" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;"></div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-stethoscope" style="color: #d2302c; margin-right: 5px;"></i>Chuyên khoa *</label><select name="special" class="form-control" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;">
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-user-tag" style="color: #d2302c; margin-right: 5px;"></i>Tên đăng nhập *</label><input type="text" class="form-control" name="username" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;"></div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group"><label style="color: #000000; background: rgba(255, 255, 255, 0.6); padding: 8px 12px; border-radius: 6px;"><i class="fas fa-stethoscope" style="color: #d2302c; margin-right: 5px;"></i>Chuyên khoa *</label><select name="special_id" class="form-control" required style="border: 3px solid #d2302c; color: #000000; font-weight: 500;">
                                                 <option value="">-- Chọn chuyên khoa --</option>
                                                 <?php
                                                 $specList = $pdo->query("SELECT id, name, name_vi FROM specializations WHERE status = 1 ORDER BY name_vi ASC")->fetchAll();
                                                 foreach ($specList as $spec) {
-                                                    echo '<option value="' . htmlspecialchars($spec['name']) . '">' . htmlspecialchars($spec['name_vi']) . '</option>';
+                                                    echo '<option value="' . htmlspecialchars($spec['id']) . '">' . htmlspecialchars($spec['name_vi']) . '</option>';
                                                 }
                                                 ?>
                                             </select></div>

@@ -134,8 +134,9 @@ $search_condition = '';
 $params = [];
 
 if ($search_query) {
-    $search_condition .= " AND (name LIKE :search OR manufacturer LIKE :search)";
-    $params[':search'] = "%$search_query%";
+    $search_condition .= " AND (name LIKE :search1 OR manufacturer LIKE :search2)";
+    $params[':search1'] = "%$search_query%";
+    $params[':search2'] = "%$search_query%";
 }
 if ($category_filter) {
     $search_condition .= " AND category = :category";

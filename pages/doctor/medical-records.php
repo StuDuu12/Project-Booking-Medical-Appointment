@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<?php
+﻿<?php
+ob_start();
 session_start();
 require_once('../../config.php');
 require_once('../../includes/messages.php');
@@ -215,7 +215,8 @@ if ($selected_patient_id && $doctor_id) {
     }
 }
 ?>
-<html lang="en">
+<!DOCTYPE html>
+="en">
 
 <head>
     <meta charset="utf-8">

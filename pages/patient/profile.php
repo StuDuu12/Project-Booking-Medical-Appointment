@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<?php
+﻿<?php
+ob_start();
 session_start();
 require_once('../../config.php');
 require_once('../../includes/messages.php');
@@ -23,7 +23,8 @@ $stmt = $pdo->prepare("SELECT * FROM patreg WHERE pid = :pid");
 $stmt->execute([':pid' => $pid]);
 $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
-<html lang="vi">
+<!DOCTYPE html>
+="vi">
 
 <head>
     <meta charset="utf-8">
